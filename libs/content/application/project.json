@@ -1,0 +1,26 @@
+{
+  "name": "content-application",
+  "projectType": "library",
+  "sourceRoot": "libs/content/application/src",
+  "tags": ["layer:application"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/content/application --max-warnings=0"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/content/application/tsconfig.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run libs/content/application"
+      }
+    }
+  }
+}

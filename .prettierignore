@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.nx/
+.react-router/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
+.questboard/
+.claude/

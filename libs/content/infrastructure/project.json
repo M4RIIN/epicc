@@ -1,0 +1,26 @@
+{
+  "name": "content-infrastructure",
+  "projectType": "library",
+  "sourceRoot": "libs/content/infrastructure/src",
+  "tags": ["layer:infrastructure"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/content/infrastructure --max-warnings=0"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/content/infrastructure/tsconfig.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run libs/content/infrastructure"
+      }
+    }
+  }
+}

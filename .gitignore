@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.nx/
+.react-router/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.*
+.questboard/

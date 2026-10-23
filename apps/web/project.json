@@ -1,0 +1,44 @@
+{
+  "name": "web",
+  "projectType": "application",
+  "sourceRoot": "apps/web/app",
+  "tags": ["layer:web"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint apps/web --max-warnings=0"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "react-router typegen && tsc --noEmit",
+        "cwd": "apps/web"
+      },
+      "outputs": ["{projectRoot}/.react-router/types"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run apps/web"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/dist/apps/web"],
+      "options": {
+        "command": "react-router build",
+        "cwd": "apps/web"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "continuous": true,
+      "options": {
+        "command": "react-router dev --host 0.0.0.0 --port 3100 --strictPort",
+        "cwd": "apps/web"
+      }
+    }
+  }
+}

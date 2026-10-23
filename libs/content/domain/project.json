@@ -1,0 +1,26 @@
+{
+  "name": "content-domain",
+  "projectType": "library",
+  "sourceRoot": "libs/content/domain/src",
+  "tags": ["layer:domain"],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "eslint libs/content/domain --max-warnings=0"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -p libs/content/domain/tsconfig.json --noEmit"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "vitest run libs/content/domain"
+      }
+    }
+  }
+}

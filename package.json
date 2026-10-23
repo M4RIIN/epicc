@@ -1,0 +1,56 @@
+{
+  "name": "@epicc/workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0 <23 || >=24"
+  },
+  "scripts": {
+    "dev": "nx run-many -t serve -p web api --parallel=2",
+    "build": "nx run-many -t build",
+    "start": "NODE_ENV=production node dist/apps/api/main.mjs",
+    "lint": "nx run-many -t lint && eslint tools e2e *.config.* --max-warnings=0",
+    "typecheck": "nx run-many -t typecheck && tsc -p tsconfig.tools.json --noEmit",
+    "test": "nx run-many -t test",
+    "test:e2e": "playwright test",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build",
+    "graph": "nx graph",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "@react-router/node": "^8.5.0",
+    "hono": "^4.13.13",
+    "isbot": "^5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router": "^8.5.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@nx/devkit": "^24.0.0",
+    "@nx/eslint-plugin": "^24.0.0",
+    "@playwright/test": "^1.64.1",
+    "@react-router/dev": "^8.5.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
+    "eslint": "10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "nx": "^24.0.0",
+    "prettier": "3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.72.0",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "overrides": {
+    "undici": "7.29.1"
+  }
+}
