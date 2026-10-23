@@ -1,6 +1,6 @@
 # EPICC
 
-Socle TypeScript en monorepo Nx : vitrine React rendue côté serveur, point d’entrée du futur backoffice sur `/connect` et API Hono sur `/api`. En production, un seul serveur Node sert ces trois espaces sur la même origine.
+Socle TypeScript en monorepo Nx : vitrine React rendue côté serveur, gestion des clients sur `/connect` et API Hono sur `/api`. En production, un seul serveur Node sert ces trois espaces sur la même origine.
 
 ## Démarrer
 
@@ -13,7 +13,7 @@ npm run dev
 
 Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. Le chargement de la page d’accueil appelle l’API depuis le serveur, avant le rendu du HTML. Les modifications sont rechargées automatiquement.
 
-Aucune base de données, aucun secret ni fichier `.env` ne sont nécessaires pour démarrer.
+La vitrine démarre sans secret ni fichier `.env`. La base SQLite des clients est créée automatiquement au premier lancement de l’API ; la connexion à la gestion reste désactivée tant que les accès ne sont pas configurés.
 
 ## Commandes
 
@@ -52,14 +52,14 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 
 - `/` : vitrine responsive en français, rendue côté serveur, avec titre, description, Open Graph et URL canonique.
 - `/clients/:slug` : fiche client sous forme de formulaire d’archives, avec navigation entre les fiches et retour au répertoire.
-- `/connect` : page d’attente du futur backoffice, avec `noindex, nofollow`, `X-Robots-Tag` et `Cache-Control: no-store`.
+- `/connect` : connexion et liste des clients ; `/connect/clients/nouveau` et `/connect/clients/:slug` : création et modification. Ces routes sont exclues de l’indexation et du cache.
 - `/api/health` : état du serveur HTTP ; ce contrôle ne vérifie pas une base de données.
 - `/api/v1/pages/accueil` : contenu public de démonstration, chargé par la vitrine.
 - `/robots.txt` et `/sitemap.xml` : consignes d’exploration et liste des pages publiques.
 
 Le contenu est déterministe et assemblé dans `apps/api/src/composition-root.ts`. Le cas d’usage masque les brouillons et les pages absentes avec le même statut 404. Une panne de l’API produit une page d’erreur 503 ; les erreurs techniques ne sont pas exposées au visiteur.
 
-**Ce socle ne comprend pas encore de CMS, d’authentification, d’édition ni de persistance.** `/connect` ne donne aucun accès privilégié et aucune route d’écriture n’est exposée. L’exclusion des moteurs de recherche n’est pas une protection d’accès. Les contenus et l’identité visuelle sont des exemples à remplacer.
+La gestion des clients comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. Les contenus et l’identité visuelle sont des exemples à remplacer.
 
 ## Exécuter le build
 
@@ -78,12 +78,32 @@ Ce lancement reste local : publier et configurer le domaine est une étape d’h
 
 Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Pour changer le port Hono en développement, fournir aussi `INTERNAL_API_ORIGIN`. Ne pas exposer ces paramètres dans le bundle navigateur. Le processus de production doit disposer de `dist/`, du `package.json` et de ses dépendances d’exécution (`npm ci --omit=dev`).
 
+## Gestion des clients
+
+Configurer les variables dans l’environnement du serveur, sans les exposer au navigateur :
+
+| Variable          | Usage                                                                                                                                                                    |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ADMIN_EMAIL`     | Adresse du compte administrateur ; valeur par défaut pour les tests : `test@questboard.test`. Définir l’adresse réelle pour l’hébergement.                               |
+| `ADMIN_PASSWORD`  | Mot de passe administrateur, obligatoire pour activer la connexion. Utiliser un mot de passe fort et unique.                                                             |
+| `SESSION_SECRET`  | Secret aléatoire d’au moins 32 caractères, obligatoire ; signe les sessions et protège l’API privée. Le conserver entre redémarrages. Sa rotation invalide les sessions. |
+| `CLIENTS_DB_PATH` | Chemin de la base SQLite ; par défaut `data/clients.sqlite`, relatif au répertoire de lancement.                                                                         |
+
+La gestion permet d’ajouter, modifier et supprimer les fiches, de changer tous leurs textes, leur couleur, leur ordre et leur publication. Les adresses des fiches restent stables après création pour préserver les liens. Les images JPEG, PNG ou WebP peuvent être téléversées (5 Mo maximum) ou remplacées par une illustration existante. Les suppressions nécessitent une confirmation explicite.
+
+L’API crée automatiquement les tables et importe une seule fois les six exemples fictifs. Les modifications, les images et même une liste entièrement vidée sont conservées après redémarrage. SQLite utilise le module natif `node:sqlite` (Node peut afficher un avertissement expérimental). Aucun service Postgres n’est nécessaire.
+
+**Hébergement : monter un volume persistant et inscriptible pour le dossier contenant `CLIENTS_DB_PATH`**, hors de `dist/`, et sauvegarder ce volume avec le processus arrêté ou avec un outil de sauvegarde SQLite. Un disque éphémère perdrait les modifications au redéploiement. Ce stockage convient à un serveur Node unique ; plusieurs répliques sur des disques séparés nécessiteraient un stockage partagé adapté. Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. Les variables d’authentification doivent être identiques dans les processus web et API en développement.
+
+Les visiteurs lisent uniquement les fiches publiées. L’accueil, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
+
+Les tests navigateur utilisent une base temporaire isolée et le compte `test@questboard.test` / `testtest`, puis nettoient leur stockage. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
+
 ## Prochaines fonctionnalités
 
-1. Ajouter l’authentification et une autorisation serveur sur chaque opération d’administration ; protéger les sessions et les écritures contre le CSRF.
-2. Ajouter des cas d’usage distincts de création, modification et publication, puis leurs adaptateurs HTTP et leurs formulaires `/connect`.
-3. Remplacer le dépôt en mémoire par une implémentation persistante du port, avec migrations et tests d’intégration.
-4. Enrichir la vitrine avec les contenus réels, les pages publiques et leur référencement.
+1. Étendre la gestion aux pages éditoriales et aux contenus réels.
+2. Prévoir plusieurs comptes et rôles si l’équipe de gestion s’agrandit.
+3. Migrer le stockage des clients si l’hébergement nécessite plusieurs répliques.
 
 Le verrouillage transitoire d’`undici` dans `package.json` impose la version corrigée 7.29.1 à Nx 24, qui dépend de 7.29.0. Le retirer quand Nx embarquera une version corrigée.
 
@@ -91,7 +111,7 @@ Le verrouillage transitoire d’`undici` dans `package.json` impose la version c
 
 La vitrine adopte un carnet de rencontres : papier grainé, encre bleue, notes manuscrites et photographies fixées par du scotch en CSS. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
 
-Les six clients de `apps/web/app/services/clients.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
+Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
 
 Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
 
