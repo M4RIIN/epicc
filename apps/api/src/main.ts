@@ -26,6 +26,8 @@ if (production) {
   const handleRequest = createRequestHandler(build, 'production');
   const clientRoot = fileURLToPath(new URL('../web/client/', import.meta.url));
   app.use('/assets/*', serveStatic({ root: clientRoot }));
+  app.use('/images/*', serveStatic({ root: clientRoot }));
+  app.use('/fonts/*', serveStatic({ root: clientRoot }));
   app.all('*', (context) => handleRequest(context.req.raw));
 }
 
