@@ -1,14 +1,16 @@
 import { Link } from 'react-router';
 import type { Route } from './+types/client';
-import { clients } from '../services/clients';
+import { loadClients } from '../services/clients.server';
 import { getSiteOrigin } from '../services/site.server';
 
-export function loader({ params }: Route.LoaderArgs) {
+export async function loader({ params }: Route.LoaderArgs) {
+  const clients = await loadClients();
   const index = clients.findIndex((client) => client.slug === params.slug);
   const client = clients[index];
   if (!client) throw new Response('Fiche introuvable', { status: 404 });
   return {
     client,
+    total: clients.length,
     previous: clients[index - 1] ?? null,
     next: clients[index + 1] ?? null,
     origin: getSiteOrigin(),
@@ -28,6 +30,8 @@ export function meta({ loaderData: data }: Route.MetaArgs) {
     { property: 'og:title', content: title },
     { property: 'og:description', content: data.client.description },
     { property: 'og:type', content: 'website' },
+    { property: 'og:image', content: `${data.origin}${data.client.image}` },
+    { property: 'og:image:alt', content: data.client.alt },
     { property: 'og:locale', content: 'fr_FR' },
     {
       property: 'og:url',
@@ -42,7 +46,7 @@ export function meta({ loaderData: data }: Route.MetaArgs) {
 }
 
 export default function Client({ loaderData }: Route.ComponentProps) {
-  const { client, previous, next } = loaderData;
+  const { client, previous, next, total } = loaderData;
   return (
     <main id="contenu" className="client-page">
       <nav className="file-breadcrumb" aria-label="Fil d’Ariane">
@@ -112,7 +116,7 @@ export default function Client({ loaderData }: Route.ComponentProps) {
           <aside className="file-memories" aria-label="Le carnet visuel">
             <figure className="file-photo taped">
               <img
-                src={`/images/${client.image}.jpg`}
+                src={client.image}
                 alt={client.alt}
                 width="1000"
                 height="1100"
@@ -149,7 +153,7 @@ export default function Client({ loaderData }: Route.ComponentProps) {
           <span>EPICC / RÉPERTOIRE DES RENCONTRES</span>
           <span>
             EXEMPLAIRE DE DÉMONSTRATION — {client.number} /{' '}
-            {String(clients.length).padStart(2, '0')}
+            {String(total).padStart(2, '0')}
           </span>
         </div>
       </article>

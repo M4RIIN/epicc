@@ -1,5 +1,5 @@
 // Exemples fictifs de présentation, à remplacer par les références validées.
-export const clients = [
+export const initialClients = [
   {
     slug: 'maison-sauge',
     number: '01',
@@ -7,7 +7,7 @@ export const clients = [
     sector: 'Art de vivre',
     place: 'Lyon',
     year: '2026',
-    image: 'botanique',
+    image: '/images/botanique.jpg',
     alt: 'Feuillages aux nuances de vert',
     tagline: 'Faire pousser les belles idées.',
     description:
@@ -25,7 +25,7 @@ export const clients = [
     sector: 'Création & savoir-faire',
     place: 'Nantes',
     year: '2026',
-    image: 'atelier',
+    image: '/images/atelier.jpg',
     alt: 'Intérieur lumineux et matières naturelles d’un atelier',
     tagline: 'La matière a des choses à raconter.',
     description:
@@ -43,7 +43,7 @@ export const clients = [
     sector: 'Lieux & rencontres',
     place: 'Bordeaux',
     year: '2025',
-    image: 'cafe',
+    image: '/images/cafe.jpg',
     alt: 'Comptoir chaleureux d’un café de quartier',
     tagline: 'Le goût d’être ensemble.',
     description:
@@ -61,7 +61,7 @@ export const clients = [
     sector: 'Création & savoir-faire',
     place: 'Paris',
     year: '2025',
-    image: 'atelier',
+    image: '/images/atelier.jpg',
     alt: 'Espace de création baigné de lumière',
     tagline: 'Des espaces qui laissent une empreinte.',
     description:
@@ -79,7 +79,7 @@ export const clients = [
     sector: 'Art de vivre',
     place: 'Lille',
     year: '2025',
-    image: 'botanique',
+    image: '/images/botanique.jpg',
     alt: 'Composition de plantes et de feuillages',
     tagline: 'Cultiver des liens, tout simplement.',
     description:
@@ -97,7 +97,7 @@ export const clients = [
     sector: 'Lieux & rencontres',
     place: 'Rennes',
     year: '2024',
-    image: 'cafe',
+    image: '/images/cafe.jpg',
     alt: 'Tables et lumière douce dans un café',
     tagline: 'Un petit lieu, de grandes conversations.',
     description:
@@ -109,9 +109,3 @@ export const clients = [
     color: 'yellow',
   },
 ] as const;
-
-export const sectors = [
-  'Art de vivre',
-  'Création & savoir-faire',
-  'Lieux & rencontres',
-];

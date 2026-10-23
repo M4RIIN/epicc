@@ -1,7 +1,8 @@
-import { clients } from '../services/clients';
+import { loadClients } from '../services/clients.server';
 import { getSiteOrigin } from '../services/site.server';
 
-export function loader() {
+export async function loader() {
+  const clients = await loadClients();
   const origin = getSiteOrigin()
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')

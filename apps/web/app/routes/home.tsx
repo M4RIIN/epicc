@@ -2,9 +2,11 @@ import { Form, Link } from 'react-router';
 import type { Route } from './+types/home';
 import { loadHomePage } from '../services/content.server';
 import { getSiteOrigin } from '../services/site.server';
-import { clients, sectors } from '../services/clients';
+import { loadClients } from '../services/clients.server';
 
 export async function loader({ request }: Route.LoaderArgs) {
+  const clients = await loadClients();
+  const sectors = [...new Set(clients.map((client) => client.sector))];
   const params = new URL(request.url).searchParams;
   const query = (params.get('q') ?? '').trim();
   const sector = params.get('secteur') ?? '';
@@ -24,6 +26,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     page: await loadHomePage(),
     origin: getSiteOrigin(),
     clients: results,
+    total: clients.length,
+    sectors,
     query,
     sector,
   };
@@ -48,7 +52,7 @@ export function meta({ loaderData: data }: Route.MetaArgs) {
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  const { page, clients: results, query, sector } = loaderData;
+  const { page, clients: results, query, sector, total, sectors } = loaderData;
   return (
     <main id="contenu">
       <section className="hero" aria-labelledby="hero-title">
@@ -153,7 +157,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
           <div className="directory-top">
             <span>LE RÉPERTOIRE EPICC</span>
             <span>
-              {String(clients.length).padStart(2, '0')} RENCONTRES À FEUILLETER
+              {String(total).padStart(2, '0')} RENCONTRES À FEUILLETER
             </span>
           </div>
           <Form
@@ -216,7 +220,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
               </div>
               <figure className="client-photo taped">
                 <img
-                  src={`/images/${client.image}.jpg`}
+                  src={client.image}
                   alt={client.alt}
                   width="1000"
                   height="700"

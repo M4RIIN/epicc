@@ -1,6 +1,8 @@
 import { Page } from '@epicc/content-domain';
 import { InMemoryPageRepository } from '@epicc/content-infrastructure';
 import { createApi } from './app';
+import { ClientStore } from './clients.store';
+import { createClientsApi } from './clients.api';
 
 export function composeApi() {
   const pages = new InMemoryPageRepository([
@@ -13,5 +15,5 @@ export function composeApi() {
       published: true,
     }),
   ]);
-  return createApi(pages);
+  return createApi(pages).route('/', createClientsApi(new ClientStore()));
 }

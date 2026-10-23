@@ -42,7 +42,7 @@ test('la navigation fonctionne après hydratation, avec les assets de production
   await page.getByRole('link', { name: /Espace de gestion/ }).click();
   await expect(page).toHaveURL(/\/connect$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Les coulisses',
+    'Connexion à la gestion',
   );
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
     'content',

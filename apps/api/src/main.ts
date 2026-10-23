@@ -14,7 +14,12 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) {
 }
 
 const app = new Hono();
-app.use('*', secureHeaders());
+app.use('*', secureHeaders({ referrerPolicy: 'same-origin' }));
+app.use('/connect*', async (context, next) => {
+  await next();
+  context.header('X-Robots-Tag', 'noindex, nofollow');
+  context.header('Cache-Control', 'no-store');
+});
 app.route('/api', composeApi());
 app.all('/api/*', (context) =>
   context.json({ error: 'Ressource introuvable.' }, 404),
@@ -28,7 +33,17 @@ if (production) {
   app.use('/assets/*', serveStatic({ root: clientRoot }));
   app.use('/images/*', serveStatic({ root: clientRoot }));
   app.use('/fonts/*', serveStatic({ root: clientRoot }));
-  app.all('*', (context) => handleRequest(context.req.raw));
+  app.all('*', (context) => {
+    const request = context.req.raw;
+    if (!process.env.PUBLIC_SITE_URL) return handleRequest(request);
+    // L’origine publique reste exacte derrière un proxy qui termine HTTPS.
+    // Aucun en-tête X-Forwarded-* fourni par le visiteur n’est utilisé.
+    const url = new URL(request.url);
+    const origin = new URL(process.env.PUBLIC_SITE_URL);
+    url.protocol = origin.protocol;
+    url.host = origin.host;
+    return handleRequest(new Request(url, request));
+  });
 }
 
 const server = serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {

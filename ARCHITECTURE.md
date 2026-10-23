@@ -36,7 +36,13 @@ Les tags `layer:*` et la règle `@nx/enforce-module-boundaries` interdisent les 
 - **Inversion des dépendances** : l’application définit son port, l’infrastructure l’implémente ; les dépendances concrètes sont injectées au constructeur.
 - **Lisibilité** : noms métier, fonctions courtes, types stricts, exports explicites, validations aux frontières et erreurs intentionnelles. Pas de conteneur d’injection ni de classe générique tant qu’ils ne résolvent pas un besoin concret.
 
-Les méthodes de gestion ne sont pas anticipées dans des abstractions vides. La page `/connect` annonce clairement les fonctions qui restent à implémenter.
+### Gestion des clients
+
+Les clients disposent d’un contrat Zod partagé (`clientSchema`). Leur module API est distinct des pages : `clients.api.ts` assure le transport et l’autorisation, `clients.store.ts` encapsule le dépôt SQLite, ses transactions et sa migration initiale, et `clients.seed.ts` fournit les exemples fictifs. Le point d’assemblage choisit et injecte le dépôt. Ce module reste local à l’API ; le front ne l’importe jamais. Les bibliothèques historiques `content` conservent leur rôle pour les pages éditoriales.
+
+Les loaders et actions React Router utilisent `clients.server.ts` pour communiquer avec l’API. Les actions exigent une session administrateur valide et un jeton CSRF. L’API privée exige indépendamment un jeton dérivé du secret serveur. Les fichiers `.server.ts` et leurs secrets sont exclus du bundle navigateur. La durée des sessions est contrôlée côté serveur, les tentatives de connexion sont limitées et la taille des formulaires est bornée.
+
+Les fiches et leurs images sont enregistrées dans une même transaction SQLite, sur un volume persistant. Le dépôt filtre les brouillons avant toute lecture publique. Les images orphelines sont supprimées et les images de brouillons ne sont accessibles que par un relais administrateur authentifié. Le HTML public, les métadonnées, la navigation entre fiches, les univers et le sitemap sont dérivés des fiches publiées lors de chaque requête SSR.
 
 ## Ajouter une fonctionnalité
 
