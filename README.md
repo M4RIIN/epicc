@@ -51,6 +51,7 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 ## Routes et contenu de démonstration
 
 - `/` : vitrine responsive en français, rendue côté serveur, avec titre, description, Open Graph et URL canonique.
+- `/clients/:slug` : fiche client sous forme de formulaire d’archives, avec navigation entre les fiches et retour au répertoire.
 - `/connect` : page d’attente du futur backoffice, avec `noindex, nofollow`, `X-Robots-Tag` et `Cache-Control: no-store`.
 - `/api/health` : état du serveur HTTP ; ce contrôle ne vérifie pas une base de données.
 - `/api/v1/pages/accueil` : contenu public de démonstration, chargé par la vitrine.
@@ -85,3 +86,15 @@ Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Pour ch
 4. Enrichir la vitrine avec les contenus réels, les pages publiques et leur référencement.
 
 Le verrouillage transitoire d’`undici` dans `package.json` impose la version corrigée 7.29.1 à Nx 24, qui dépend de 7.29.0. Le retirer quand Nx embarquera une version corrigée.
+
+## Direction visuelle et répertoire clients
+
+La vitrine adopte un carnet de rencontres : papier grainé, encre bleue, notes manuscrites et photographies fixées par du scotch en CSS. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
+
+Les six clients de `apps/web/app/services/clients.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
+
+Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
+
+- Photographies d’illustration provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
+- Police manuscrite Caveat, distribuée sous SIL Open Font License ; licence conservée dans `apps/web/public/fonts/OFL-Caveat.txt`.
+- Grain SVG procédural et rubans adhésifs CSS créés pour cette interface. Les pièces jointes d’inspiration ne sont pas publiées dans le site.

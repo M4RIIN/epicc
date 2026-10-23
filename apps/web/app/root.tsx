@@ -29,7 +29,8 @@ export function Layout({ children }: { children: ReactNode }) {
             EPICC<span aria-hidden="true">✳</span>
           </Link>
           <nav aria-label="Navigation principale">
-            <Link to="/">La vitrine</Link>
+            <Link to="/#clients">Les rencontres</Link>
+            <Link to="/#approche">Le studio</Link>
             <Link className="nav-connect" to="/connect">
               Espace de gestion <span aria-hidden="true">↗</span>
             </Link>
@@ -40,8 +41,8 @@ export function Layout({ children }: { children: ReactNode }) {
           <Link className="brand" to="/">
             EPICC<span aria-hidden="true">✳</span>
           </Link>
-          <p>De l’idée au prochain chapitre.</p>
-          <span>Construisons la suite.</span>
+          <p>Des idées, des liens, de belles histoires.</p>
+          <span>STUDIO INDÉPENDANT · ESPRIT COLLECTIF</span>
         </footer>
         <ScrollRestoration />
         <Scripts />
