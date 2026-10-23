@@ -1,12 +1,6 @@
 import { createCookieSessionStorage, redirect } from 'react-router';
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 
-export function adminConfigured() {
-  return Boolean(
-    process.env.ADMIN_PASSWORD &&
-    (process.env.SESSION_SECRET?.length ?? 0) >= 32,
-  );
-}
 const fallbackSecret = randomBytes(32).toString('hex');
 function storage() {
   return createCookieSessionStorage({
@@ -33,7 +27,6 @@ export async function adminSession(request: Request) {
 export type AdminSession = Awaited<ReturnType<typeof adminSession>>;
 export function isAdmin(session: AdminSession) {
   return (
-    adminConfigured() &&
     session.get('admin') === true &&
     Number(session.get('expiresAt')) > Date.now()
   );
@@ -68,26 +61,11 @@ export function verifyCsrf(
     );
   }
 }
-const attempts = { count: 0, reset: 0 };
-export function login(email: string, password: string) {
-  const now = Date.now();
-  if (now > attempts.reset) {
-    attempts.count = 0;
-    attempts.reset = now + 15 * 60 * 1000;
-  }
-  if (attempts.count >= 20)
-    return 'Trop de tentatives. Réessayez dans quinze minutes.';
-  attempts.count++;
-  const digest = (value: string) => createHash('sha256').update(value).digest();
-  if (
-    !adminConfigured() ||
-    email !== (process.env.ADMIN_EMAIL ?? 'test@questboard.test') ||
-    !timingSafeEqual(digest(password), digest(process.env.ADMIN_PASSWORD ?? ''))
-  ) {
-    return 'Identifiants incorrects.';
-  }
-  attempts.count = 0;
-  return null;
+// Accès de démonstration : les identifiants ne sont pas vérifiés.
+export function login(identifier: string, password: string) {
+  return identifier.trim() && password
+    ? null
+    : 'Saisissez un identifiant et un mot de passe.';
 }
 
 export async function readAdminForm(request: Request) {

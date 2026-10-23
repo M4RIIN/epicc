@@ -13,8 +13,7 @@ afterEach(() => {
 });
 
 it('signe les sessions, contrôle leur expiration et refuse les cookies altérés', async () => {
-  vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-  vi.stubEnv('ADMIN_EMAIL', 'test@questboard.test');
+  vi.stubEnv('ADMIN_PASSWORD', '');
   vi.stubEnv(
     'SESSION_SECRET',
     'secret-de-test-de-plus-de-trente-deux-caracteres',
@@ -69,22 +68,17 @@ it('refuse les formulaires volumineux avant leur traitement', async () => {
   await expect(readAdminForm(request)).rejects.toMatchObject({ status: 413 });
 });
 
-it('n’autorise pas la connexion sans configuration et limite les essais', () => {
+it('accepte des identifiants libres sans configuration administrateur', () => {
   vi.stubEnv('ADMIN_PASSWORD', '');
   vi.stubEnv('SESSION_SECRET', '');
-  expect(login('test@questboard.test', 'testtest')).toBe(
-    'Identifiants incorrects.',
-  );
-  vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-  vi.stubEnv('ADMIN_EMAIL', 'test@questboard.test');
-  vi.stubEnv(
-    'SESSION_SECRET',
-    'secret-de-test-de-plus-de-trente-deux-caracteres',
-  );
+  expect(login('demo', 'au-choix')).toBeNull();
   expect(login('test@questboard.test', 'testtest')).toBeNull();
-  for (let attempt = 0; attempt < 20; attempt++)
-    login('test@questboard.test', 'invalide');
-  expect(login('test@questboard.test', 'testtest')).toContain(
-    'Trop de tentatives',
-  );
+  for (let attempt = 0; attempt < 25; attempt++)
+    expect(login('autre identifiant', 'autre mot de passe')).toBeNull();
+});
+
+it('demande de remplir les deux champs', () => {
+  expect(login('', 'testtest')).toContain('Saisissez');
+  expect(login('   ', 'testtest')).toContain('Saisissez');
+  expect(login('demo', '')).toContain('Saisissez');
 });

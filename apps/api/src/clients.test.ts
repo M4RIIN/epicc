@@ -55,7 +55,7 @@ describe('gestion persistante des clients', () => {
         (await api.request('/v1/admin/clients', { headers: { authorization } }))
           .status,
       ).toBe(200);
-      vi.stubEnv('ADMIN_PASSWORD', '');
+      vi.stubEnv('SESSION_SECRET', '');
       expect(
         (await api.request('/v1/admin/clients', { headers: { authorization } }))
           .status,

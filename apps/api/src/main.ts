@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -11,6 +12,12 @@ const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? (production ? 3100 : 3101));
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error('PORT doit être un numéro de port valide.');
+}
+
+// Le serveur de démonstration reste utilisable sans configuration préalable.
+// Le secret généré reste privé et change au redémarrage.
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  process.env.SESSION_SECRET = randomBytes(32).toString('hex');
 }
 
 const app = new Hono();

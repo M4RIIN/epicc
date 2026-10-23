@@ -2,7 +2,6 @@ import { data, Form, Link, redirect, useNavigation } from 'react-router';
 import { randomBytes } from 'node:crypto';
 import type { Route } from './+types/connect';
 import {
-  adminConfigured,
   adminSession,
   commitAdmin,
   isAdmin,
@@ -28,7 +27,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   return data(
     {
       authenticated,
-      configured: adminConfigured(),
       csrf: session.get('csrf') as string,
       clients: authenticated ? await loadClients(true) : [],
     },
@@ -44,7 +42,10 @@ export async function action({ request }: Route.ActionArgs) {
       headers: { 'Set-Cookie': await logoutAdmin(session) },
     });
   }
-  const error = login(String(form.get('email')), String(form.get('password')));
+  const error = login(
+    String(form.get('email') ?? ''),
+    String(form.get('password') ?? ''),
+  );
   if (error)
     return data(
       { error, email: String(form.get('email') ?? '') },
@@ -61,7 +62,7 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients } = loaderData;
+  const { authenticated, csrf, clients } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
@@ -72,21 +73,18 @@ export default function Connect({
       </p>
       {!authenticated ? (
         <div className="admin-panel paper">
-          <p>Connectez-vous pour gérer les fiches et leurs images.</p>
-          {!configured && (
-            <p role="status">
-              La connexion sera disponible après configuration des accès
-              administrateur sur le serveur.
-            </p>
-          )}
+          <p>
+            Accès de démonstration : saisissez l’identifiant et le mot de passe
+            de votre choix pour découvrir le Dashboard.
+          </p>
           <Form method="post" className="admin-form">
             <input type="hidden" name="csrf" value={csrf} />
             <label>
-              Adresse e-mail
+              Identifiant
               <input
                 name="email"
                 defaultValue={actionData?.email}
-                type="email"
+                type="text"
                 autoComplete="username"
                 required
               />
@@ -101,7 +99,7 @@ export default function Connect({
               />
             </label>
             {actionData?.error && <p role="alert">{actionData.error}</p>}
-            <button className="button" disabled={!configured || pending}>
+            <button className="button" disabled={pending}>
               Se connecter
             </button>
           </Form>

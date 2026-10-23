@@ -36,9 +36,9 @@ export default defineConfig({
     env: {
       PORT: '3190',
       CLIENTS_DB_PATH: database,
-      ADMIN_EMAIL: 'test@questboard.test',
-      ADMIN_PASSWORD: 'testtest',
-      SESSION_SECRET: 'secret-de-test-deterministe-avec-plus-de-32-caracteres',
+      ADMIN_EMAIL: '',
+      ADMIN_PASSWORD: '',
+      SESSION_SECRET: '',
       INTERNAL_API_ORIGIN: 'http://127.0.0.1:3190',
       PUBLIC_SITE_URL: 'http://127.0.0.1:3190',
     },
