@@ -6,8 +6,7 @@ import type { ClientStore } from './clients.store';
 
 function authorized(header: string | undefined) {
   const secret = process.env.SESSION_SECRET;
-  if (!process.env.ADMIN_PASSWORD || !secret || secret.length < 32)
-    return false;
+  if (!secret || secret.length < 32) return false;
   const expected = `Bearer ${createHash('sha256').update(`clients-api:${secret}`).digest('hex')}`;
   const supplied = Buffer.from(header ?? '');
   return (

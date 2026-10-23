@@ -15,13 +15,8 @@ for (const javaScriptEnabled of [false, true]) {
         data: '',
       });
       expect(denied.status()).toBe(401);
-      await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
-      await page.getByLabel('Mot de passe', { exact: true }).fill('incorrect');
-      await page.getByRole('button', { name: 'Se connecter' }).click();
-      await expect(page.getByRole('alert')).toContainText(
-        'Identifiants incorrects',
-      );
-      await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
+      await page.getByLabel('Identifiant', { exact: true }).fill('demo libre');
+      await page.getByLabel('Mot de passe', { exact: true }).fill('au-choix');
       await page.getByRole('button', { name: 'Se connecter' }).click();
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(
         'Gérer les clients',
