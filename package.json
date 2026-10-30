@@ -18,7 +18,8 @@
     "graph": "nx graph",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts"
+    "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts",
+    "admin:create": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",

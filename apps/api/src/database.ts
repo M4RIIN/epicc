@@ -44,7 +44,7 @@ export class Database {
       client.release();
     }
   }
-  async migrate() {
+  async migrate({ provisionAdmin = true } = {}) {
     await this.transaction(async (client) => {
       await client.query('SELECT pg_advisory_xact_lock(310031)');
       await client.query(`
@@ -85,7 +85,11 @@ export class Database {
         await client.query("INSERT INTO migrations VALUES ('seed-offers')");
       }
       // Les variables servent uniquement à créer le compte initial ; aucun mot de passe en clair en base.
-      if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      if (
+        provisionAdmin &&
+        process.env.ADMIN_EMAIL &&
+        process.env.ADMIN_PASSWORD
+      ) {
         const email = process.env.ADMIN_EMAIL.trim().toLowerCase();
         if (
           !(
