@@ -154,3 +154,99 @@ for (const javaScriptEnabled of [false, true]) {
     }
   });
 }
+
+for (const javaScriptEnabled of [false, true]) {
+  test(`images des offres et alternance des formats avec JavaScript ${javaScriptEnabled}`, async ({
+    browser,
+    request,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled });
+    try {
+      const page = await context.newPage();
+      await page.goto('/connect/offres/creation-de-marque');
+      await expect(page).toHaveURL(/\/connect$/);
+      await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
+      await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
+      await page.getByRole('button', { name: 'Se connecter' }).click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+        'Gérer les clients',
+      );
+      expect(
+        (
+          await context.request.post('/connect/offres/creation-de-marque', {
+            form: { alt: 'Refus sans CSRF' },
+          })
+        ).status(),
+      ).toBe(403);
+      const png = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XcAAAAASUVORK5CYII=',
+        'base64',
+      );
+      const slugs = ['creation-de-marque', 'restructuration-de-restaurants'];
+      for (const slug of slugs) {
+        await page.goto(`/connect/offres/${slug}`);
+        await page.getByLabel('Texte alternatif de l’image').fill('');
+        await page
+          .getByLabel('Remplacer par une image', { exact: true })
+          .setInputFiles({
+            name: 'test.png',
+            mimeType: 'image/png',
+            buffer: png,
+          });
+        await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
+        await expect(page.getByRole('alert')).toContainText('Décrivez l’image');
+        await page
+          .getByLabel('Texte alternatif de l’image')
+          .fill(`Visuel de test ${slug}`);
+        await page
+          .getByLabel('Remplacer par une image', { exact: true })
+          .setInputFiles({
+            name: 'test.png',
+            mimeType: 'image/png',
+            buffer: png,
+          });
+        await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
+        await expect(page).toHaveURL(/\/connect$/);
+      }
+      await page.goto('/');
+      const visuals = page.locator('.vitrine-offer-visual');
+      await expect(visuals).toHaveCount(2);
+      const images: string[] = [];
+      for (let index = 0; index < 2; index++) {
+        const image = visuals.nth(index).locator('img');
+        await expect(image).toHaveAttribute(
+          'alt',
+          `Visuel de test ${slugs[index]}`,
+        );
+        images.push((await image.getAttribute('src'))!);
+        expect(
+          (await request.get(images[index]!)).headers()['content-type'],
+        ).toBe('image/png');
+      }
+      for (const width of [1440, 375, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        const large = (await visuals.nth(0).boundingBox())!;
+        const small = (await visuals.nth(1).boundingBox())!;
+        expect(large.width).toBeGreaterThan(small.width * 1.5);
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+      }
+      for (const slug of slugs) {
+        await page.goto(`/connect/offres/${slug}`);
+        await expect(page.locator('.admin-preview')).toBeVisible();
+        await page.getByLabel('Retirer l’image actuelle').check();
+        await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
+        await expect(page).toHaveURL(/\/connect$/);
+      }
+      for (const image of images)
+        expect((await request.get(image)).status()).toBe(404);
+      await page.goto('/');
+      await expect(page.locator('.vitrine-offer-visual')).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+}

@@ -11,9 +11,9 @@ npm ci
 npm run dev
 ```
 
-Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Le répertoire et les fiches chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement.
+Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Le répertoire et les fiches chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement. Fournir `DATABASE_URL` avant le démarrage, comme décrit ci-dessous.
 
-La vitrine démarre sans secret ni fichier `.env`. La base SQLite des clients est créée automatiquement au premier lancement de l’API ; la connexion à la gestion reste désactivée tant que les accès ne sont pas configurés.
+Le serveur utilise PostgreSQL : créez une base dédiée avec votre hébergeur ou `createdb epicc`, puis fournissez `DATABASE_URL` dans l’environnement du processus (par exemple `postgresql://utilisateur:mot-de-passe@localhost:5432/epicc`). Les tables et les contenus initiaux sont créés au premier lancement. Aucun fichier `.env` n’est nécessaire. La connexion à la gestion exige un compte initial et un secret de session.
 
 ## Commandes
 
@@ -81,30 +81,42 @@ Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Pour ch
 
 ## Gestion des clients
 
-Configurer les variables dans l’environnement du serveur, sans les exposer au navigateur :
+Configurer les variables dans l’environnement du serveur, sans les exposer au navigateur. PostgreSQL est obligatoire, y compris pour la vitrine :
 
-| Variable          | Usage                                                                                                                                                                    |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `ADMIN_EMAIL`     | Adresse du compte administrateur ; valeur par défaut pour les tests : `test@questboard.test`. Définir l’adresse réelle pour l’hébergement.                               |
-| `ADMIN_PASSWORD`  | Mot de passe administrateur, obligatoire pour activer la connexion. Utiliser un mot de passe fort et unique.                                                             |
-| `SESSION_SECRET`  | Secret aléatoire d’au moins 32 caractères, obligatoire ; signe les sessions et protège l’API privée. Le conserver entre redémarrages. Sa rotation invalide les sessions. |
-| `CLIENTS_DB_PATH` | Chemin de la base SQLite ; par défaut `data/clients.sqlite`, relatif au répertoire de lancement.                                                                         |
+| Variable         | Usage                                                                                                                                                                                                                                       |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`   | URL de la base PostgreSQL dédiée, obligatoire. Le compte doit pouvoir créer les tables. Configurer TLS selon les exigences de l’hébergeur, sans désactiver la vérification des certificats.                                                 |
+| `ADMIN_EMAIL`    | Adresse du compte administrateur initial, obligatoire pour sa création.                                                                                                                                                                     |
+| `ADMIN_PASSWORD` | Mot de passe du compte initial. Haché avec scrypt et un sel aléatoire avant stockage ; utilisé uniquement si le compte n’existe pas. Peut être retiré après création. Changer cette variable ne change pas un mot de passe déjà enregistré. |
+| `SESSION_SECRET` | Secret aléatoire d’au moins 32 caractères, obligatoire pour la connexion et l’API privée. Le conserver entre redémarrages ; sa rotation invalide les sessions.                                                                              |
 
 La gestion permet d’ajouter, modifier et supprimer les fiches, de changer tous leurs textes, leur couleur, leur ordre et leur publication. Les adresses des fiches restent stables après création pour préserver les liens. Les images JPEG, PNG ou WebP peuvent être téléversées (5 Mo maximum) ou remplacées par une illustration existante. Les suppressions nécessitent une confirmation explicite.
 
-L’API crée automatiquement les tables et importe une seule fois les six exemples fictifs. Les modifications, les images et même une liste entièrement vidée sont conservées après redémarrage. SQLite utilise le module natif `node:sqlite` (Node peut afficher un avertissement expérimental). Aucun service Postgres n’est nécessaire.
+L’API crée automatiquement les tables et importe une seule fois les six exemples fictifs et les cinq offres existantes. Les clients, images et comptes sont conservés dans PostgreSQL après redémarrage. Sauvegarder la base avec les outils de l’hébergeur ou `pg_dump` ; aucun volume SQLite local n’est utilisé.
 
-**Hébergement : monter un volume persistant et inscriptible pour le dossier contenant `CLIENTS_DB_PATH`**, hors de `dist/`, et sauvegarder ce volume avec le processus arrêté ou avec un outil de sauvegarde SQLite. Un disque éphémère perdrait les modifications au redéploiement. Ce stockage convient à un serveur Node unique ; plusieurs répliques sur des disques séparés nécessiteraient un stockage partagé adapté. Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. Les variables d’authentification doivent être identiques dans les processus web et API en développement.
+Pour reprendre une base SQLite existante, arrêter l’ancienne application, sauvegarder sa base et préparer une base PostgreSQL neuve. Puis exécuter, avec `DATABASE_URL` dans l’environnement :
+
+```sh
+npm run db:import-sqlite -- /chemin/vers/clients.sqlite
+```
+
+L’import est transactionnel, conserve les identifiants et les images, préserve une liste vide et ouvre la source en lecture seule. Il refuse une seconde importation ou une destination déjà modifiée dans la gestion. Installer les dépendances de développement pour cette commande, puis démarrer la nouvelle version. Ne pas laisser les deux versions accepter des écritures simultanément.
+
+Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. `SESSION_SECRET` doit être identique dans les processus web et API en développement.
+
+### Images des offres
+
+Depuis `/connect`, ouvrir « Modifier l’image » pour l’une des cinq offres. Téléverser un JPEG, PNG ou WebP de 5 Mo maximum, renseigner son texte alternatif, puis enregistrer. Une prévisualisation permet de retrouver le visuel ; il peut être remplacé ou retiré. Les modifications sont immédiatement visibles sur l’accueil, y compris sans JavaScript. Le visuel est recadré en 3:2 ; la largeur alterne entre 100 % et 58 % selon la position de l’offre, sur bureau comme sur mobile. Les images remplacées ou retirées sont supprimées de la base lorsqu’elles ne sont plus référencées. Les offres initiales conservent leurs libellés illustrés et n’ont pas de photographie ajoutée automatiquement.
 
 Les visiteurs lisent uniquement les fiches publiées. Le répertoire, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
 
-Les tests navigateur utilisent une base temporaire isolée et le compte `test@questboard.test` / `testtest`, puis nettoient leur stockage. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
+Les tests d’intégration et navigateur exigent `TEST_DATABASE_URL` (URL du serveur PostgreSQL de test) et `TEST_DB_PREFIX` (préfixe réservé, par exemple `test_local_`). Ils créent des bases temporaires isolées portant ce préfixe et les suppriment après exécution. Le compte utilisé est `test@questboard.test` / `testtest`, puis les bases sont nettoyées. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
 
 ## Prochaines fonctionnalités
 
 1. Étendre la gestion aux pages éditoriales et aux contenus réels.
 2. Prévoir plusieurs comptes et rôles si l’équipe de gestion s’agrandit.
-3. Migrer le stockage des clients si l’hébergement nécessite plusieurs répliques.
+3. Ajouter une gestion des comptes et un parcours de changement de mot de passe.
 
 Le verrouillage transitoire d’`undici` dans `package.json` impose la version corrigée 7.29.1 à Nx 24, qui dépend de 7.29.0. Le retirer quand Nx embarquera une version corrigée.
 

@@ -1203,3 +1203,10 @@ nav a:hover,
   opacity: 0.6;
   cursor: wait;
 }
+
+.admin-offers {
+  display: grid;
+  gap: 16px;
+  padding-left: 20px;
+  overflow-wrap: anywhere;
+}
