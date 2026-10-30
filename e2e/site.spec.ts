@@ -293,3 +293,51 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   ).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('la connexion est directement accessible et l’ouverture utilise des images légères', async ({
+  browser,
+  request,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto('/');
+    const connection = page.getByRole('link', {
+      name: 'Connexion',
+      exact: false,
+    });
+    for (const width of [1440, 375, 320]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(connection).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+    await expect(page.locator('.vitrine-opening svg image')).toHaveCount(0);
+    const openingImages = page.locator('.vitrine-opening img');
+    await expect(openingImages).toHaveCount(2);
+    let totalBytes = 0;
+    for (const image of await openingImages.all()) {
+      await expect(image).toHaveAttribute('loading', 'eager');
+      await expect(image).toHaveAttribute('decoding', 'async');
+      const src = (await image.getAttribute('src'))!;
+      const response = await request.get(src);
+      expect(response.status()).toBe(200);
+      expect(response.headers()['content-type']).toContain('image/webp');
+      expect(response.headers()['cache-control']).toContain('immutable');
+      totalBytes += (await response.body()).byteLength;
+    }
+    // Budget sur les variantes les plus grandes, indépendant du débit réseau.
+    expect(totalBytes).toBeLessThan(800 * 1024);
+    await connection.click();
+    await expect(page).toHaveURL(/\/connect$/);
+    await expect(page.getByLabel('Adresse e-mail')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Se connecter' }),
+    ).toBeEnabled();
+  } finally {
+    await context.close();
+  }
+});
