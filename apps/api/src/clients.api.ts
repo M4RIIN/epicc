@@ -37,7 +37,7 @@ export function createClientsApi(store: ClientStore) {
       return c.json({ error: 'Accès refusé.' }, 401);
     await next();
   });
-  api.use('/v1/admin/*', bodyLimit({ maxSize: 6 * 1024 * 1024 }));
+  api.use('/v1/admin/*', bodyLimit({ maxSize: 21 * 1024 * 1024 }));
   api.get('/v1/admin/images/:id', async (c) => {
     const image = await store.image(c.req.param('id'), true);
     if (!image) return c.notFound();
@@ -46,6 +46,24 @@ export function createClientsApi(store: ClientStore) {
     return c.body(Buffer.from(image.content));
   });
   api.get('/v1/admin/clients', async (c) => c.json(await store.list(true)));
+  api.post('/v1/admin/clients-order', async (c) => {
+    let slugs: unknown;
+    try {
+      slugs = JSON.parse(String((await c.req.formData()).get('slugs')));
+    } catch {
+      return c.json({ error: 'Ordre invalide.' }, 400);
+    }
+    if (
+      !Array.isArray(slugs) ||
+      slugs.some((slug) => typeof slug !== 'string') ||
+      !(await store.reorder(slugs))
+    )
+      return c.json(
+        { error: 'La liste des projets a changé. Actualisez la page.' },
+        409,
+      );
+    return c.json({ ok: true });
+  });
   api.post('/v1/admin/clients/:slug', async (c) => {
     const form = await c.req.formData();
     if (form.get('intent') === 'delete') {
@@ -94,11 +112,27 @@ export function createClientsApi(store: ClientStore) {
       )
     )
       return c.json({ error: 'Image de galerie inconnue.' }, 400);
+    const galleryFiles = form
+      .getAll('galleryImages')
+      .filter((file) => file instanceof File && file.size > 0);
+    const legacyPhoto = form.get('galleryImage');
+    if (legacyPhoto instanceof File && legacyPhoto.size)
+      galleryFiles.push(legacyPhoto);
+    if (client.gallery.length + galleryFiles.length > 3)
+      return c.json({ error: 'Quatre photos maximum par projet.' }, 400);
     let image;
-    let galleryImage;
+    let galleryImages;
+    let galleryReplacements;
     try {
       image = await readImage(form.get('image'));
-      galleryImage = await readImage(form.get('galleryImage'));
+      galleryImages = await Promise.all(
+        galleryFiles.map((file) => readImage(file)),
+      );
+      galleryReplacements = await Promise.all(
+        client.gallery.map((_, index) =>
+          readImage(form.get(`galleryReplace${index}`)),
+        ),
+      );
     } catch (error) {
       return c.json({ error: (error as Error).message }, 400);
     }
@@ -114,26 +148,24 @@ export function createClientsApi(store: ClientStore) {
         400,
       );
     }
-    const galleryPhoto = galleryImage
-      ? clientPhotoSchema.pick({ alt: true }).safeParse({
-          alt: String(form.get('galleryAlt') ?? ''),
-        })
-      : null;
-    if (galleryPhoto && (!galleryPhoto.success || client.gallery.length >= 3))
-      return c.json(
-        {
-          error:
-            'Ajoutez une description à la photo et limitez la galerie à trois photos complémentaires.',
-        },
-        400,
-      );
+    const galleryPhotos = [];
+    for (const [index, uploaded] of galleryImages.entries()) {
+      const photo = clientPhotoSchema.pick({ alt: true }).safeParse({
+        alt: String(
+          form.getAll('galleryAlts')[index] ?? form.get('galleryAlt') ?? '',
+        ),
+      });
+      if (!photo.success)
+        return c.json({ error: 'Décrivez chaque photo du projet.' }, 400);
+      if (uploaded)
+        galleryPhotos.push({ image: uploaded, alt: photo.data.alt });
+    }
     await store.write(
       client,
       image,
       form.get('intent') === 'create',
-      galleryImage && galleryPhoto?.success
-        ? { image: galleryImage, alt: galleryPhoto.data.alt }
-        : undefined,
+      galleryPhotos,
+      galleryReplacements,
     );
     return c.json({ ok: true });
   });

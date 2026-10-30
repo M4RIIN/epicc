@@ -208,3 +208,39 @@ it('conserve la galerie après redémarrage, protège les brouillons et refuse l
     (await database.pool.query('SELECT count(*) FROM images')).rows[0].count,
   ).toBe('0');
 });
+
+it('réordonne tous les projets dans une transaction et refuse une liste incomplète ou dupliquée', async () => {
+  vi.stubEnv('SESSION_SECRET', secret);
+  const store = new ClientStore(database);
+  const api = createClientsApi(store);
+  const slugs = (await store.list(true)).map((client) => client.slug);
+  expect(await store.reorder(slugs.slice(1))).toBe(false);
+  expect(await store.reorder(slugs.map(() => slugs[0]!))).toBe(false);
+  expect((await store.list(true)).map((client) => client.slug)).toEqual(slugs);
+  const reversed = [...slugs].reverse();
+  const form = new FormData();
+  form.set('slugs', JSON.stringify(reversed));
+  expect(
+    (
+      await api.request('/v1/admin/clients-order', {
+        method: 'POST',
+        body: form,
+      })
+    ).status,
+  ).toBe(401);
+  expect(
+    (
+      await api.request('/v1/admin/clients-order', {
+        method: 'POST',
+        body: form,
+        headers: { authorization },
+      })
+    ).status,
+  ).toBe(200);
+  expect((await store.list(true)).map((client) => client.slug)).toEqual(
+    reversed,
+  );
+  expect((await store.list(true)).map((client) => client.position)).toEqual([
+    0, 1, 2, 3, 4, 5,
+  ]);
+});

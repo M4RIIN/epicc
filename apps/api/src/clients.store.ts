@@ -20,7 +20,8 @@ export class ClientStore {
     client: Client,
     image?: UploadedImage,
     creating = false,
-    galleryPhoto?: { image: UploadedImage; alt: string },
+    galleryPhotos: { image: UploadedImage; alt: string }[] = [],
+    galleryReplacements: (UploadedImage | undefined)[] = [],
   ) {
     await this.database.transaction(async (connection) => {
       if (image) {
@@ -32,7 +33,24 @@ export class ClientStore {
         ]);
         client = { ...client, image: `/api/v1/client-images/${id}` };
       }
-      if (galleryPhoto) {
+      for (const [index, replacement] of galleryReplacements.entries()) {
+        if (!replacement || !client.gallery[index]) continue;
+        const id = randomUUID();
+        await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
+          id,
+          replacement.mime,
+          Buffer.from(replacement.content),
+        ]);
+        client = {
+          ...client,
+          gallery: client.gallery.map((photo, position) =>
+            position === index
+              ? { ...photo, image: `/api/v1/client-images/${id}` }
+              : photo,
+          ),
+        };
+      }
+      for (const galleryPhoto of galleryPhotos) {
         const id = randomUUID();
         await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
           id,
@@ -63,6 +81,29 @@ export class ClientStore {
         "INSERT INTO migrations VALUES ('postgres-edited') ON CONFLICT DO NOTHING",
       );
       await removeUnusedImages(connection);
+    });
+  }
+  async reorder(slugs: string[]) {
+    return this.database.transaction(async (connection) => {
+      const existing = await connection.query<{ slug: string }>(
+        'SELECT slug FROM clients FOR UPDATE',
+      );
+      if (
+        slugs.length !== existing.rows.length ||
+        new Set(slugs).size !== slugs.length ||
+        existing.rows.some((row) => !slugs.includes(row.slug))
+      )
+        return false;
+      for (const [position, slug] of slugs.entries()) {
+        await connection.query(
+          "UPDATE clients SET content = jsonb_set(content, '{position}', to_jsonb($2::integer)) WHERE slug = $1",
+          [slug, position],
+        );
+      }
+      await connection.query(
+        "INSERT INTO migrations VALUES ('postgres-edited') ON CONFLICT DO NOTHING",
+      );
+      return true;
     });
   }
   async delete(slug: string) {
