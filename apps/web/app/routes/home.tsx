@@ -4,6 +4,7 @@ import { Opening } from '../components/vitrine/opening';
 import { Services } from '../components/vitrine/services';
 import { Biography } from '../components/vitrine/biography';
 import { Manifesto } from '../components/vitrine/manifesto';
+import { Offers } from '../components/vitrine/offers';
 import '../components/vitrine/vitrine.css';
 
 export function loader() {
@@ -36,6 +37,7 @@ export default function Home() {
       <Services />
       <Biography />
       <Manifesto />
+      <Offers />
     </main>
   );
 }
