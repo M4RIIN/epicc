@@ -1,3 +1,5 @@
+import { optimizedImages } from './images.generated';
+
 export const artworkPath = '/images/vitrine/';
 
 type ArtworkProps = {
@@ -7,6 +9,7 @@ type ArtworkProps = {
   width: number;
   height: number;
   eager?: boolean;
+  sizes?: string;
 };
 
 /** Les dessins restent des images ; les textes courants sont du HTML. */
@@ -17,10 +20,15 @@ export function Artwork({
   width,
   height,
   eager = false,
+  sizes = '100vw',
 }: ArtworkProps) {
+  const optimized = optimizedImages[file as keyof typeof optimizedImages];
   return (
     <img
-      src={`${artworkPath}${file}`}
+      src={optimized?.src ?? `${artworkPath}${file}`}
+      srcSet={optimized?.srcSet}
+      sizes={optimized ? sizes : undefined}
+      decoding="async"
       alt={alt}
       width={width}
       height={height}

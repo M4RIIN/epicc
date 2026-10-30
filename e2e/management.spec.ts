@@ -69,7 +69,7 @@ for (const javaScriptEnabled of [false, true]) {
       for (const [label, value] of fields)
         await page.getByLabel(label!, { exact: true }).fill(value!);
       const png = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XcAAAAASUVORK5CYII=',
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
         'base64',
       );
       await page
@@ -113,7 +113,7 @@ for (const javaScriptEnabled of [false, true]) {
       );
       expect(html).toContain('alt="Image de test déterministe"');
       expect((await request.get(publicImage)).headers()['content-type']).toBe(
-        'image/png',
+        'image/webp',
       );
       expect(await (await request.get('/sitemap.xml')).text()).toContain(
         '/clients/client-test',
@@ -147,6 +147,9 @@ for (const javaScriptEnabled of [false, true]) {
         '/clients/client-test',
       );
       await page.getByRole('button', { name: 'Se déconnecter' }).click();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+        'Connexion à la gestion',
+      );
       await page.goto('/connect/clients/maison-sauge');
       await expect(page).toHaveURL(/\/connect$/);
     } finally {
@@ -179,7 +182,7 @@ for (const javaScriptEnabled of [false, true]) {
         ).status(),
       ).toBe(403);
       const png = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XcAAAAASUVORK5CYII=',
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
         'base64',
       );
       const slugs = ['creation-de-marque', 'restructuration-de-restaurants'];
@@ -221,7 +224,7 @@ for (const javaScriptEnabled of [false, true]) {
         images.push((await image.getAttribute('src'))!);
         expect(
           (await request.get(images[index]!)).headers()['content-type'],
-        ).toBe('image/png');
+        ).toBe('image/webp');
       }
       for (const width of [1440, 375, 320]) {
         await page.setViewportSize({ width, height: 900 });

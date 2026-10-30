@@ -17,7 +17,7 @@ import {
 const secret = 'secret-de-test-de-plus-de-trente-deux-caracteres';
 const authorization = `Bearer ${createHash('sha256').update(`clients-api:${secret}`).digest('hex')}`;
 const png = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XcAAAAASUVORK5CYII=',
+  'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
   'base64',
 );
 let database: Database;
@@ -112,7 +112,12 @@ it('enregistre et remplace les images des offres, protège les écritures et net
   api = composeApi(database);
   const response = await api.request(firstImage.replace('/api', ''));
   expect(response.status).toBe(200);
-  expect(Buffer.from(await response.arrayBuffer())).toEqual(png);
+  expect(response.headers.get('Content-Type')).toBe('image/webp');
+  expect(
+    Buffer.from(await response.arrayBuffer())
+      .subarray(0, 4)
+      .toString(),
+  ).toBe('RIFF');
   expect(
     (
       await post(

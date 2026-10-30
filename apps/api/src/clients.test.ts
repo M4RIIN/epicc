@@ -105,7 +105,7 @@ describe('gestion persistante des clients', () => {
         ).status,
       ).toBe(400);
       const png = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7XcAAAAASUVORK5CYII=',
+        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
         'base64',
       );
       expect(
@@ -133,8 +133,12 @@ describe('gestion persistante des clients', () => {
       ).toBe(200);
       expect((await post({ ...draft, published: true })).status).toBe(200);
       const image = await api.request(draft.image.replace('/api', ''));
-      expect(image.headers.get('content-type')).toBe('image/png');
-      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
+      expect(image.headers.get('content-type')).toBe('image/webp');
+      expect(
+        Buffer.from(await image.arrayBuffer())
+          .subarray(0, 4)
+          .toString(),
+      ).toBe('RIFF');
       await store.delete(original.slug);
       expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
         404,
