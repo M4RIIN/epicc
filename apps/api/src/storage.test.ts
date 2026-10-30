@@ -6,6 +6,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { importSqlite } from './import-sqlite';
+import { createAdministrator } from './create-admin';
 import { composeApi } from './composition-root';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
@@ -221,4 +222,34 @@ it('préserve une liste SQLite vide au prochain démarrage et refuse un import a
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
+});
+
+it('crée un administrateur persistant sans écraser un compte existant', async () => {
+  await database.pool.query('DELETE FROM administrators');
+  await database.migrate({ provisionAdmin: false });
+  expect(
+    (await database.pool.query('SELECT count(*) FROM administrators')).rows[0]
+      .count,
+  ).toBe('0');
+  await createAdministrator(database, 'TEST@questboard.test', 'testtest');
+  expect(await database.authenticate('test@questboard.test', 'testtest')).toBe(
+    true,
+  );
+  await expect(
+    createAdministrator(database, 'test@questboard.test', 'autremotdepasse'),
+  ).rejects.toThrow('existe déjà');
+  await database.close();
+  database = new Database(testDatabaseUrl(name));
+  await database.migrate();
+  expect(await database.authenticate('test@questboard.test', 'testtest')).toBe(
+    true,
+  );
+  expect(
+    await database.authenticate('test@questboard.test', 'autremotdepasse'),
+  ).toBe(false);
+  const result = await database.pool.query(
+    'SELECT password_hash FROM administrators WHERE email = $1',
+    ['test@questboard.test'],
+  );
+  expect(result.rows[0].password_hash).not.toContain('testtest');
 });

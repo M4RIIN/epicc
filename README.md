@@ -104,6 +104,18 @@ L’import est transactionnel, conserve les identifiants et les images, préserv
 
 Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. `SESSION_SECRET` doit être identique dans les processus web et API en développement.
 
+### Créer un compte administrateur
+
+Sur une machine disposant de l’accès à la base PostgreSQL cible et des dépendances du projet, fournir `DATABASE_URL` et `ADMIN_EMAIL` dans l’environnement, puis exécuter :
+
+```sh
+npm run admin:create
+```
+
+La commande initialise les tables si nécessaire, crée le compte et affiche une seule fois un mot de passe aléatoire. Le conserver dans un gestionnaire de mots de passe. Pour choisir un mot de passe, fournir aussi `ADMIN_PASSWORD` (au moins huit caractères) dans l’environnement avant la commande ; il ne sera pas affiché. Ne pas passer les secrets en arguments de ligne de commande ni les versionner. La commande refuse d’écraser un compte existant. Le serveur de l’application doit utiliser la même base et disposer de `SESSION_SECRET` (32 caractères minimum) pour permettre la connexion sur `/connect`.
+
+La création de compte nécessite une connexion PostgreSQL durable : les bases temporaires utilisées par les tests ne constituent pas un compte utilisable sur l’hébergement réel.
+
 ### Images des offres
 
 Depuis `/connect`, ouvrir « Modifier l’image » pour l’une des cinq offres. Téléverser un JPEG, PNG ou WebP de 5 Mo maximum, renseigner son texte alternatif, puis enregistrer. Une prévisualisation permet de retrouver le visuel ; il peut être remplacé ou retiré. Les modifications sont immédiatement visibles sur l’accueil, y compris sans JavaScript. Le visuel est recadré en 3:2 ; la largeur alterne entre 100 % et 58 % selon la position de l’offre, sur bureau comme sur mobile. Les images remplacées ou retirées sont supprimées de la base lorsqu’elles ne sont plus référencées. Les offres initiales conservent leurs libellés illustrés et n’ont pas de photographie ajoutée automatiquement.
@@ -130,11 +142,9 @@ Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement f
 
 Le lien « Connexion ↗ » est visible directement en haut de l’accueil et mène à `/connect`. Pour activer la connexion sur l’hébergement, fournir `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` lors du premier démarrage, comme décrit plus haut. Aucun compte de démonstration n’est activé en production.
 
-Les photographies et libellés de la vitrine disposent de versions WebP et de plusieurs tailles, sélectionnées par le navigateur. Le collage d’ouverture est précomposé en une seule couche transparente pour éviter son affichage dessin par dessin. Les deux images d’ouverture sont prioritaires ; les sections suivantes sont chargées à l’approche du défilement. Les fichiers optimisés portent une empreinte dans leur nom et sont mis en cache un an ; une modification produit une nouvelle URL.
+L’accueil présente un écran de chargement EPICC avec une progression réelle pendant le téléchargement et le décodage de ses images, y compris les illustrations SVG et les visuels des offres. Toutes les images de la page sont chargées avant de révéler le contenu. Après douze secondes, un bouton permet d’entrer sans attendre ; le lien vers la gestion reste accessible pendant le chargement. Une image en erreur ne bloque pas l’ouverture. Sans JavaScript, le contenu reste directement lisible ; si le JavaScript de l’application ne démarre pas, le masque se retire au bout de quinze secondes.
 
-Les originaux de la maquette sont conservés. Après modification d’un original ou des coordonnées du collage, exécuter `npm run images:optimize`, puis versionner les images de `apps/web/public/images/vitrine/optimized` et le manifeste `images.generated.ts`. Cette commande est nécessaire seulement lors d’une modification des sources ; le build habituel utilise les fichiers déjà versionnés.
-
-Les nouvelles images téléversées dans la gestion (clients et offres) sont décodées, orientées et converties en WebP, avec un côté maximal de 1 920 pixels. Les fichiers déjà en base conservent leur format ; les remplacer depuis la gestion pour bénéficier de cette réduction. La limite d’envoi reste 5 Mo, avec un maximum de 40 millions de pixels. Les images privées conservent leur protection et ne sont pas placées dans le cache public.
+Les photographies et illustrations sont servies dans leur format et leur résolution d’origine, sans recompression ni rasterisation des SVG. Les nouvelles images téléversées dans la gestion (clients et offres) sont validées, puis enregistrées et servies avec leurs octets d’origine. La limite d’envoi reste 5 Mo et 40 millions de pixels. Si un fichier avait déjà été compressé par une version précédente, téléverser à nouveau son original : les détails perdus ne peuvent pas être reconstitués depuis le fichier compressé. Les images privées conservent leur protection.
 
 Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
 
