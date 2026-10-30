@@ -1,6 +1,7 @@
 import type { Route } from './+types/home';
 import { loadOffers } from '../services/offers.server';
 import { getSiteOrigin } from '../services/site.server';
+import { LoadingScreen } from '../components/vitrine/loading-screen';
 import { Opening } from '../components/vitrine/opening';
 import { Services } from '../components/vitrine/services';
 import { Biography } from '../components/vitrine/biography';
@@ -29,14 +30,17 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return (
-    <main id="contenu" className="vitrine">
-      <h1 className="vitrine-sr-only">
-        EPICC — Communication pour la restauration et l’agroalimentaire
-      </h1>
-      <Opening />
-      <Services offers={loaderData.offers} />
-      <Biography />
-      <Manifesto />
-    </main>
+    <>
+      <LoadingScreen />
+      <main id="contenu" className="vitrine">
+        <h1 className="vitrine-sr-only">
+          EPICC — Communication pour la restauration et l’agroalimentaire
+        </h1>
+        <Opening />
+        <Services offers={loaderData.offers} />
+        <Biography />
+        <Manifesto />
+      </main>
+    </>
   );
 }

@@ -133,12 +133,8 @@ describe('gestion persistante des clients', () => {
       ).toBe(200);
       expect((await post({ ...draft, published: true })).status).toBe(200);
       const image = await api.request(draft.image.replace('/api', ''));
-      expect(image.headers.get('content-type')).toBe('image/webp');
-      expect(
-        Buffer.from(await image.arrayBuffer())
-          .subarray(0, 4)
-          .toString(),
-      ).toBe('RIFF');
+      expect(image.headers.get('content-type')).toBe('image/png');
+      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
       await store.delete(original.slug);
       expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
         404,
