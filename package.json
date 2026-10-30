@@ -18,7 +18,8 @@
     "graph": "nx graph",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts"
+    "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts",
+    "images:optimize": "node tools/optimize-images.mjs && prettier --write apps/web/app/components/vitrine/images.generated.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.5",
@@ -29,6 +30,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router": "^8.5.0",
+    "sharp": "0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -47,6 +49,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "nx": "^24.0.0",
     "prettier": "3.9.10",
+    "svgo": "4.1.0",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.72.0",

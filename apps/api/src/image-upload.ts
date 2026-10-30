@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 import type { UploadedImage } from './clients.store';
 
 export async function readImage(file: FormDataEntryValue | null) {
@@ -15,7 +16,23 @@ export async function readImage(file: FormDataEntryValue | null) {
         hex.slice(16) === '57454250');
     if (!valid)
       throw new Error('Choisissez une image JPEG, PNG ou WebP valide.');
-    image = { mime: file.type, content };
+    try {
+      const optimized = await sharp(content, { limitInputPixels: 40_000_000 })
+        .rotate()
+        .resize({
+          width: 1920,
+          height: 1920,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82 })
+        .toBuffer();
+      image = { mime: 'image/webp', content: optimized };
+    } catch {
+      throw new Error(
+        'Image illisible ou trop grande. Choisissez une image JPEG, PNG ou WebP valide (40 millions de pixels maximum).',
+      );
+    }
   }
   return image;
 }

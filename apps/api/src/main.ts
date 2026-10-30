@@ -41,6 +41,11 @@ if (production) {
   const handleRequest = createRequestHandler(build, 'production');
   const clientRoot = fileURLToPath(new URL('../web/client/', import.meta.url));
   app.use('/assets/*', serveStatic({ root: clientRoot }));
+  app.use('/images/vitrine/optimized/*', async (context, next) => {
+    await next();
+    if (context.res.status === 200)
+      context.header('Cache-Control', 'public, max-age=31536000, immutable');
+  });
   app.use('/images/*', serveStatic({ root: clientRoot }));
   app.use('/fonts/*', serveStatic({ root: clientRoot }));
   app.all('*', (context) => {
