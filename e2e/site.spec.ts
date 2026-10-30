@@ -8,20 +8,18 @@ test('la vitrine et ses métadonnées sont présentes sans JavaScript', async ({
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('<h1');
-  expect(html).toContain(
-    'Des idées ambitieuses. Des projets qui prennent vie.',
-  );
-  expect(html).toContain('Nous croyons aux projets qui ont du sens.');
+  expect(html).toContain('Salut, moi c’est');
+  expect(html).toContain('Accompagner les acteurs de la restauration');
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Les belles histoiress’écrivent à plusieurs.',
+      'EPICC — Communication pour la restauration et l’agroalimentaire',
     );
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      /EPICC accompagne/,
+      /Chloé Gathla accompagne/,
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -38,7 +36,11 @@ test('la navigation fonctionne après hydratation, avec les assets de production
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
-  await expect(page.locator('h1')).toHaveCSS('font-weight', '400');
+  await expect(page.locator('#biography-title')).toHaveCSS(
+    'font-family',
+    /Roboto Mono/,
+  );
+  await page.getByText('Menu', { exact: true }).first().click();
   await page.getByRole('link', { name: /Espace de gestion/ }).click();
   await expect(page).toHaveURL(/\/connect$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
@@ -50,7 +52,7 @@ test('la navigation fonctionne après hydratation, avec les assets de production
   );
   await page.getByRole('link', { name: /Retour à la vitrine/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'Les belles histoires',
+    'EPICC — Communication',
   );
   expect(errors).toEqual([]);
 });
@@ -104,7 +106,7 @@ test('le répertoire et les fiches fonctionnent sans JavaScript', async ({
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    await page.goto('/');
+    await page.goto('/clients');
     await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
       6,
     );
@@ -143,7 +145,7 @@ test('le répertoire et les fiches fonctionnent sans JavaScript', async ({
 test('les filtres se combinent et une recherche vide peut être réinitialisée', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/clients');
   await page
     .getByLabel('Univers', { exact: true })
     .selectOption('Art de vivre');
@@ -156,7 +158,7 @@ test('les filtres se combinent et une recherche vide peut être réinitialisée'
     .getByRole('link', { name: 'Retrouver toutes les rencontres' })
     .click();
   await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(6);
-  await page.goto('/?q=creation');
+  await page.goto('/clients?q=creation');
   await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(2);
 });
 
@@ -179,7 +181,7 @@ test('toutes les fiches existent, les inconnues répondent 404', async ({
 test('les fiches restent lisibles sur les petits écrans', async ({ page }) => {
   for (const width of [320, 375, 768]) {
     await page.setViewportSize({ width, height: 812 });
-    for (const path of ['/', '/clients/les-jours-heureux']) {
+    for (const path of ['/', '/clients', '/clients/les-jours-heureux']) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       expect(
@@ -194,7 +196,7 @@ test('les fiches restent lisibles sur les petits écrans', async ({ page }) => {
 test('les liens et les contrôles sont accessibles au clavier', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/clients');
   await page.keyboard.press('Tab');
   await expect(
     page.getByRole('link', { name: 'Aller au contenu' }),
@@ -209,4 +211,85 @@ test('les liens et les contrôles sont accessibles au clavier', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Maison Sauge',
   );
+});
+
+test('le menu et les sections de la maquette fonctionnent sans JavaScript', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto('/');
+    await page.getByText('Menu', { exact: true }).first().click();
+    await page
+      .getByRole('link', { name: 'À propos de Chloé', exact: true })
+      .click();
+    await expect(page).toHaveURL(/#a-propos$/);
+    await expect(
+      page.getByRole('heading', { name: /Salut, moi c’est/ }),
+    ).toBeInViewport();
+    await page.goto('/');
+    await page.getByText('Menu', { exact: true }).first().click();
+    await page
+      .getByRole('link', { name: 'Les rencontres', exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/clients$/);
+    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
+      6,
+    );
+  } finally {
+    await context.close();
+  }
+});
+
+test('les visuels et la typographie de la vitrine sont servis localement', async ({
+  page,
+  request,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  await page.evaluate(async () => {
+    for (const image of Array.from(document.images)) image.loading = 'eager';
+    await document.fonts.ready;
+  });
+  await page.waitForFunction(() =>
+    Array.from(document.images).every((image) => image.complete),
+  );
+  const images = await page.locator('.vitrine img').evaluateAll((images) =>
+    images.map((node) => {
+      const image = node as HTMLImageElement;
+      const bounds = image.getBoundingClientRect();
+      return {
+        src: image.getAttribute('src')!,
+        loaded: image.naturalWidth > 0,
+        visible: bounds.width > 0 && bounds.height > 0,
+      };
+    }),
+  );
+  expect(images.length).toBeGreaterThan(0);
+  for (const image of images) {
+    expect(image.src).toMatch(/^\/images\/vitrine\//);
+    expect(image.loaded).toBe(true);
+    expect(image.visible).toBe(true);
+  }
+  const vectors = await page
+    .locator('.vitrine svg image')
+    .evaluateAll((images) =>
+      images.map((image) => image.getAttribute('href')!),
+    );
+  for (const src of new Set([
+    ...vectors,
+    '/fonts/roboto-mono.ttf',
+    '/fonts/roboto-mono-italic.ttf',
+  ])) {
+    const response = await request.get(src);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).not.toContain('text/html');
+    expect((await response.body()).length).toBeGreaterThan(0);
+  }
+  expect(
+    await page.evaluate(() => document.fonts.check('700 20px "Roboto Mono"')),
+  ).toBe(true);
+  expect(errors).toEqual([]);
 });

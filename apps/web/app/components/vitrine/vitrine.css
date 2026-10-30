@@ -1,0 +1,531 @@
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto-mono.ttf') format('truetype');
+  font-weight: 100 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto-mono-italic.ttf') format('truetype');
+  font-weight: 100 700;
+  font-style: italic;
+  font-display: swap;
+}
+body:has(.vitrine) {
+  background: #fff;
+}
+.vitrine {
+  --vitrine-ink: #000;
+  --vitrine-paper: #fff;
+  --vitrine-heading: clamp(18px, 1.40625cqw, 27px);
+  --vitrine-copy: clamp(12px, 1.041667cqw, 20px);
+  --vitrine-small: clamp(11px, 0.833333cqw, 16px);
+  container-type: inline-size;
+  width: 100%;
+  max-width: 1920px;
+  min-height: min(316.3vw, 6073px);
+  margin: 0 auto;
+  background: var(--vitrine-paper);
+  color: var(--vitrine-ink);
+  font:
+    700 var(--vitrine-copy) / 1.3 'Roboto Mono',
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: -0.1em;
+}
+.vitrine h2 {
+  margin: 0;
+  font:
+    700 var(--vitrine-heading) / 1.333333 'Roboto Mono',
+    monospace;
+  letter-spacing: -0.06em;
+}
+.vitrine p {
+  margin: 0;
+}
+.vitrine img {
+  height: auto;
+}
+.vitrine-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.vitrine-opening {
+  position: relative;
+  aspect-ratio: 1920 / 1395;
+  overflow: clip;
+}
+.vitrine-cover {
+  position: absolute;
+  top: 0;
+  left: -4.635417%;
+  width: 106.822917%;
+  height: 100%;
+  overflow: hidden;
+}
+.vitrine-cover > img {
+  width: 100%;
+  height: 111.15%;
+  object-fit: fill;
+}
+.vitrine-opening-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.vitrine-navigation {
+  position: absolute;
+  inset: 5.95% 7.6% auto 7.65625%;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: var(--vitrine-heading);
+  line-height: 1.333333;
+  letter-spacing: -0.06em;
+  z-index: 1;
+}
+.vitrine-navigation-sections {
+  display: flex;
+  justify-content: space-between;
+  width: 24.3%;
+  gap: 24px;
+}
+.vitrine-menu summary {
+  cursor: pointer;
+  list-style: none;
+}
+.vitrine-menu summary::-webkit-details-marker {
+  display: none;
+}
+.vitrine-navigation a:hover,
+.vitrine-menu summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.vitrine-menu-panel {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 18px);
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  width: max-content;
+  max-width: 100%;
+  border: 1px solid var(--vitrine-ink);
+  background: var(--vitrine-paper);
+  font-size: max(13px, 0.9375cqw);
+}
+.vitrine-services {
+  width: 68.489583%;
+  margin: 6.666667cqw 0 0 7.864583%;
+  scroll-margin-top: 32px;
+}
+.vitrine-services dl {
+  margin: 0;
+}
+.vitrine-service {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30.41825% 1fr;
+  align-items: center;
+  min-height: 4.322917cqw;
+  padding-block: 0.625cqw;
+}
+.vitrine-service:nth-child(3) {
+  min-height: 2.8125cqw;
+}
+.vitrine-service:nth-child(4) {
+  min-height: 5.729167cqw;
+}
+.vitrine-service dt {
+  padding-right: 16px;
+}
+.vitrine-service dd {
+  margin: 0;
+}
+.vitrine-service-rule {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  overflow: visible;
+}
+.vitrine-brand-label {
+  position: relative;
+  display: block;
+  width: 10.46875cqw;
+  height: 3.072917cqw;
+}
+.vitrine-brand-label img {
+  position: absolute;
+  width: 7.708333cqw;
+  transform: rotate(-5deg);
+}
+.vitrine-brand-label img:first-child {
+  left: -0.364583cqw;
+  top: -0.520833cqw;
+}
+.vitrine-brand-label img:last-child {
+  left: 2.447917cqw;
+  top: 1.041667cqw;
+}
+.vitrine-event-label {
+  width: 10.989583cqw;
+  transform: rotate(-3.5deg);
+}
+.vitrine-biography {
+  margin: 10.364583cqw 7.65625% 0;
+  scroll-margin-top: 32px;
+}
+.vitrine-biography-heading {
+  position: relative;
+  height: 9.791667cqw;
+}
+.vitrine-biography-heading h2 {
+  position: absolute;
+  top: 5.416667cqw;
+  left: 29.6875cqw;
+}
+.vitrine-biography-heading > img {
+  position: absolute;
+  width: 46.145833cqw;
+  top: 0;
+  left: 39.479167cqw;
+}
+.vitrine-biography-intro {
+  display: grid;
+  grid-template-columns: 30.32342% 1fr;
+  gap: 0;
+  align-items: start;
+}
+.vitrine-biography-intro > p {
+  width: 19.479167cqw;
+  padding-top: 1.041667cqw;
+}
+.vitrine-biography-intro em {
+  font-weight: 700;
+  font-size: 1.2em;
+  letter-spacing: -0.1em;
+}
+.vitrine-childhood {
+  position: relative;
+  aspect-ratio: 953.819 / 537;
+  width: 49.678073cqw;
+  overflow: hidden;
+}
+.vitrine-childhood > img {
+  position: absolute;
+  width: 56.299999%;
+  height: 177.619867%;
+  max-width: none;
+  left: 21.85%;
+  top: -38.809933%;
+  object-fit: cover;
+  transform: rotate(-90deg);
+}
+.vitrine-chapters {
+  min-height: 10.833333cqw;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2.760417cqw;
+  margin-top: 4.375cqw;
+}
+.vitrine-chapters p {
+  font-size: var(--vitrine-small);
+  letter-spacing: -0.1em;
+  white-space: pre-line;
+}
+.vitrine-manifesto {
+  margin: 8.854167cqw 7.65625% 0;
+  scroll-margin-top: 32px;
+}
+.vitrine-manifesto h2 {
+  text-align: center;
+}
+.vitrine-manifesto-intro {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3.125cqw;
+}
+.vitrine-manifesto-intro p {
+  min-height: 5.208333cqw;
+  width: 18.75cqw;
+  font-size: var(--vitrine-small);
+  letter-spacing: -0.1em;
+}
+.vitrine-manifesto-collage {
+  position: relative;
+  width: 52.1875cqw;
+  height: 34.375cqw;
+  margin: -2.5cqw 0 0 14.270833cqw;
+}
+.vitrine-manifesto-collage > img,
+.vitrine-collage-photo {
+  position: absolute;
+}
+.vitrine-collage-paper {
+  width: 21.227cqw;
+  left: 23.645833cqw;
+  top: 4.947917cqw;
+}
+.vitrine-collage-photo {
+  left: 6.197917cqw;
+  top: 11.822917cqw;
+  width: 33.541667cqw;
+  height: 13.75cqw;
+  overflow: hidden;
+}
+.vitrine-collage-photo img {
+  position: absolute;
+  width: 100%;
+  height: 150%;
+  top: -37.12%;
+}
+.vitrine-collage-bon {
+  width: 36.510417cqw;
+  left: 7.708333cqw;
+  top: 8.802083cqw;
+}
+.vitrine-collage-bien {
+  width: 40.572917cqw;
+  left: 4.479167cqw;
+  top: 18.697917cqw;
+}
+.vitrine-collage-beau {
+  width: 48.489583cqw;
+  left: 0;
+  top: 0;
+}
+.vitrine-colophon {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 27.604167cqw;
+  top: 32.291667cqw;
+  height: 1.770833cqw;
+  border: 1px solid var(--vitrine-ink);
+  background: var(--vitrine-paper);
+  font-size: 0.625cqw;
+  line-height: 1.333333;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+}
+.vitrine-colophon > span {
+  padding-inline: 0.833333cqw;
+}
+.vitrine-colophon > svg {
+  width: 1px;
+  height: 100%;
+  flex-shrink: 0;
+}
+.vitrine-colophon > img {
+  position: absolute;
+  width: 8.903894cqw;
+  max-width: none;
+  left: 15.677083cqw;
+  top: -1px;
+}
+@media (max-width: 900px) {
+  .vitrine {
+    min-height: 100vh;
+    padding-bottom: 20vw;
+  }
+  .vitrine-services {
+    width: 84.6875%;
+  }
+  .vitrine-service {
+    min-height: 70px;
+    padding-block: 16px;
+    grid-template-columns: 32% 1fr;
+  }
+  .vitrine-service:nth-child(3),
+  .vitrine-service:nth-child(4) {
+    min-height: 70px;
+  }
+  .vitrine-brand-label {
+    width: 130px;
+    height: 50px;
+  }
+  .vitrine-brand-label img {
+    width: 90px;
+  }
+  .vitrine-brand-label img:last-child {
+    left: 28px;
+    top: 15px;
+  }
+  .vitrine-event-label {
+    width: 130px;
+    max-width: 100%;
+  }
+  .vitrine-biography {
+    margin-top: 12cqw;
+  }
+  .vitrine-biography-heading {
+    height: 15cqw;
+  }
+  .vitrine-biography-heading h2 {
+    left: 25cqw;
+    top: 7cqw;
+  }
+  .vitrine-biography-heading > img {
+    top: 0;
+    left: 41cqw;
+    width: 45cqw;
+  }
+  .vitrine-biography-intro > p {
+    width: auto;
+    padding-right: 20px;
+  }
+  .vitrine-chapters {
+    min-height: 10.833333cqw;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+    margin-top: 40px;
+  }
+  .vitrine-manifesto {
+    margin-top: 70px;
+  }
+  .vitrine-manifesto-intro {
+    margin-top: 32px;
+    gap: 24px;
+  }
+  .vitrine-manifesto-intro p {
+    min-height: 5.208333cqw;
+    width: 40%;
+  }
+  .vitrine-manifesto-collage {
+    margin-top: 12px;
+  }
+}
+@media (max-width: 540px) {
+  .vitrine-navigation {
+    inset: 24px 7.65% auto;
+  }
+  .vitrine-navigation-sections {
+    width: auto;
+    gap: 18px;
+  }
+  .vitrine-navigation-sections a {
+    font-size: 12px;
+  }
+  .vitrine-opening {
+    aspect-ratio: 1 / 1.05;
+  }
+  .vitrine-cover {
+    left: -23%;
+    width: 147%;
+  }
+  .vitrine-opening-art {
+    width: 147%;
+    max-width: none;
+    left: -23%;
+  }
+  .vitrine-services {
+    margin-top: 40px;
+  }
+  .vitrine-service {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-block: 22px;
+  }
+  .vitrine-brand-label {
+    height: 65px;
+  }
+  .vitrine-event-label {
+    width: 145px;
+  }
+  .vitrine-biography {
+    margin-top: 60px;
+  }
+  .vitrine-biography-heading {
+    height: 130px;
+  }
+  .vitrine-biography-heading h2 {
+    top: 0;
+    left: 0;
+  }
+  .vitrine-biography-heading > img {
+    width: 90cqw;
+    max-width: none;
+    left: -3cqw;
+    top: 20px;
+  }
+  .vitrine-biography-intro {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .vitrine-biography-intro > p {
+    max-width: 280px;
+    padding: 0;
+  }
+  .vitrine-childhood {
+    width: 100%;
+  }
+  .vitrine-chapters {
+    min-height: 10.833333cqw;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .vitrine-manifesto {
+    margin-top: 60px;
+  }
+  .vitrine-manifesto-intro {
+    display: grid;
+  }
+  .vitrine-manifesto-intro p {
+    min-height: 5.208333cqw;
+    width: 100%;
+  }
+  .vitrine-manifesto-collage {
+    width: 100%;
+    height: 60cqw;
+    margin: 28px 0 0;
+  }
+  .vitrine-collage-paper {
+    width: 34cqw;
+    left: 37.83cqw;
+    top: 7.91cqw;
+  }
+  .vitrine-collage-photo {
+    left: 9.91cqw;
+    top: 18.91cqw;
+    width: 53.66cqw;
+    height: 22cqw;
+  }
+  .vitrine-collage-bon {
+    width: 58.41cqw;
+    left: 12.33cqw;
+    top: 14.08cqw;
+  }
+  .vitrine-collage-bien {
+    width: 64.91cqw;
+    left: 7.16cqw;
+    top: 29.91cqw;
+  }
+  .vitrine-collage-beau {
+    width: 77.58cqw;
+  }
+  .vitrine-colophon {
+    left: 13cqw;
+    top: 53cqw;
+    height: 24px;
+    font-size: 7px;
+  }
+  .vitrine-colophon > span {
+    padding-inline: 5px;
+  }
+  .vitrine-colophon > img {
+    width: 70px;
+    left: 168px;
+    top: 0;
+  }
+}

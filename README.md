@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. Le chargement de la page d’accueil appelle l’API depuis le serveur, avant le rendu du HTML. Les modifications sont rechargées automatiquement.
+Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Le répertoire et les fiches chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement.
 
 La vitrine démarre sans secret ni fichier `.env`. La base SQLite des clients est créée automatiquement au premier lancement de l’API ; la connexion à la gestion reste désactivée tant que les accès ne sont pas configurés.
 
@@ -51,15 +51,16 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 ## Routes et contenu de démonstration
 
 - `/` : vitrine responsive en français, rendue côté serveur, avec titre, description, Open Graph et URL canonique.
+- `/clients` : répertoire public, recherche et filtre par univers, utilisables sans JavaScript.
 - `/clients/:slug` : fiche client sous forme de formulaire d’archives, avec navigation entre les fiches et retour au répertoire.
 - `/connect` : connexion et liste des clients ; `/connect/clients/nouveau` et `/connect/clients/:slug` : création et modification. Ces routes sont exclues de l’indexation et du cache.
 - `/api/health` : état du serveur HTTP ; ce contrôle ne vérifie pas une base de données.
-- `/api/v1/pages/accueil` : contenu public de démonstration, chargé par la vitrine.
+- `/api/v1/pages/accueil` : contenu éditorial de démonstration, utilisé pour les métadonnées du répertoire.
 - `/robots.txt` et `/sitemap.xml` : consignes d’exploration et liste des pages publiques.
 
 Le contenu est déterministe et assemblé dans `apps/api/src/composition-root.ts`. Le cas d’usage masque les brouillons et les pages absentes avec le même statut 404. Une panne de l’API produit une page d’erreur 503 ; les erreurs techniques ne sont pas exposées au visiteur.
 
-La gestion des clients comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. Les contenus et l’identité visuelle sont des exemples à remplacer.
+La gestion des clients comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. Les fiches clients sont des exemples à remplacer ; l’accueil reprend la maquette EPICC.
 
 ## Exécuter le build
 
@@ -95,7 +96,7 @@ L’API crée automatiquement les tables et importe une seule fois les six exemp
 
 **Hébergement : monter un volume persistant et inscriptible pour le dossier contenant `CLIENTS_DB_PATH`**, hors de `dist/`, et sauvegarder ce volume avec le processus arrêté ou avec un outil de sauvegarde SQLite. Un disque éphémère perdrait les modifications au redéploiement. Ce stockage convient à un serveur Node unique ; plusieurs répliques sur des disques séparés nécessiteraient un stockage partagé adapté. Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. Les variables d’authentification doivent être identiques dans les processus web et API en développement.
 
-Les visiteurs lisent uniquement les fiches publiées. L’accueil, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
+Les visiteurs lisent uniquement les fiches publiées. Le répertoire, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
 
 Les tests navigateur utilisent une base temporaire isolée et le compte `test@questboard.test` / `testtest`, puis nettoient leur stockage. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
 
@@ -109,12 +110,16 @@ Le verrouillage transitoire d’`undici` dans `package.json` impose la version c
 
 ## Direction visuelle et répertoire clients
 
-La vitrine adopte un carnet de rencontres : papier grainé, encre bleue, notes manuscrites et photographies fixées par du scotch en CSS. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
+L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé et manifeste. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
+
+Le répertoire sur `/clients` conserve le carnet de rencontres : papier grainé, encre bleue et notes manuscrites. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
 
 Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
 
 Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
 
-- Photographies d’illustration provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
+- Visuels originaux de la maquette dans `apps/web/public/images/vitrine`, servis localement sans URL temporaire Figma.
+- Roboto Mono normale et italique (graisse 700), auto-hébergée ; licence SIL conservée dans `apps/web/public/fonts/OFL-RobotoMono.txt`.
+- Photographies d’illustration du répertoire provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
 - Police manuscrite Caveat, distribuée sous SIL Open Font License ; licence conservée dans `apps/web/public/fonts/OFL-Caveat.txt`.
 - Grain SVG procédural et rubans adhésifs CSS créés pour cette interface. Les pièces jointes d’inspiration ne sont pas publiées dans le site.
