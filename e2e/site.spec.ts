@@ -230,6 +230,13 @@ test('le menu et les sections de la maquette fonctionnent sans JavaScript', asyn
     ).toBeInViewport();
     await page.goto('/');
     await page.getByText('Menu', { exact: true }).first().click();
+    await page.getByRole('link', { name: 'Nos offres', exact: true }).click();
+    await expect(page).toHaveURL(/#nos-offres$/);
+    await expect(
+      page.getByRole('heading', { name: 'Nos offres', exact: true }),
+    ).toBeInViewport();
+    await page.goto('/');
+    await page.getByText('Menu', { exact: true }).first().click();
     await page
       .getByRole('link', { name: 'Les rencontres', exact: true })
       .click();

@@ -334,7 +334,97 @@ body:has(.vitrine) {
   left: 15.677083cqw;
   top: -1px;
 }
+.vitrine-offers {
+  margin-top: 10.104167cqw;
+  padding-bottom: 17.34375cqw;
+  scroll-margin-top: 32px;
+}
+.vitrine-offers h2 {
+  text-align: center;
+}
+/* Repère du collage Figma, avec les recadrages des calques d’origine. */
+.vitrine-offers-collage {
+  position: relative;
+  width: clamp(280px, 32.275521cqw, 619.69px);
+  max-width: 84.6875%;
+  aspect-ratio: 619.69 / 1305.47;
+  margin: 3.229167cqw 0 0 35.052083cqw;
+}
+.vitrine-offers-collage > div {
+  position: absolute;
+  overflow: hidden;
+}
+.vitrine-offers-collage img {
+  display: block;
+  width: 100%;
+}
+.vitrine-offers-tomato {
+  left: 9.359518%;
+  top: 5.515255%;
+  width: 29.960141%;
+  aspect-ratio: 185.66 / 236.84;
+}
+.vitrine-offers-meat {
+  left: 20.010005%;
+  top: 24.971849%;
+  width: 19.848634%;
+  aspect-ratio: 123 / 194;
+}
+.vitrine-offers-restaurant {
+  left: 11.295971%;
+  top: 41.134611%;
+  width: 28.562668%;
+  aspect-ratio: 177 / 266;
+}
+.vitrine-offers-blue {
+  left: 44.86114%;
+  top: 54.922748%;
+  width: 34.049283%;
+  aspect-ratio: 211 / 317;
+}
+.vitrine-offers-dish {
+  left: 0%;
+  top: 63.502034%;
+  width: 39.858639%;
+  aspect-ratio: 247 / 371;
+}
+.vitrine-offers-golf {
+  left: 44.86114%;
+  top: 81.350012%;
+  width: 22.09976%;
+  aspect-ratio: 136.95 / 243.47;
+}
+.vitrine-offers-still-life {
+  left: 44.86114%;
+  top: 0%;
+  width: 25.012506%;
+  aspect-ratio: 155 / 232;
+}
+.vitrine-offers-landscape {
+  left: 80.685504%;
+  top: 23.822838%;
+  width: 19.314496%;
+  aspect-ratio: 119.69 / 210.33;
+}
+.vitrine-offers-tomato img {
+  width: 103.156307%;
+}
+.vitrine-offers-meat img {
+  width: 97.447006%;
+}
+.vitrine-offers-golf img {
+  width: 102.519168%;
+}
+.vitrine-offers-dish img {
+  transform: scaleX(-1);
+}
 @media (max-width: 900px) {
+  .vitrine-offers {
+    margin-top: 70px;
+  }
+  .vitrine-offers-collage {
+    margin: 40px auto 0;
+  }
   .vitrine {
     min-height: 100vh;
     padding-bottom: 20vw;

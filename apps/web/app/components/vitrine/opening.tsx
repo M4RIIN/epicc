@@ -69,6 +69,7 @@ export function Opening() {
             <a href="#prestations">Les prestations</a>
             <a href="#a-propos">À propos de Chloé</a>
             <a href="#epicc">L’esprit EPICC</a>
+            <a href="#nos-offres">Nos offres</a>
             <Link to="/clients">Les rencontres</Link>
             <Link to="/connect">Espace de gestion</Link>
           </div>
