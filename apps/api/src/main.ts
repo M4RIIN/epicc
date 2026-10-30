@@ -6,6 +6,7 @@ import { createRequestHandler } from 'react-router';
 import type { ServerBuild } from 'react-router';
 import { fileURLToPath } from 'node:url';
 import { composeApi } from './composition-root';
+import { Database } from './database';
 
 const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? (production ? 3100 : 3101));
@@ -20,7 +21,16 @@ app.use('/connect*', async (context, next) => {
   context.header('X-Robots-Tag', 'noindex, nofollow');
   context.header('Cache-Control', 'no-store');
 });
-app.route('/api', composeApi());
+const database = new Database();
+try {
+  await database.migrate();
+} catch {
+  await database.close();
+  throw new Error(
+    'Initialisation PostgreSQL impossible. Vérifiez DATABASE_URL et les droits de création des tables.',
+  );
+}
+app.route('/api', composeApi(database));
 app.all('/api/*', (context) =>
   context.json({ error: 'Ressource introuvable.' }, 404),
 );
@@ -51,7 +61,8 @@ const server = serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
-    server.close((error) => {
+    server.close(async (error) => {
+      await database.close();
       if (error) {
         console.error(error);
         process.exitCode = 1;

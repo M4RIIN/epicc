@@ -10,6 +10,7 @@ import {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 it('signe les sessions, contrôle leur expiration et refuse les cookies altérés', async () => {
@@ -69,22 +70,36 @@ it('refuse les formulaires volumineux avant leur traitement', async () => {
   await expect(readAdminForm(request)).rejects.toMatchObject({ status: 413 });
 });
 
-it('n’autorise pas la connexion sans configuration et limite les essais', () => {
-  vi.stubEnv('ADMIN_PASSWORD', '');
+it('délègue la connexion à l’API PostgreSQL et présente les refus', async () => {
   vi.stubEnv('SESSION_SECRET', '');
-  expect(login('test@questboard.test', 'testtest')).toBe(
+  expect(await login('test@questboard.test', 'testtest')).toBe(
     'Identifiants incorrects.',
   );
-  vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-  vi.stubEnv('ADMIN_EMAIL', 'test@questboard.test');
   vi.stubEnv(
     'SESSION_SECRET',
     'secret-de-test-de-plus-de-trente-deux-caracteres',
   );
-  expect(login('test@questboard.test', 'testtest')).toBeNull();
-  for (let attempt = 0; attempt < 20; attempt++)
-    login('test@questboard.test', 'invalide');
-  expect(login('test@questboard.test', 'testtest')).toContain(
+  const fetcher = vi
+    .fn()
+    .mockResolvedValue(new Response('{}', { status: 200 }));
+  vi.stubGlobal('fetch', fetcher);
+  expect(await login('test@questboard.test', 'testtest')).toBeNull();
+  expect(fetcher).toHaveBeenCalledWith(
+    expect.any(URL),
+    expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({
+        email: 'test@questboard.test',
+        password: 'testtest',
+      }),
+    }),
+  );
+  fetcher.mockResolvedValue(new Response('{}', { status: 401 }));
+  expect(await login('test@questboard.test', 'incorrect')).toBe(
+    'Identifiants incorrects.',
+  );
+  fetcher.mockResolvedValue(new Response('{}', { status: 429 }));
+  expect(await login('test@questboard.test', 'testtest')).toContain(
     'Trop de tentatives',
   );
 });

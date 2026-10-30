@@ -7,7 +7,8 @@
       "{workspaceRoot}/eslint.config.mjs",
       "{workspaceRoot}/vitest.config.ts",
       "{workspaceRoot}/package-lock.json",
-      "{workspaceRoot}/package.json"
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/e2e/database.ts"
     ],
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
@@ -30,7 +31,7 @@
       "inputs": ["default", "^default"]
     },
     "test": {
-      "cache": true,
+      "cache": false,
       "inputs": ["default", "^default"]
     }
   }
