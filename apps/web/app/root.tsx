@@ -6,12 +6,14 @@ import {
   ScrollRestoration,
   Link,
   isRouteErrorResponse,
+  useLocation,
 } from 'react-router';
 import type { Route } from './+types/root';
 import type { ReactNode } from 'react';
 import './styles.css';
 
 export function Layout({ children }: { children: ReactNode }) {
+  const isHome = useLocation().pathname === '/';
   return (
     <html lang="fr">
       <head>
@@ -24,26 +26,30 @@ export function Layout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#contenu">
           Aller au contenu
         </a>
-        <header className="site-header">
-          <Link className="brand" to="/" aria-label="EPICC, accueil">
-            EPICC<span aria-hidden="true">✳</span>
-          </Link>
-          <nav aria-label="Navigation principale">
-            <Link to="/#clients">Les rencontres</Link>
-            <Link to="/#approche">Le studio</Link>
-            <Link className="nav-connect" to="/connect">
-              Espace de gestion <span aria-hidden="true">↗</span>
+        {!isHome && (
+          <header className="site-header">
+            <Link className="brand" to="/" aria-label="EPICC, accueil">
+              EPICC<span aria-hidden="true">✳</span>
             </Link>
-          </nav>
-        </header>
+            <nav aria-label="Navigation principale">
+              <Link to="/clients#clients">Les rencontres</Link>
+              <Link to="/#a-propos">Le studio</Link>
+              <Link className="nav-connect" to="/connect">
+                Espace de gestion <span aria-hidden="true">↗</span>
+              </Link>
+            </nav>
+          </header>
+        )}
         {children}
-        <footer className="site-footer">
-          <Link className="brand" to="/">
-            EPICC<span aria-hidden="true">✳</span>
-          </Link>
-          <p>Des idées, des liens, de belles histoires.</p>
-          <span>STUDIO INDÉPENDANT · ESPRIT COLLECTIF</span>
-        </footer>
+        {!isHome && (
+          <footer className="site-footer">
+            <Link className="brand" to="/">
+              EPICC<span aria-hidden="true">✳</span>
+            </Link>
+            <p>Des idées, des liens, de belles histoires.</p>
+            <span>STUDIO INDÉPENDANT · ESPRIT COLLECTIF</span>
+          </footer>
+        )}
         <ScrollRestoration />
         <Scripts />
       </body>

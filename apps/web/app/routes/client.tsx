@@ -50,7 +50,7 @@ export default function Client({ loaderData }: Route.ComponentProps) {
   return (
     <main id="contenu" className="client-page">
       <nav className="file-breadcrumb" aria-label="Fil d’Ariane">
-        <Link to="/#clients">← Retour au répertoire</Link>
+        <Link to="/clients#clients">← Retour au répertoire</Link>
         <span>Les rencontres / Fiche n° {client.number}</span>
       </nav>
       <article className="client-file paper" aria-labelledby="client-title">
@@ -170,7 +170,7 @@ export default function Client({ loaderData }: Route.ComponentProps) {
         ) : (
           <span />
         )}
-        <Link to="/#clients">Toutes les rencontres</Link>
+        <Link to="/clients#clients">Toutes les rencontres</Link>
         {next ? (
           <Link to={`/clients/${next.slug}`}>{next.name} →</Link>
         ) : (

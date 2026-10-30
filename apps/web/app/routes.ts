@@ -3,6 +3,7 @@ import type { RouteConfig } from '@react-router/dev/routes';
 
 export default [
   index('routes/home.tsx'),
+  route('clients', 'routes/directory.tsx'),
   route('clients/:slug', 'routes/client.tsx'),
   route('connect', 'routes/connect.tsx'),
   route('connect/images/:id', 'routes/admin-image.ts'),

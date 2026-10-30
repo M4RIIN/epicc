@@ -86,7 +86,7 @@ for (const javaScriptEnabled of [false, true]) {
       expect(await (await request.get('/sitemap.xml')).text()).not.toContain(
         '/clients/client-test',
       );
-      expect(await (await request.get('/')).text()).not.toContain(
+      expect(await (await request.get('/clients')).text()).not.toContain(
         'Découvrir Client de test',
       );
       await page.getByRole('link', { name: 'Modifier Client de test' }).click();
@@ -118,7 +118,7 @@ for (const javaScriptEnabled of [false, true]) {
       expect(await (await request.get('/sitemap.xml')).text()).toContain(
         '/clients/client-test',
       );
-      await page.goto('/?secteur=Univers+de+test');
+      await page.goto('/clients?secteur=Univers+de+test');
       await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
         1,
       );
@@ -128,7 +128,7 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByLabel('Ordre d’affichage').fill('999');
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
-      await page.goto('/');
+      await page.goto('/clients');
       await expect(
         page.getByRole('link', { name: /^Découvrir / }).last(),
       ).toHaveAccessibleName('Découvrir Client corrigé');
