@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import type { Client } from '@epicc/content-contracts';
 import { expect, test } from '@playwright/test';
 
 const png = Buffer.from(
@@ -218,3 +220,99 @@ for (const javaScriptEnabled of [false, true]) {
     }
   });
 }
+
+test('les deux colonnes suivent les placements de la capture sans aligner leurs projets par rangées', async ({
+  page,
+  request,
+}, testInfo) => {
+  const authorization = `Bearer ${createHash('sha256').update('clients-api:secret-de-test-deterministe-avec-plus-de-32-caracteres').digest('hex')}`;
+  const headers = { authorization };
+  const originals = (await (
+    await request.get('/api/v1/admin/clients', { headers })
+  ).json()) as Client[];
+  const counts = [4, 2, 2, 2, 1, 2];
+  try {
+    for (const [index, original] of originals.entries()) {
+      let current = original;
+      for (let extra = 1; extra < counts[index]!; extra++) {
+        const response = await request.post(
+          `/api/v1/admin/clients/${original.slug}`,
+          {
+            headers,
+            multipart: {
+              client: JSON.stringify(current),
+              galleryImage: photo(`detail-${extra}.png`),
+              galleryAlt: `Détail de test ${extra}`,
+            },
+          },
+        );
+        expect(response.status()).toBe(200);
+        current = (
+          (await (
+            await request.get('/api/v1/admin/clients', { headers })
+          ).json()) as Client[]
+        ).find((client) => client.slug === original.slug)!;
+      }
+    }
+    await page.setViewportSize({ width: 680, height: 1000 });
+    await page.goto('/#projets-clients');
+    await expect(page.locator('.vitrine-loading')).toBeHidden({
+      timeout: 15000,
+    });
+    const figures = page.locator('.vitrine-project');
+    const tops = await figures.evaluateAll((nodes) =>
+      nodes.map(
+        (node) => node.querySelector('img')!.getBoundingClientRect().top,
+      ),
+    );
+    const reference = [23, 0, 452, 223, 720, 488];
+    for (const [index, top] of tops.entries())
+      expect(top - tops[1]!).toBeCloseTo(reference[index]!, 0);
+    const photos = await page
+      .locator('.vitrine-project img')
+      .evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { width: rect.width, height: rect.height };
+        }),
+      );
+    const expected = [
+      [79, 101],
+      [43, 67],
+      [62, 95],
+      [87, 130],
+      [41, 61],
+      [81, 143],
+      [57, 92],
+      [101, 153],
+      [105, 158],
+      [49, 86],
+      [83, 125],
+      [81, 147],
+      [101, 103],
+    ];
+    for (const [index, image] of photos.entries()) {
+      expect(image.width).toBeCloseTo(expected[index]![0]!, 0);
+      expect(image.height).toBeCloseTo(expected[index]![1]!, 0);
+    }
+    await page
+      .locator('#projets-clients')
+      .screenshot({ path: testInfo.outputPath('composition-reference.png') });
+    for (const width of [320, 375, 1920]) {
+      await page.setViewportSize({ width, height: 1080 });
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+  } finally {
+    for (const original of originals) {
+      const response = await request.post(
+        `/api/v1/admin/clients/${original.slug}`,
+        { headers, multipart: { client: JSON.stringify(original) } },
+      );
+      expect(response.status()).toBe(200);
+    }
+  }
+});

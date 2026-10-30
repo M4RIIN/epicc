@@ -371,7 +371,7 @@ test('un chargement lent permet de continuer ou de rejoindre la gestion', async 
   }
 });
 
-test('l’ouverture conserve un cadre 16:9 sur ordinateur et les photos des projets gardent leurs proportions', async ({
+test('l’ouverture conserve un cadre 16:9 et les photos utilisent les cadrages de la référence', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1920, height: 1080 });
@@ -385,11 +385,23 @@ test('l’ouverture conserve un cadre 16:9 sur ordinateur et les photos des proj
       images.map((node) => {
         const image = node as HTMLImageElement;
         return {
-          natural: image.naturalWidth / image.naturalHeight,
+          loaded: image.naturalWidth > 0,
+          fitting: getComputedStyle(image).objectFit,
           rendered: image.width / image.height,
         };
       }),
     );
-  for (const photo of photos)
-    expect(photo.rendered).toBeCloseTo(photo.natural, 1);
+  const referenceRatios = [
+    79 / 101,
+    41 / 61,
+    57 / 92,
+    105 / 158,
+    83 / 125,
+    81 / 147,
+  ];
+  for (const [index, photo] of photos.entries()) {
+    expect(photo.loaded).toBe(true);
+    expect(photo.fitting).toBe('cover');
+    expect(photo.rendered).toBeCloseTo(referenceRatios[index]!, 1);
+  }
 });
