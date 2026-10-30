@@ -16,7 +16,12 @@ export class ClientStore {
       .filter((client) => includeDrafts || client.published)
       .sort((a, b) => a.position - b.position || a.slug.localeCompare(b.slug));
   }
-  async write(client: Client, image?: UploadedImage, creating = false) {
+  async write(
+    client: Client,
+    image?: UploadedImage,
+    creating = false,
+    galleryPhoto?: { image: UploadedImage; alt: string },
+  ) {
     await this.database.transaction(async (connection) => {
       if (image) {
         const id = randomUUID();
@@ -26,6 +31,21 @@ export class ClientStore {
           Buffer.from(image.content),
         ]);
         client = { ...client, image: `/api/v1/client-images/${id}` };
+      }
+      if (galleryPhoto) {
+        const id = randomUUID();
+        await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
+          id,
+          galleryPhoto.image.mime,
+          Buffer.from(galleryPhoto.image.content),
+        ]);
+        client = {
+          ...client,
+          gallery: [
+            ...client.gallery,
+            { image: `/api/v1/client-images/${id}`, alt: galleryPhoto.alt },
+          ],
+        };
       }
       const content = clientSchema.parse(client);
       if (creating) {
@@ -63,7 +83,9 @@ export class ClientStore {
     }>(
       `SELECT mime, content FROM images WHERE id = $1 AND ($2 OR EXISTS (
         SELECT 1 FROM clients WHERE (content->>'published')::boolean
-        AND content->>'image' = '/api/v1/client-images/' || images.id
+        AND (content->>'image' = '/api/v1/client-images/' || images.id
+          OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(content->'gallery', '[]'::jsonb)) photo
+            WHERE photo->>'image' = '/api/v1/client-images/' || images.id))
       ))`,
       [id, admin],
     );
@@ -73,6 +95,8 @@ export class ClientStore {
 export async function removeUnusedImages(connection: PoolClient) {
   await connection.query(`DELETE FROM images WHERE NOT EXISTS (
     SELECT 1 FROM clients WHERE content->>'image' = '/api/v1/client-images/' || images.id
+      OR EXISTS (SELECT 1 FROM jsonb_array_elements(COALESCE(content->'gallery', '[]'::jsonb)) photo
+        WHERE photo->>'image' = '/api/v1/client-images/' || images.id)
   ) AND NOT EXISTS (
     SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
   )`);

@@ -153,6 +153,7 @@ it('reprend SQLite sans modifier la source et refuse une seconde importation', a
   const importedClient = {
     ...client,
     name: 'Client importé',
+    gallery: [],
     image: `/api/v1/client-images/${id}`,
     published: false,
   };

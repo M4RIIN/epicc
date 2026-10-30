@@ -138,28 +138,52 @@ for (const javaScriptEnabled of [false, true]) {
           mimeType: 'image/png',
           buffer: png,
         });
+      await page
+        .getByLabel('Ajouter une photo au projet', { exact: true })
+        .setInputFiles({
+          name: 'detail.png',
+          mimeType: 'image/png',
+          buffer: png,
+        });
+      await page
+        .getByLabel('Description de la nouvelle photo', { exact: true })
+        .fill('Détail du projet de test');
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
       expect((await request.get(publicImage)).status()).toBe(404);
       await page.goto('/');
+      await expect(page.locator('#projet-client-test img')).toHaveCount(2);
+      await expect(
+        page.locator('#projet-client-test img').nth(1),
+      ).toHaveAttribute('alt', 'Détail du projet de test');
       const replacementImage = await page
         .locator('#projet-client-test img')
+        .first()
         .getAttribute('src');
       expect(replacementImage).not.toBe(publicImage);
       expect(replacementImage).toMatch(/^\/api\/v1\/client-images\//);
       expect(
         (await request.get(replacementImage!)).headers()['content-type'],
       ).toBe('image/png');
-      await expect(page.locator('#projet-client-test img')).toHaveAttribute(
-        'alt',
-        'Image de test déterministe',
-      );
+      await expect(
+        page.locator('#projet-client-test img').first(),
+      ).toHaveAttribute('alt', 'Image de test déterministe');
       await page.goto('/');
       await expect(page.locator('#prestations img[src^="/api/"]')).toHaveCount(
         0,
       );
       await page.goto('/connect');
       await page.getByRole('link', { name: 'Modifier Client de test' }).click();
+      await expect(page.locator('.admin-preview')).toHaveCount(2);
+      const galleryUrl = (await page
+        .locator('.admin-preview')
+        .nth(1)
+        .getAttribute('src'))!.replace(
+        '/connect/images/',
+        '/api/v1/client-images/',
+      );
+      expect((await request.get(galleryUrl)).status()).toBe(200);
+      await page.getByLabel('Retirer la photo 2', { exact: true }).check();
       await page.getByLabel('Nom', { exact: true }).fill('Client corrigé');
       await page.getByLabel('Ordre d’affichage').fill('999');
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
@@ -169,6 +193,8 @@ for (const javaScriptEnabled of [false, true]) {
         .last()
         .click();
       await expect(page).toHaveURL(/#projet-client-test$/);
+      expect((await request.get(galleryUrl)).status()).toBe(404);
+      await expect(page.locator('#projet-client-test img')).toHaveCount(1);
       await expect(
         page.locator('.vitrine-project').last().getByRole('heading'),
       ).toHaveText('Client corrigé');

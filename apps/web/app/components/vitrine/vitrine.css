@@ -613,7 +613,7 @@ html[data-home-loading] .vitrine-loading {
 
 .vitrine-projects {
   margin: 8.854167cqw 7.65625% 0;
-  padding-bottom: 8.854167cqw;
+  padding-bottom: 16cqw;
   scroll-margin-top: 32px;
 }
 .vitrine-projects > h2 {
@@ -621,40 +621,79 @@ html[data-home-loading] .vitrine-loading {
 }
 .vitrine-projects-list {
   display: grid;
-  gap: 4.375cqw;
-  margin-top: 4.375cqw;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  column-gap: 1.5cqw;
+  row-gap: 1.5cqw;
+  margin-top: 6cqw;
 }
 .vitrine-project {
-  width: 100%;
-  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40%;
+  align-items: start;
+  gap: 3cqw;
+  min-width: 0;
+  margin: 3cqw 0 0;
   scroll-margin-top: 32px;
 }
 .vitrine-project:nth-child(even) {
-  width: 58%;
-  justify-self: end;
+  grid-template-columns: 40% minmax(0, 1fr);
+  margin-top: 0;
 }
-.vitrine-project > img {
+.vitrine-project-photos {
+  display: grid;
+  justify-items: end;
+  gap: 1.2cqw;
+  grid-column: 2;
+  grid-row: 1;
+}
+.vitrine-project:nth-child(even) .vitrine-project-photos {
+  grid-column: 1;
+  justify-items: start;
+}
+.vitrine-project-photos img {
   display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
+  height: auto;
   object-fit: cover;
 }
+.vitrine-project-photo-large {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+}
+.vitrine-project-photo-small {
+  width: 58%;
+  aspect-ratio: 3 / 4;
+}
+.vitrine-project:nth-child(4n + 1) .vitrine-project-photo-large {
+  width: 82%;
+}
 .vitrine-project figcaption {
-  display: grid;
-  gap: 8px;
-  margin-top: 16px;
+  grid-row: 1;
+  grid-column: 1;
+  padding-top: 2cqw;
+  text-align: right;
   overflow-wrap: anywhere;
+}
+.vitrine-project:nth-child(even) figcaption {
+  grid-column: 2;
+  text-align: left;
 }
 .vitrine-project h3 {
   margin: 0;
-  font: inherit;
+  font:
+    400 clamp(18px, 3.7cqw, 70px) / 0.95 Caveat,
+    cursive;
+  letter-spacing: -0.055em;
 }
 @media (max-width: 540px) {
   .vitrine-projects {
-    margin-top: 60px;
+    margin: 60px 5% 0;
   }
   .vitrine-projects-list {
-    gap: 32px;
     margin-top: 32px;
+    row-gap: 20px;
+  }
+  .vitrine-project {
+    gap: 12px;
   }
 }

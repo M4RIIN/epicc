@@ -10,6 +10,15 @@ export const publishedPageSchema = z.object({
 export type PublishedPage = z.infer<typeof publishedPageSchema>;
 
 const text = z.string().trim().min(1, 'Ce champ est obligatoire.');
+const clientImagePath = z
+  .string()
+  .regex(
+    /^\/(?:images\/(?:botanique|atelier|cafe)\.jpg|api\/v1\/client-images\/[a-f0-9-]+)$/,
+  );
+export const clientPhotoSchema = z.object({
+  image: clientImagePath,
+  alt: text.max(300),
+});
 export const clientSchema = z.object({
   slug: text
     .max(100)
@@ -22,11 +31,8 @@ export const clientSchema = z.object({
   sector: text.max(100),
   place: text.max(150),
   year: z.string().regex(/^\d{4}$/, 'Indiquez une année sur quatre chiffres.'),
-  image: z
-    .string()
-    .regex(
-      /^\/(?:images\/(?:botanique|atelier|cafe)\.jpg|api\/v1\/client-images\/[a-f0-9-]+)$/,
-    ),
+  image: clientImagePath,
+  gallery: clientPhotoSchema.array().max(3).default([]),
   alt: text.max(300),
   tagline: text.max(300),
   description: text.max(2000),

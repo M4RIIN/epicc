@@ -15,17 +15,26 @@ export function Projects({ clients }: { clients: Client[] }) {
             id={`projet-${client.slug}`}
             key={client.slug}
           >
-            <img
-              src={client.image}
-              alt={client.alt}
-              loading="lazy"
-              width={960}
-              height={640}
-            />
+            <div className="vitrine-project-photos">
+              {[
+                { image: client.image, alt: client.alt },
+                ...client.gallery,
+              ].map((photo, index) => (
+                <img
+                  key={photo.image}
+                  src={photo.image}
+                  alt={photo.alt}
+                  loading="lazy"
+                  className={
+                    index % 2 === 0
+                      ? 'vitrine-project-photo-large'
+                      : 'vitrine-project-photo-small'
+                  }
+                />
+              ))}
+            </div>
             <figcaption>
               <h3>{client.name}</h3>
-              <p>{client.tagline}</p>
-              <p>{client.work}</p>
             </figcaption>
           </figure>
         ))}

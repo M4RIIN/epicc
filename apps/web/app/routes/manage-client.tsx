@@ -38,6 +38,7 @@ const defaultClient: Client = {
   place: '',
   year: '2026',
   image: '/images/botanique.jpg',
+  gallery: [],
   alt: '',
   tagline: '',
   description: '',
@@ -78,12 +79,26 @@ export async function action({ request, params }: Route.ActionArgs) {
     if (error) return data({ error, values: null }, { status: 400 });
     return redirect('/connect');
   }
+  const current = creating
+    ? defaultClient
+    : (await loadClients(true)).find((client) => client.slug === params.slug);
+  if (!current) throw new Response('Projet introuvable.', { status: 404 });
   const values = {
     ...Object.fromEntries(
       Object.keys(clientSchema.shape).map((key) => [
         key,
         String(form.get(key) ?? ''),
       ]),
+    ),
+    gallery: current.gallery.flatMap((photo, index) =>
+      form.get(`removeGallery${index}`) === 'yes'
+        ? []
+        : [
+            {
+              image: photo.image,
+              alt: String(form.get(`galleryAlt${index}`) ?? photo.alt),
+            },
+          ],
     ),
     slug: creating ? String(form.get('slug')) : params.slug,
     published: form.get('published') === 'on',
@@ -110,6 +125,11 @@ export async function action({ request, params }: Route.ActionArgs) {
   outgoing.set('intent', creating ? 'create' : 'update');
   const image = form.get('imageFile');
   if (image instanceof File && image.size) outgoing.set('image', image);
+  const galleryImage = form.get('galleryImage');
+  if (galleryImage instanceof File && galleryImage.size) {
+    outgoing.set('galleryImage', galleryImage);
+    outgoing.set('galleryAlt', String(form.get('galleryAlt') ?? ''));
+  }
   const error = await saveClient(result.data.slug, outgoing);
   if (error) return data({ error, values }, { status: 400 });
   return redirect('/connect');
@@ -229,6 +249,64 @@ export default function ManageClient({
             JPEG, PNG ou WebP, 5 Mo maximum. Le fichier sélectionné remplace
             l’image existante à l’enregistrement.
           </p>
+        </fieldset>
+        <fieldset>
+          <legend>Photos complémentaires du projet</legend>
+          <p>
+            Les photos sont regroupées au centre de la vitrine, près du nom du
+            projet. Trois photos complémentaires maximum, dans l’ordre
+            ci-dessous.
+          </p>
+          {client.gallery.map((photo, index) => (
+            <div key={photo.image}>
+              <img
+                className="admin-preview"
+                src={photo.image.replace(
+                  '/api/v1/client-images/',
+                  '/connect/images/',
+                )}
+                alt={photo.alt}
+              />
+              <label>
+                Description de la photo {index + 2}
+                <input
+                  name={`galleryAlt${index}`}
+                  defaultValue={photo.alt}
+                  maxLength={300}
+                  required
+                />
+              </label>
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  name={`removeGallery${index}`}
+                  value="yes"
+                />
+                Retirer la photo {index + 2}
+              </label>
+            </div>
+          ))}
+          {client.gallery.length < 3 && (
+            <>
+              <label>
+                Ajouter une photo au projet
+                <input
+                  type="file"
+                  name="galleryImage"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+              </label>
+              <label>
+                Description de la nouvelle photo
+                <input name="galleryAlt" maxLength={300} />
+              </label>
+              <p>
+                JPEG, PNG ou WebP, 5 Mo par photo, 6 Mo au total par
+                enregistrement. La description est obligatoire pour ajouter une
+                photo. Enregistrez pour en ajouter une autre.
+              </p>
+            </>
+          )}
         </fieldset>
         <label className="admin-checkbox">
           <input

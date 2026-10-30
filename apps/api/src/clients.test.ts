@@ -142,3 +142,69 @@ describe('gestion persistante des clients', () => {
     }
   });
 });
+
+it('conserve la galerie après redémarrage, protège les brouillons et refuse les images d’un autre projet', async () => {
+  vi.stubEnv('SESSION_SECRET', secret);
+  let store = new ClientStore(database);
+  let api = createClientsApi(store);
+  const original = (await store.list(true))[0]!;
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
+    'base64',
+  );
+  const post = (
+    client: typeof original,
+    addPhoto = false,
+    alt = 'Détail de test',
+  ) => {
+    const form = new FormData();
+    form.set('client', JSON.stringify(client));
+    if (addPhoto)
+      form.set(
+        'galleryImage',
+        new File([png], 'detail.png', { type: 'image/png' }),
+      );
+    form.set('galleryAlt', alt);
+    return api.request(`/v1/admin/clients/${client.slug}`, {
+      method: 'POST',
+      headers: { authorization },
+      body: form,
+    });
+  };
+  expect((await post(original, true, '')).status).toBe(400);
+  expect((await post({ ...original, published: false }, true)).status).toBe(
+    200,
+  );
+  await database.close();
+  database = new Database(testDatabaseUrl(name));
+  await database.migrate();
+  store = new ClientStore(database);
+  api = createClientsApi(store);
+  const draft = (await store.list(true)).find(
+    (client) => client.slug === original.slug,
+  )!;
+  expect(draft.gallery).toHaveLength(1);
+  const image = draft.gallery[0]!.image.replace('/api', '');
+  expect((await api.request(image)).status).toBe(404);
+  expect(
+    (
+      await api.request(
+        image.replace('/v1/client-images/', '/v1/admin/images/'),
+        { headers: { authorization } },
+      )
+    ).status,
+  ).toBe(200);
+  const other = (await store.list(true)).find(
+    (client) => client.slug !== original.slug,
+  )!;
+  expect((await post({ ...other, gallery: draft.gallery })).status).toBe(400);
+  expect((await post({ ...draft, published: true })).status).toBe(200);
+  expect(Buffer.from(await (await api.request(image)).arrayBuffer())).toEqual(
+    png,
+  );
+  expect((await post({ ...draft, gallery: [] })).status).toBe(200);
+  expect((await api.request(image)).status).toBe(404);
+  expect(
+    (await database.pool.query('SELECT count(*) FROM images')).rows[0].count,
+  ).toBe('0');
+});

@@ -117,7 +117,7 @@ test('la vitrine est la seule page publique et le sitemap ne référence aucun a
 
 test('les projets sont intégrés à la vitrine sans page séparée et restent lisibles sur mobile', async ({
   browser,
-}) => {
+}, testInfo) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
@@ -133,15 +133,31 @@ test('les projets sont intégrés à la vitrine sans page séparée et restent l
     await expect(page.locator('a[href^="/clients"]')).toHaveCount(0);
     for (const width of [320, 375, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      const large = (await projects.locator('figure').nth(0).boundingBox())!;
-      const small = (await projects.locator('figure').nth(1).boundingBox())!;
-      expect(large.width).toBeGreaterThan(small.width * 1.5);
+      const figures = projects.locator('figure');
+      const leftPhoto = (await figures.nth(0).locator('img').boundingBox())!;
+      const rightPhoto = (await figures.nth(1).locator('img').boundingBox())!;
+      const leftName = (await figures
+        .nth(0)
+        .locator('figcaption')
+        .boundingBox())!;
+      const rightName = (await figures
+        .nth(1)
+        .locator('figcaption')
+        .boundingBox())!;
+      expect(leftPhoto.x + leftPhoto.width).toBeLessThanOrEqual(width / 2);
+      expect(rightPhoto.x).toBeGreaterThanOrEqual(width / 2);
+      expect(leftName.x + leftName.width).toBeLessThan(leftPhoto.x);
+      expect(rightName.x).toBeGreaterThan(rightPhoto.x + rightPhoto.width);
+      expect(leftPhoto.width).toBeLessThan(width * 0.2);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
     }
+    await projects.screenshot({
+      path: testInfo.outputPath('projets-clients.png'),
+    });
   } finally {
     await context.close();
   }

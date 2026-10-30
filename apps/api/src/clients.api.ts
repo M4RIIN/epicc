@@ -2,7 +2,7 @@ import { readImage } from './image-upload';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { clientSchema } from '@epicc/content-contracts';
+import { clientSchema, clientPhotoSchema } from '@epicc/content-contracts';
 import type { ClientStore } from './clients.store';
 
 export function authorized(header: string | undefined) {
@@ -84,9 +84,21 @@ export function createClientsApi(store: ClientStore) {
         exists ? 409 : 404,
       );
     }
+    const current = (await store.list(true)).find(
+      (item) => item.slug === client.slug,
+    );
+    if (
+      client.gallery.some(
+        (photo) =>
+          !current?.gallery.some((saved) => saved.image === photo.image),
+      )
+    )
+      return c.json({ error: 'Image de galerie inconnue.' }, 400);
     let image;
+    let galleryImage;
     try {
       image = await readImage(form.get('image'));
+      galleryImage = await readImage(form.get('galleryImage'));
     } catch (error) {
       return c.json({ error: (error as Error).message }, 400);
     }
@@ -102,7 +114,27 @@ export function createClientsApi(store: ClientStore) {
         400,
       );
     }
-    await store.write(client, image, form.get('intent') === 'create');
+    const galleryPhoto = galleryImage
+      ? clientPhotoSchema.pick({ alt: true }).safeParse({
+          alt: String(form.get('galleryAlt') ?? ''),
+        })
+      : null;
+    if (galleryPhoto && (!galleryPhoto.success || client.gallery.length >= 3))
+      return c.json(
+        {
+          error:
+            'Ajoutez une description à la photo et limitez la galerie à trois photos complémentaires.',
+        },
+        400,
+      );
+    await store.write(
+      client,
+      image,
+      form.get('intent') === 'create',
+      galleryImage && galleryPhoto?.success
+        ? { image: galleryImage, alt: galleryPhoto.data.alt }
+        : undefined,
+    );
     return c.json({ ok: true });
   });
   return api;
