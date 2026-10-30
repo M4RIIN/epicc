@@ -128,6 +128,14 @@ Le répertoire sur `/clients` conserve le carnet de rencontres : papier grainé,
 
 Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
 
+Le lien « Connexion ↗ » est visible directement en haut de l’accueil et mène à `/connect`. Pour activer la connexion sur l’hébergement, fournir `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` lors du premier démarrage, comme décrit plus haut. Aucun compte de démonstration n’est activé en production.
+
+Les photographies et libellés de la vitrine disposent de versions WebP et de plusieurs tailles, sélectionnées par le navigateur. Le collage d’ouverture est précomposé en une seule couche transparente pour éviter son affichage dessin par dessin. Les deux images d’ouverture sont prioritaires ; les sections suivantes sont chargées à l’approche du défilement. Les fichiers optimisés portent une empreinte dans leur nom et sont mis en cache un an ; une modification produit une nouvelle URL.
+
+Les originaux de la maquette sont conservés. Après modification d’un original ou des coordonnées du collage, exécuter `npm run images:optimize`, puis versionner les images de `apps/web/public/images/vitrine/optimized` et le manifeste `images.generated.ts`. Cette commande est nécessaire seulement lors d’une modification des sources ; le build habituel utilise les fichiers déjà versionnés.
+
+Les nouvelles images téléversées dans la gestion (clients et offres) sont décodées, orientées et converties en WebP, avec un côté maximal de 1 920 pixels. Les fichiers déjà en base conservent leur format ; les remplacer depuis la gestion pour bénéficier de cette réduction. La limite d’envoi reste 5 Mo, avec un maximum de 40 millions de pixels. Les images privées conservent leur protection et ne sont pas placées dans le cache public.
+
 Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
 
 - Visuels originaux de la maquette dans `apps/web/public/images/vitrine`, servis localement sans URL temporaire Figma.

@@ -97,10 +97,20 @@ body:has(.vitrine) {
   letter-spacing: -0.06em;
   z-index: 1;
 }
+.vitrine-navigation-actions {
+  display: flex;
+  align-items: start;
+  justify-content: flex-end;
+  gap: clamp(20px, 4cqw, 76px);
+  flex: 1;
+}
+.vitrine-connect {
+  white-space: nowrap;
+}
 .vitrine-navigation-sections {
   display: flex;
   justify-content: space-between;
-  width: 24.3%;
+  width: 29%;
   gap: 24px;
 }
 .vitrine-menu summary {
@@ -413,6 +423,13 @@ body:has(.vitrine) {
 @media (max-width: 540px) {
   .vitrine-navigation {
     inset: 24px 7.65% auto;
+  }
+  .vitrine-navigation-actions {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .vitrine-connect {
+    font-size: 12px;
   }
   .vitrine-navigation-sections {
     width: auto;

@@ -33,16 +33,21 @@ export function Opening() {
             <Link to="/connect">Espace de gestion</Link>
           </div>
         </details>
-        <div className="vitrine-navigation-sections">
-          <a href="#prestations" aria-label="Menu — Les prestations">
-            Menu
-          </a>
-          <a href="#a-propos" aria-label="Menu — À propos">
-            Menu
-          </a>
-          <a href="#epicc" aria-label="Menu — EPICC, c’est quoi">
-            Menu
-          </a>
+        <div className="vitrine-navigation-actions">
+          <Link to="/connect" className="vitrine-connect">
+            Connexion <span aria-hidden="true">↗</span>
+          </Link>
+          <div className="vitrine-navigation-sections">
+            <a href="#prestations" aria-label="Menu — Les prestations">
+              Menu
+            </a>
+            <a href="#a-propos" aria-label="Menu — À propos">
+              Menu
+            </a>
+            <a href="#epicc" aria-label="Menu — EPICC, c’est quoi">
+              Menu
+            </a>
+          </div>
         </div>
       </nav>
     </section>
