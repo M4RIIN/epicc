@@ -112,12 +112,8 @@ it('enregistre et remplace les images des offres, protège les écritures et net
   api = composeApi(database);
   const response = await api.request(firstImage.replace('/api', ''));
   expect(response.status).toBe(200);
-  expect(response.headers.get('Content-Type')).toBe('image/webp');
-  expect(
-    Buffer.from(await response.arrayBuffer())
-      .subarray(0, 4)
-      .toString(),
-  ).toBe('RIFF');
+  expect(response.headers.get('Content-Type')).toBe('image/png');
+  expect(Buffer.from(await response.arrayBuffer())).toEqual(png);
   expect(
     (
       await post(

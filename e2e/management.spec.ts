@@ -113,7 +113,7 @@ for (const javaScriptEnabled of [false, true]) {
       );
       expect(html).toContain('alt="Image de test déterministe"');
       expect((await request.get(publicImage)).headers()['content-type']).toBe(
-        'image/webp',
+        'image/png',
       );
       expect(await (await request.get('/sitemap.xml')).text()).toContain(
         '/clients/client-test',
@@ -224,7 +224,7 @@ for (const javaScriptEnabled of [false, true]) {
         images.push((await image.getAttribute('src'))!);
         expect(
           (await request.get(images[index]!)).headers()['content-type'],
-        ).toBe('image/webp');
+        ).toBe('image/png');
       }
       for (const width of [1440, 375, 320]) {
         await page.setViewportSize({ width, height: 900 });

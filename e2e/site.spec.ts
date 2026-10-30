@@ -294,7 +294,7 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   expect(errors).toEqual([]);
 });
 
-test('la connexion est directement accessible et l’ouverture utilise des images légères', async ({
+test('la connexion reste directement accessible sans JavaScript et les visuels utilisent leurs originaux', async ({
   browser,
   request,
 }) => {
@@ -302,6 +302,7 @@ test('la connexion est directement accessible et l’ouverture utilise des image
   try {
     const page = await context.newPage();
     await page.goto('/');
+    await expect(page.locator('.vitrine-loading')).toBeHidden();
     const connection = page.getByRole('link', {
       name: 'Connexion',
       exact: false,
@@ -315,22 +316,15 @@ test('la connexion est directement accessible et l’ouverture utilise des image
         ),
       ).toBe(true);
     }
-    await expect(page.locator('.vitrine-opening svg image')).toHaveCount(0);
-    const openingImages = page.locator('.vitrine-opening img');
-    await expect(openingImages).toHaveCount(2);
-    let totalBytes = 0;
-    for (const image of await openingImages.all()) {
-      await expect(image).toHaveAttribute('loading', 'eager');
-      await expect(image).toHaveAttribute('decoding', 'async');
-      const src = (await image.getAttribute('src'))!;
-      const response = await request.get(src);
-      expect(response.status()).toBe(200);
-      expect(response.headers()['content-type']).toContain('image/webp');
-      expect(response.headers()['cache-control']).toContain('immutable');
-      totalBytes += (await response.body()).byteLength;
-    }
-    // Budget sur les variantes les plus grandes, indépendant du débit réseau.
-    expect(totalBytes).toBeLessThan(800 * 1024);
+    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+      'src',
+      '/images/vitrine/Image29102026A17281.png',
+    );
+    expect(
+      (await request.get('/images/vitrine/Image29102026A17281.png')).headers()[
+        'content-type'
+      ],
+    ).toContain('image/png');
     await connection.click();
     await expect(page).toHaveURL(/\/connect$/);
     await expect(page.getByLabel('Adresse e-mail')).toBeVisible();
@@ -339,5 +333,90 @@ test('la connexion est directement accessible et l’ouverture utilise des image
     ).toBeEnabled();
   } finally {
     await context.close();
+  }
+});
+
+test('l’écran de chargement attend aussi la dernière illustration avant de révéler toutes les images', async ({
+  page,
+}) => {
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/images/vitrine/Group16.svg', async (route) => {
+    await pending;
+    await route.continue();
+  });
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.vitrine-loading')).toBeVisible();
+    await expect(page.locator('main.vitrine')).toBeHidden();
+    release();
+    await expect(page.locator('.vitrine-loading')).toBeHidden({
+      timeout: 15000,
+    });
+    await expect(page.locator('main.vitrine')).toBeVisible();
+    expect(
+      await page.locator('.vitrine img').evaluateAll((images) =>
+        images.every((node) => {
+          const image = node as HTMLImageElement;
+          return image.complete && image.naturalWidth > 0;
+        }),
+      ),
+    ).toBe(true);
+    await page.reload();
+    await expect(page.locator('.vitrine-loading')).toBeHidden({
+      timeout: 15000,
+    });
+    await expect(page.locator('main.vitrine')).toBeVisible();
+  } finally {
+    release();
+  }
+});
+
+test('une image en erreur ne bloque pas le chargement', async ({ page }) => {
+  await page.route('**/images/vitrine/Group16.svg', (route) => route.abort());
+  await page.goto('/');
+  await expect(page.locator('.vitrine-loading')).toBeHidden({ timeout: 15000 });
+  await expect(page.locator('main.vitrine')).toBeVisible();
+});
+
+test('un chargement lent permet de continuer ou de rejoindre la gestion', async ({
+  page,
+}) => {
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.clock.install();
+  await page.route(
+    '**/images/vitrine/Image29102026A17281.png',
+    async (route) => {
+      await pending;
+      await route.continue();
+    },
+  );
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('html')).toHaveAttribute(
+      'data-home-loading',
+      'true',
+    );
+    await expect(
+      page
+        .locator('.vitrine-loading')
+        .getByRole('link', { name: 'Connexion à la gestion' }),
+    ).toBeVisible();
+    await page.clock.fastForward(12001);
+    await expect(
+      page.getByText('Le chargement prend plus de temps que prévu.'),
+    ).toBeVisible();
+    await page
+      .getByRole('button', { name: 'Afficher le site sans attendre' })
+      .click();
+    await expect(page.locator('.vitrine-loading')).toBeHidden();
+    await expect(page.locator('main.vitrine')).toBeVisible();
+  } finally {
+    release();
   }
 });
