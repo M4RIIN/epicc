@@ -11,6 +11,7 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
+import { loadOffers } from '../services/offers.server';
 import { loadClients } from '../services/clients.server';
 
 export function meta() {
@@ -31,6 +32,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       configured: adminConfigured(),
       csrf: session.get('csrf') as string,
       clients: authenticated ? await loadClients(true) : [],
+      offers: authenticated ? await loadOffers() : [],
     },
     { headers: { 'Set-Cookie': await commitAdmin(session) } },
   );
@@ -64,7 +66,7 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients } = loaderData;
+  const { authenticated, configured, csrf, clients, offers } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
@@ -75,7 +77,10 @@ export default function Connect({
       </p>
       {!authenticated ? (
         <div className="admin-panel paper">
-          <p>Connectez-vous pour gérer les fiches et leurs images.</p>
+          <p>
+            Connectez-vous pour gérer les fiches clients et les images des
+            offres.
+          </p>
           {!configured && (
             <p role="status">
               La connexion sera disponible après configuration des accès
@@ -111,6 +116,26 @@ export default function Connect({
         </div>
       ) : (
         <>
+          <section aria-labelledby="offers-title" className="admin-panel paper">
+            <h2 id="offers-title">Images des offres</h2>
+            <p>
+              Les visuels alternent entre grand et petit format selon la
+              position de l’offre.
+            </p>
+            <ul className="admin-offers">
+              {offers.map((offer, index) => (
+                <li key={offer.slug}>
+                  <Link to={`/connect/offres/${offer.slug}`}>
+                    Modifier l’image : {offer.name} ↗
+                  </Link>
+                  <span>
+                    {' '}
+                    · {index % 2 === 0 ? 'Grand format' : 'Petit format'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
           <div className="admin-toolbar">
             <Link className="button" to="/connect/clients/nouveau">
               Ajouter un client ↗

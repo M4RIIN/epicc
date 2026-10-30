@@ -36,13 +36,19 @@ Les tags `layer:*` et la règle `@nx/enforce-module-boundaries` interdisent les 
 - **Inversion des dépendances** : l’application définit son port, l’infrastructure l’implémente ; les dépendances concrètes sont injectées au constructeur.
 - **Lisibilité** : noms métier, fonctions courtes, types stricts, exports explicites, validations aux frontières et erreurs intentionnelles. Pas de conteneur d’injection ni de classe générique tant qu’ils ne résolvent pas un besoin concret.
 
-### Gestion des clients
+### Gestion des clients et des offres
 
-Les clients disposent d’un contrat Zod partagé (`clientSchema`). Leur module API est distinct des pages : `clients.api.ts` assure le transport et l’autorisation, `clients.store.ts` encapsule le dépôt SQLite, ses transactions et sa migration initiale, et `clients.seed.ts` fournit les exemples fictifs. Le point d’assemblage choisit et injecte le dépôt. Ce module reste local à l’API ; le front ne l’importe jamais. Les bibliothèques historiques `content` conservent leur rôle pour les pages éditoriales.
+Les clients disposent d’un contrat Zod partagé (`clientSchema`). Leur module API est distinct des pages : `clients.api.ts` assure le transport et l’autorisation, `clients.store.ts` encapsule le dépôt PostgreSQL et ses transactions, et `clients.seed.ts` fournit les exemples fictifs. Le point d’assemblage choisit et injecte le dépôt. Ce module reste local à l’API ; le front ne l’importe jamais. Les bibliothèques historiques `content` conservent leur rôle pour les pages éditoriales.
 
 Les loaders et actions React Router utilisent `clients.server.ts` pour communiquer avec l’API. Les actions exigent une session administrateur valide et un jeton CSRF. L’API privée exige indépendamment un jeton dérivé du secret serveur. Les fichiers `.server.ts` et leurs secrets sont exclus du bundle navigateur. La durée des sessions est contrôlée côté serveur, les tentatives de connexion sont limitées et la taille des formulaires est bornée.
 
-Les fiches et leurs images sont enregistrées dans une même transaction SQLite, sur un volume persistant. Le dépôt filtre les brouillons avant toute lecture publique. Les images orphelines sont supprimées et les images de brouillons ne sont accessibles que par un relais administrateur authentifié. Le HTML public, les métadonnées, la navigation entre fiches, les univers et le sitemap sont dérivés des fiches publiées lors de chaque requête SSR.
+Les fiches et leurs images sont enregistrées dans une même transaction PostgreSQL. Le dépôt filtre les brouillons avant toute lecture publique. Les images orphelines sont supprimées et les images de brouillons ne sont accessibles que par un relais administrateur authentifié. Le HTML public, les métadonnées, la navigation entre fiches, les univers et le sitemap sont dérivés des fiches publiées lors de chaque requête SSR.
+
+`database.ts` gère le pool PostgreSQL, les transactions et les migrations idempotentes sous verrou consultatif. `offers.api.ts` gère les visuels des offres et partage la validation des fichiers avec les clients. Les images sont enregistrées en BYTEA ; leurs références font partie des documents JSONB. Le nettoyage tient compte des deux types de contenu.
+
+`auth.api.ts` vérifie les identifiants dans la table `administrators` avec scrypt et un sel par compte. Les variables d’environnement provisionnent uniquement le compte initial. L’API de connexion exige le jeton serveur, limite les tentatives et n’expose aucun hachage. Les sessions signées restent dans un cookie HTTP-only de huit heures ; leur expiration est vérifiée côté serveur. La limitation des tentatives est locale au processus : prévoir une limitation partagée si plusieurs serveurs acceptent des connexions.
+
+`db:import-sqlite` permet une reprise explicite de l’ancien stockage avant les premières écritures PostgreSQL. La source est ouverte en lecture seule ; la destination est importée en une transaction et marquée pour empêcher une seconde reprise.
 
 ## Ajouter une fonctionnalité
 

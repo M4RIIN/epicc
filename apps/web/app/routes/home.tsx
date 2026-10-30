@@ -1,4 +1,5 @@
 import type { Route } from './+types/home';
+import { loadOffers } from '../services/offers.server';
 import { getSiteOrigin } from '../services/site.server';
 import { Opening } from '../components/vitrine/opening';
 import { Services } from '../components/vitrine/services';
@@ -6,8 +7,8 @@ import { Biography } from '../components/vitrine/biography';
 import { Manifesto } from '../components/vitrine/manifesto';
 import '../components/vitrine/vitrine.css';
 
-export function loader() {
-  return { origin: getSiteOrigin() };
+export async function loader() {
+  return { origin: getSiteOrigin(), offers: await loadOffers() };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -26,14 +27,14 @@ export function meta({ loaderData }: Route.MetaArgs) {
   ];
 }
 
-export default function Home() {
+export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <main id="contenu" className="vitrine">
       <h1 className="vitrine-sr-only">
         EPICC — Communication pour la restauration et l’agroalimentaire
       </h1>
       <Opening />
-      <Services />
+      <Services offers={loaderData.offers} />
       <Biography />
       <Manifesto />
     </main>
