@@ -11,7 +11,6 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
-import { loadOffers } from '../services/offers.server';
 import { loadClients } from '../services/clients.server';
 
 export function meta() {
@@ -32,7 +31,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       configured: adminConfigured(),
       csrf: session.get('csrf') as string,
       clients: authenticated ? await loadClients(true) : [],
-      offers: authenticated ? await loadOffers() : [],
     },
     { headers: { 'Set-Cookie': await commitAdmin(session) } },
   );
@@ -66,7 +64,7 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients, offers } = loaderData;
+  const { authenticated, configured, csrf, clients } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
@@ -78,8 +76,8 @@ export default function Connect({
       {!authenticated ? (
         <div className="admin-panel paper">
           <p>
-            Connectez-vous pour gérer les fiches clients et les images des
-            offres.
+            Connectez-vous pour gérer les fiches et les images des projets
+            clients.
           </p>
           {!configured && (
             <p role="status">
@@ -116,26 +114,6 @@ export default function Connect({
         </div>
       ) : (
         <>
-          <section aria-labelledby="offers-title" className="admin-panel paper">
-            <h2 id="offers-title">Images des offres</h2>
-            <p>
-              Les visuels alternent entre grand et petit format selon la
-              position de l’offre.
-            </p>
-            <ul className="admin-offers">
-              {offers.map((offer, index) => (
-                <li key={offer.slug}>
-                  <Link to={`/connect/offres/${offer.slug}`}>
-                    Modifier l’image : {offer.name} ↗
-                  </Link>
-                  <span>
-                    {' '}
-                    · {index % 2 === 0 ? 'Grand format' : 'Petit format'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
           <div className="admin-toolbar">
             <Link className="button" to="/connect/clients/nouveau">
               Ajouter un client ↗
@@ -147,6 +125,11 @@ export default function Connect({
               </button>
             </Form>
           </div>
+          <h2>Projets clients</h2>
+          <p>
+            Modifiez les images depuis chaque projet client. Elles apparaissent
+            dans le répertoire et sur la fiche publique du projet.
+          </p>
           <p>
             Les fiches publiées apparaissent sur la vitrine. L’ordre croissant
             détermine leur place dans le répertoire.
@@ -168,6 +151,11 @@ export default function Connect({
                   </p>
                 </div>
                 <div>
+                  <p>
+                    <Link to={`/connect/clients/${client.slug}#image-projet`}>
+                      Modifier l’image de {client.name} ↗
+                    </Link>
+                  </p>
                   <Link
                     className="text-link"
                     to={`/connect/clients/${client.slug}`}

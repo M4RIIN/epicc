@@ -547,24 +547,6 @@ body:has(.vitrine) {
   }
 }
 
-.vitrine-offer-visual {
-  grid-column: 1 / -1;
-  padding-block: 1.5cqw;
-}
-.vitrine-offer-visual img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-}
-.vitrine-offer-large {
-  width: 100%;
-}
-.vitrine-offer-small {
-  width: 58%;
-  justify-self: end;
-}
-
 .vitrine-loading {
   display: none;
 }

@@ -6,7 +6,6 @@ export default [
   route('clients', 'routes/directory.tsx'),
   route('clients/:slug', 'routes/client.tsx'),
   route('connect', 'routes/connect.tsx'),
-  route('connect/offres/:slug', 'routes/manage-offer.tsx'),
   route('connect/images/:id', 'routes/admin-image.ts'),
   route('connect/clients/:slug', 'routes/manage-client.tsx'),
   route('robots.txt', 'routes/robots.ts'),

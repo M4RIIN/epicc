@@ -194,8 +194,8 @@ export default function ManageClient({
             required
           />
         </label>
-        <fieldset>
-          <legend>Image</legend>
+        <fieldset id="image-projet">
+          <legend>Image du projet client</legend>
           <img
             className="admin-preview"
             src={client.image.replace(
