@@ -1,4 +1,11 @@
-import { data, Form, Link, redirect, useNavigation } from 'react-router';
+import {
+  data,
+  Form,
+  Link,
+  redirect,
+  useNavigation,
+  useFetcher,
+} from 'react-router';
 import { randomBytes } from 'node:crypto';
 import type { Route } from './+types/connect';
 import {
@@ -11,8 +18,12 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
-import { loadOffers } from '../services/offers.server';
-import { loadClients } from '../services/clients.server';
+import type { Client } from '@epicc/content-contracts';
+import {
+  loadClients,
+  saveClient,
+  clientsRequest,
+} from '../services/clients.server';
 
 export function meta() {
   return [
@@ -32,7 +43,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       configured: adminConfigured(),
       csrf: session.get('csrf') as string,
       clients: authenticated ? await loadClients(true) : [],
-      offers: authenticated ? await loadOffers() : [],
     },
     { headers: { 'Set-Cookie': await commitAdmin(session) } },
   );
@@ -46,13 +56,66 @@ export async function action({ request }: Route.ActionArgs) {
       headers: { 'Set-Cookie': await logoutAdmin(session) },
     });
   }
+  if (form.get('intent') === 'publish' || form.get('intent') === 'move') {
+    if (!isAdmin(session)) return redirect('/connect');
+    const clients = await loadClients(true);
+    const index = clients.findIndex(
+      (client) => client.slug === form.get('slug'),
+    );
+    const client = clients[index];
+    if (!client)
+      return data(
+        {
+          error: 'Projet introuvable. Actualisez la page.',
+          email: '',
+          message: '',
+        },
+        { status: 404 },
+      );
+    if (form.get('intent') === 'publish') {
+      const outgoing = new FormData();
+      const published = form.get('published') === 'yes';
+      outgoing.set('client', JSON.stringify({ ...client, published }));
+      const error = await saveClient(client.slug, outgoing);
+      return data(
+        {
+          error,
+          email: '',
+          message: error ? '' : published ? 'Projet publié.' : 'Projet masqué.',
+        },
+        { status: error ? 400 : 200 },
+      );
+    }
+    const destination = index + (form.get('direction') === 'up' ? -1 : 1);
+    if (destination < 0 || destination >= clients.length)
+      return data({ error: null, email: '', message: 'Ordre inchangé.' });
+    const slugs = clients.map((item) => item.slug);
+    [slugs[index], slugs[destination]] = [slugs[destination]!, slugs[index]!];
+    const outgoing = new FormData();
+    outgoing.set('slugs', JSON.stringify(slugs));
+    const response = await clientsRequest(
+      'admin/clients-order',
+      { method: 'POST', body: outgoing },
+      true,
+    );
+    return data(
+      {
+        error: response.ok
+          ? null
+          : 'Déplacement impossible. Actualisez la page et réessayez.',
+        email: '',
+        message: response.ok ? 'Ordre enregistré.' : '',
+      },
+      { status: response.ok ? 200 : 400 },
+    );
+  }
   const error = await login(
     String(form.get('email')),
     String(form.get('password')),
   );
   if (error)
     return data(
-      { error, email: String(form.get('email') ?? '') },
+      { error, email: String(form.get('email') ?? ''), message: '' },
       { status: 400 },
     );
   session.set('admin', true);
@@ -66,20 +129,20 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients, offers } = loaderData;
+  const { authenticated, configured, csrf, clients } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
       <p className="eyebrow">Espace de gestion</p>
-      <h1>{authenticated ? 'Gérer les clients' : 'Connexion à la gestion'}</h1>
+      <h1>{authenticated ? 'Gérer la vitrine' : 'Connexion à la gestion'}</h1>
       <p>
         <Link to="/">Retour à la vitrine ↗</Link>
       </p>
       {!authenticated ? (
         <div className="admin-panel paper">
           <p>
-            Connectez-vous pour gérer les fiches clients et les images des
-            offres.
+            Connectez-vous pour gérer les fiches et les images des projets
+            clients.
           </p>
           {!configured && (
             <p role="status">
@@ -116,29 +179,9 @@ export default function Connect({
         </div>
       ) : (
         <>
-          <section aria-labelledby="offers-title" className="admin-panel paper">
-            <h2 id="offers-title">Images des offres</h2>
-            <p>
-              Les visuels alternent entre grand et petit format selon la
-              position de l’offre.
-            </p>
-            <ul className="admin-offers">
-              {offers.map((offer, index) => (
-                <li key={offer.slug}>
-                  <Link to={`/connect/offres/${offer.slug}`}>
-                    Modifier l’image : {offer.name} ↗
-                  </Link>
-                  <span>
-                    {' '}
-                    · {index % 2 === 0 ? 'Grand format' : 'Petit format'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
           <div className="admin-toolbar">
             <Link className="button" to="/connect/clients/nouveau">
-              Ajouter un client ↗
+              Ajouter un projet ↗
             </Link>
             <Form method="post">
               <input type="hidden" name="csrf" value={csrf} />
@@ -147,46 +190,128 @@ export default function Connect({
               </button>
             </Form>
           </div>
+          {actionData?.error && <p role="alert">{actionData.error}</p>}
+          {actionData?.message && <p role="status">{actionData.message}</p>}
+          <h2>Projets clients</h2>
           <p>
-            Les fiches publiées apparaissent sur la vitrine. L’ordre croissant
-            détermine leur place dans le répertoire.
+            Choisissez un projet pour modifier son nom et ses photos.
+            Déplacez-le avec les flèches ou affichez-le sur la vitrine en un
+            clic.
           </p>
           {clients.length === 0 && (
-            <p>Aucun client. Ajoutez votre première fiche.</p>
+            <p>Aucun projet. Ajoutez votre premier projet.</p>
           )}
           <ol className="admin-clients">
-            {clients.map((client) => (
-              <li key={client.slug} className="paper admin-row">
-                <div>
-                  <h2>{client.name}</h2>
-                  <p>
-                    {client.sector} · {client.place}
-                  </p>
-                  <p>
-                    {client.published ? 'Publié' : 'Brouillon'} · Ordre :{' '}
-                    {client.position}
-                  </p>
-                </div>
-                <div>
-                  <Link
-                    className="text-link"
-                    to={`/connect/clients/${client.slug}`}
-                  >
-                    Modifier {client.name} ↗
-                  </Link>
-                  {client.published && (
-                    <p>
-                      <Link to={`/clients/${client.slug}`}>
-                        Voir la fiche publique
-                      </Link>
-                    </p>
-                  )}
-                </div>
-              </li>
+            {clients.map((client, index) => (
+              <ClientCard
+                key={client.slug}
+                client={client}
+                csrf={csrf}
+                first={index === 0}
+                last={index === clients.length - 1}
+              />
             ))}
           </ol>
         </>
       )}
     </main>
+  );
+}
+
+function ClientCard({
+  client,
+  csrf,
+  first,
+  last,
+}: {
+  client: Client;
+  csrf: string;
+  first: boolean;
+  last: boolean;
+}) {
+  const fetcher = useFetcher<typeof action>();
+  const pending = fetcher.state !== 'idle';
+  const optimisticPublished =
+    fetcher.formData?.get('intent') === 'publish'
+      ? fetcher.formData.get('published') === 'yes'
+      : client.published;
+  return (
+    <li className="paper admin-project-card" aria-busy={pending}>
+      <img
+        className="admin-list-thumb"
+        src={client.image.replace('/api/v1/client-images/', '/connect/images/')}
+        alt=""
+        loading="lazy"
+      />
+      <div className="admin-project-info">
+        <h3>{client.name}</h3>
+        <p>
+          <span className="admin-badge">
+            {optimisticPublished ? 'En ligne' : 'Masqué'}
+          </span>{' '}
+          · {1 + client.gallery.length} photo(s)
+        </p>
+        <Link className="text-link" to={`/connect/clients/${client.slug}`}>
+          Modifier {client.name} ↗
+        </Link>
+        {client.published && (
+          <p>
+            <Link to={`/#projet-${client.slug}`}>Voir sur la vitrine ↗</Link>
+          </p>
+        )}
+      </div>
+      <fetcher.Form method="post" className="admin-card-actions">
+        <input type="hidden" name="csrf" value={csrf} />
+        <input type="hidden" name="slug" value={client.slug} />
+        <input
+          type="hidden"
+          name="published"
+          value={client.published ? 'no' : 'yes'}
+        />
+        <button
+          className="filter-button"
+          name="intent"
+          value="publish"
+          disabled={pending}
+        >
+          {pending && fetcher.formData?.get('intent') === 'publish'
+            ? 'Mise à jour…'
+            : client.published
+              ? 'Masquer'
+              : 'Publier'}
+          <span className="admin-sr-only"> {client.name}</span>
+        </button>
+      </fetcher.Form>
+      <fetcher.Form method="post" className="admin-order-actions">
+        <input type="hidden" name="csrf" value={csrf} />
+        <input type="hidden" name="slug" value={client.slug} />
+        <input type="hidden" name="intent" value="move" />
+        <button
+          className="filter-button"
+          name="direction"
+          value="up"
+          aria-label={`Monter ${client.name}`}
+          disabled={first || pending}
+        >
+          ↑
+        </button>
+        <button
+          className="filter-button"
+          name="direction"
+          value="down"
+          aria-label={`Descendre ${client.name}`}
+          disabled={last || pending}
+        >
+          ↓
+        </button>
+      </fetcher.Form>
+      {fetcher.data?.error ? (
+        <p role="alert">{fetcher.data.error}</p>
+      ) : (
+        <p className="admin-card-status" role="status">
+          {pending ? 'Mise à jour…' : fetcher.data?.message}
+        </p>
+      )}
+    </li>
   );
 }

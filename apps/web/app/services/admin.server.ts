@@ -85,9 +85,9 @@ export async function login(email: string, password: string) {
 }
 
 export async function readAdminForm(request: Request) {
-  const limit = 6 * 1024 * 1024;
+  const limit = 21 * 1024 * 1024;
   if (Number(request.headers.get('Content-Length')) > limit)
-    throw new Response('Formulaire trop volumineux (6 Mo maximum).', {
+    throw new Response('Formulaire trop volumineux (21 Mo maximum).', {
       status: 413,
     });
   const reader = request.body?.getReader();
@@ -100,7 +100,7 @@ export async function readAdminForm(request: Request) {
     size += value.byteLength;
     if (size > limit) {
       await reader.cancel();
-      throw new Response('Formulaire trop volumineux (6 Mo maximum).', {
+      throw new Response('Formulaire trop volumineux (21 Mo maximum).', {
         status: 413,
       });
     }

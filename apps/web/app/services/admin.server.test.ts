@@ -65,7 +65,7 @@ it('refuse les formulaires sans jeton ou provenant d’une autre origine', async
 it('refuse les formulaires volumineux avant leur traitement', async () => {
   const request = new Request('http://localhost/connect', {
     method: 'POST',
-    headers: { 'Content-Length': String(7 * 1024 * 1024) },
+    headers: { 'Content-Length': String(22 * 1024 * 1024) },
   });
   await expect(readAdminForm(request)).rejects.toMatchObject({ status: 413 });
 });

@@ -100,117 +100,67 @@ test('la vitrine reste lisible sur mobile', async ({ page }) => {
   ).toBe(true);
 });
 
-test('le répertoire et les fiches fonctionnent sans JavaScript', async ({
-  browser,
+test('la vitrine est la seule page publique et le sitemap ne référence aucun ancien client', async ({
+  request,
 }) => {
+  for (const path of [
+    '/clients',
+    '/clients/maison-sauge',
+    '/clients/inconnu',
+  ]) {
+    expect((await request.get(path)).status()).toBe(404);
+  }
+  const sitemap = await (await request.get('/sitemap.xml')).text();
+  expect(sitemap).not.toContain('/clients');
+  expect(sitemap.match(/<loc>/g)).toHaveLength(1);
+});
+
+test('les projets sont intégrés à la vitrine sans page séparée et restent lisibles sur mobile', async ({
+  browser,
+}, testInfo) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    await page.goto('/clients');
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
-    await page.getByLabel('Nom, ville ou univers').fill('lyon');
-    await page.getByRole('button', { name: 'Rechercher' }).click();
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      1,
-    );
-    await page.getByRole('link', { name: 'Découvrir Maison Sauge' }).click();
-    await expect(page).toHaveURL(/clients\/maison-sauge$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Maison Sauge',
-    );
+    await page.goto('/');
+    const projects = page.locator('#projets-clients');
     await expect(
-      page.getByText('Une identité qui respire, simple et vivante.', {
-        exact: false,
-      }),
+      projects.getByRole('heading', { name: 'Les projets clients' }),
     ).toBeVisible();
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      'href',
-      'http://127.0.0.1:3190/clients/maison-sauge',
-    );
-    await page.getByRole('link', { name: 'Atelier Forme →' }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Atelier Forme',
-    );
-    await page.getByRole('link', { name: 'Retour au répertoire' }).click();
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
-  } finally {
-    await context.close();
-  }
-});
-
-test('les filtres se combinent et une recherche vide peut être réinitialisée', async ({
-  page,
-}) => {
-  await page.goto('/clients');
-  await page
-    .getByLabel('Univers', { exact: true })
-    .selectOption('Art de vivre');
-  await page.getByRole('button', { name: 'Rechercher' }).click();
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(2);
-  await page.getByLabel('Nom, ville ou univers').fill('café introuvable');
-  await page.getByRole('button', { name: 'Rechercher' }).click();
-  await expect(page.getByText('Aucune fiche pour le moment.')).toBeVisible();
-  await page
-    .getByRole('link', { name: 'Retrouver toutes les rencontres' })
-    .click();
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(6);
-  await page.goto('/clients?q=creation');
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(2);
-});
-
-test('toutes les fiches existent, les inconnues répondent 404', async ({
-  request,
-}) => {
-  for (const slug of [
-    'maison-sauge',
-    'atelier-forme',
-    'les-jours-heureux',
-    'studio-sillage',
-    'jardin-commun',
-    'la-pause',
-  ]) {
-    expect((await request.get(`/clients/${slug}`)).status()).toBe(200);
-  }
-  expect((await request.get('/clients/inconnu')).status()).toBe(404);
-});
-
-test('les fiches restent lisibles sur les petits écrans', async ({ page }) => {
-  for (const width of [320, 375, 768]) {
-    await page.setViewportSize({ width, height: 812 });
-    for (const path of ['/', '/clients', '/clients/les-jours-heureux']) {
-      await page.goto(path);
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(projects.locator('figure')).toHaveCount(6);
+    await expect(
+      projects.locator('figure').first().getByRole('heading'),
+    ).toHaveText('Maison Sauge');
+    await expect(page.locator('a[href^="/clients"]')).toHaveCount(0);
+    for (const width of [320, 375, 768, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const figures = projects.locator('figure');
+      const leftPhoto = (await figures.nth(0).locator('img').boundingBox())!;
+      const rightPhoto = (await figures.nth(1).locator('img').boundingBox())!;
+      const leftName = (await figures
+        .nth(0)
+        .locator('figcaption')
+        .boundingBox())!;
+      const rightName = (await figures
+        .nth(1)
+        .locator('figcaption')
+        .boundingBox())!;
+      expect(leftPhoto.x + leftPhoto.width).toBeLessThanOrEqual(width / 2);
+      expect(rightPhoto.x).toBeGreaterThanOrEqual(width / 2);
+      expect(leftName.x + leftName.width).toBeLessThan(leftPhoto.x);
+      expect(rightName.x).toBeGreaterThan(rightPhoto.x + rightPhoto.width);
+      expect(leftPhoto.width).toBeLessThan(width * 0.2);
       expect(
         await page.evaluate(
-          () => document.documentElement.scrollWidth <= window.innerWidth,
+          () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
     }
+    await projects.screenshot({
+      path: testInfo.outputPath('projets-clients.png'),
+    });
+  } finally {
+    await context.close();
   }
-});
-
-test('les liens et les contrôles sont accessibles au clavier', async ({
-  page,
-}) => {
-  await page.goto('/clients');
-  await page.keyboard.press('Tab');
-  await expect(
-    page.getByRole('link', { name: 'Aller au contenu' }),
-  ).toBeFocused();
-  await page.keyboard.press('Enter');
-  await page.getByLabel('Nom, ville ou univers').focus();
-  await page.keyboard.type('Maison');
-  await page.keyboard.press('Enter');
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(1);
-  await page.getByRole('link', { name: 'Découvrir Maison Sauge' }).focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Maison Sauge',
-  );
 });
 
 test('le menu et les sections de la maquette fonctionnent sans JavaScript', async ({
@@ -231,12 +181,10 @@ test('le menu et les sections de la maquette fonctionnent sans JavaScript', asyn
     await page.goto('/');
     await page.getByText('Menu', { exact: true }).first().click();
     await page
-      .getByRole('link', { name: 'Les rencontres', exact: true })
+      .getByRole('link', { name: 'Les projets clients', exact: true })
       .click();
-    await expect(page).toHaveURL(/\/clients$/);
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
+    await expect(page).toHaveURL(/#projets-clients$/);
+    await expect(page.locator('#projects-title')).toBeInViewport();
   } finally {
     await context.close();
   }
@@ -256,17 +204,19 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   await page.waitForFunction(() =>
     Array.from(document.images).every((image) => image.complete),
   );
-  const images = await page.locator('.vitrine img').evaluateAll((images) =>
-    images.map((node) => {
-      const image = node as HTMLImageElement;
-      const bounds = image.getBoundingClientRect();
-      return {
-        src: image.getAttribute('src')!,
-        loaded: image.naturalWidth > 0,
-        visible: bounds.width > 0 && bounds.height > 0,
-      };
-    }),
-  );
+  const images = await page
+    .locator('.vitrine img[src^="/images/vitrine/"]')
+    .evaluateAll((images) =>
+      images.map((node) => {
+        const image = node as HTMLImageElement;
+        const bounds = image.getBoundingClientRect();
+        return {
+          src: image.getAttribute('src')!,
+          loaded: image.naturalWidth > 0,
+          visible: bounds.width > 0 && bounds.height > 0,
+        };
+      }),
+    );
   expect(images.length).toBeGreaterThan(0);
   for (const image of images) {
     expect(image.src).toMatch(/^\/images\/vitrine\//);
@@ -418,5 +368,40 @@ test('un chargement lent permet de continuer ou de rejoindre la gestion', async 
     await expect(page.locator('main.vitrine')).toBeVisible();
   } finally {
     release();
+  }
+});
+
+test('l’ouverture conserve un cadre 16:9 et les photos utilisent les cadrages de la référence', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  await expect(page.locator('.vitrine-loading')).toBeHidden({ timeout: 15000 });
+  const opening = await page.locator('.vitrine-opening').boundingBox();
+  expect(opening!.width / opening!.height).toBeCloseTo(16 / 9, 2);
+  const photos = await page
+    .locator('.vitrine-project img')
+    .evaluateAll((images) =>
+      images.map((node) => {
+        const image = node as HTMLImageElement;
+        return {
+          loaded: image.naturalWidth > 0,
+          fitting: getComputedStyle(image).objectFit,
+          rendered: image.width / image.height,
+        };
+      }),
+    );
+  const referenceRatios = [
+    79 / 101,
+    41 / 61,
+    57 / 92,
+    105 / 158,
+    83 / 125,
+    81 / 147,
+  ];
+  for (const [index, photo] of photos.entries()) {
+    expect(photo.loaded).toBe(true);
+    expect(photo.fitting).toBe('cover');
+    expect(photo.rendered).toBeCloseTo(referenceRatios[index]!, 1);
   }
 });

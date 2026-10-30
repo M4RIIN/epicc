@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Le répertoire et les fiches chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement. Fournir `DATABASE_URL` avant le démarrage, comme décrit ci-dessous.
+Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Les projets clients de la vitrine chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement. Fournir `DATABASE_URL` avant le démarrage, comme décrit ci-dessous.
 
 Le serveur utilise PostgreSQL : créez une base dédiée avec votre hébergeur ou `createdb epicc`, puis fournissez `DATABASE_URL` dans l’environnement du processus (par exemple `postgresql://utilisateur:mot-de-passe@localhost:5432/epicc`). Les tables et les contenus initiaux sont créés au premier lancement. Aucun fichier `.env` n’est nécessaire. La connexion à la gestion exige un compte initial et un secret de session.
 
@@ -51,11 +51,10 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 ## Routes et contenu de démonstration
 
 - `/` : vitrine responsive en français, rendue côté serveur, avec titre, description, Open Graph et URL canonique.
-- `/clients` : répertoire public, recherche et filtre par univers, utilisables sans JavaScript.
-- `/clients/:slug` : fiche client sous forme de formulaire d’archives, avec navigation entre les fiches et retour au répertoire.
+- `/#projets-clients` : section des projets clients, alimentée par les projets publiés dans la gestion ; les anciennes routes `/clients` et `/clients/:slug` répondent 404.
 - `/connect` : connexion et liste des clients ; `/connect/clients/nouveau` et `/connect/clients/:slug` : création et modification. Ces routes sont exclues de l’indexation et du cache.
 - `/api/health` : état du serveur HTTP ; ce contrôle ne vérifie pas une base de données.
-- `/api/v1/pages/accueil` : contenu éditorial de démonstration, utilisé pour les métadonnées du répertoire.
+- `/api/v1/pages/accueil` : contenu éditorial de démonstration, conservé pour les consommateurs de l’API.
 - `/robots.txt` et `/sitemap.xml` : consignes d’exploration et liste des pages publiques.
 
 Le contenu est déterministe et assemblé dans `apps/api/src/composition-root.ts`. Le cas d’usage masque les brouillons et les pages absentes avec le même statut 404. Une panne de l’API produit une page d’erreur 503 ; les erreurs techniques ne sont pas exposées au visiteur.
@@ -116,11 +115,11 @@ La commande initialise les tables si nécessaire, crée le compte et affiche une
 
 La création de compte nécessite une connexion PostgreSQL durable : les bases temporaires utilisées par les tests ne constituent pas un compte utilisable sur l’hébergement réel.
 
-### Images des offres
+### Images des projets clients
 
-Depuis `/connect`, ouvrir « Modifier l’image » pour l’une des cinq offres. Téléverser un JPEG, PNG ou WebP de 5 Mo maximum, renseigner son texte alternatif, puis enregistrer. Une prévisualisation permet de retrouver le visuel ; il peut être remplacé ou retiré. Les modifications sont immédiatement visibles sur l’accueil, y compris sans JavaScript. Le visuel est recadré en 3:2 ; la largeur alterne entre 100 % et 58 % selon la position de l’offre, sur bureau comme sur mobile. Les images remplacées ou retirées sont supprimées de la base lorsqu’elles ne sont plus référencées. Les offres initiales conservent leurs libellés illustrés et n’ont pas de photographie ajoutée automatiquement.
+Depuis `/connect`, ouvrir « Modifier… » sur le projet concerné. Téléverser un JPEG, PNG ou WebP de 5 Mo maximum, renseigner son texte alternatif, puis enregistrer le projet. Les projets publiés apparaissent directement dans la section « Les projets clients » de la vitrine. Leur ordre d’affichage se règle dans la gestion. Une galerie permet d’ajouter jusqu’à trois photos complémentaires, avec description et suppression individuelles. Plusieurs photos peuvent être sélectionnées en une fois. Les aperçus apparaissent immédiatement ; les photos existantes se remplacent ou se retirent individuellement. Chaque photo accepte 5 Mo maximum et un enregistrement est limité à 21 Mo. Le formulaire demande uniquement le nom, la visibilité et les photos ; les anciennes données des fiches sont conservées. Le bouton d’enregistrement reste visible et confirme le résultat. Depuis la liste, « Publier » / « Masquer » change la visibilité sans ouvrir la fiche et les flèches règlent l’ordre des projets. Ces actions fonctionnent également sans JavaScript. Les anciennes images téléversées sont supprimées lorsqu’elles ne sont plus référencées. Les prestations ne proposent plus de gestion d’image.
 
-Les visiteurs lisent uniquement les fiches publiées. Le répertoire, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
+Les visiteurs voient uniquement les projets publiés dans la section « Les projets clients » de la vitrine, chargés à chaque requête côté serveur. Les brouillons restent absents de la vitrine et leurs images téléversées restent privées. L’administration et la vitrine fonctionnent également sans JavaScript.
 
 Les tests d’intégration et navigateur exigent `TEST_DATABASE_URL` (URL du serveur PostgreSQL de test) et `TEST_DB_PREFIX` (préfixe réservé, par exemple `test_local_`). Ils créent des bases temporaires isolées portant ce préfixe et les suppriment après exécution. Le compte utilisé est `test@questboard.test` / `testtest`, puis les bases sont nettoyées. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
 
@@ -132,17 +131,17 @@ Les tests d’intégration et navigateur exigent `TEST_DATABASE_URL` (URL du ser
 
 Le verrouillage transitoire d’`undici` dans `package.json` impose la version corrigée 7.29.1 à Nx 24, qui dépend de 7.29.0. Le retirer quand Nx embarquera une version corrigée.
 
-## Direction visuelle et répertoire clients
+## Direction visuelle et projets clients
 
-L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé et manifeste. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
+L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé et manifeste. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. L’ouverture sur ordinateur conserve un cadre 16:9 (1920 × 1080), sans étirer les images. Les photos des projets utilisent les cadrages de la référence, sans étirement et sans modifier les fichiers d’origine. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
 
-Le répertoire sur `/clients` conserve le carnet de rencontres : papier grainé, encre bleue et notes manuscrites. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
+La vitrine est l’unique page publique. Sa section « Les projets clients » charge les clients publiés via l’API, dans l’ordre défini en gestion. Chaque projet présente ses photos dans une bande centrale, accompagnées de son nom manuscrit à gauche ou à droite. Les dimensions et les espacements suivent les groupes de la capture de référence. Les deux colonnes progressent indépendamment : une galerie plus longue à gauche ne décale pas le projet suivant à droite. Les noms sont placés à la hauteur de chaque groupe, avec une police manuscrite locale. Les changements d’image, de contenu, d’ordre et de publication sont visibles au prochain chargement de la vitrine, sans JavaScript nécessaire. La gestion permet de rejoindre directement un projet via son ancre `/#projet-<slug>`. Le sitemap ne référence que `/`.
 
 Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
 
 Le lien « Connexion ↗ » est visible directement en haut de l’accueil et mène à `/connect`. Pour activer la connexion sur l’hébergement, fournir `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` lors du premier démarrage, comme décrit plus haut. Aucun compte de démonstration n’est activé en production.
 
-L’accueil présente un écran de chargement EPICC avec une progression réelle pendant le téléchargement et le décodage de ses images, y compris les illustrations SVG et les visuels des offres. Toutes les images de la page sont chargées avant de révéler le contenu. Après douze secondes, un bouton permet d’entrer sans attendre ; le lien vers la gestion reste accessible pendant le chargement. Une image en erreur ne bloque pas l’ouverture. Sans JavaScript, le contenu reste directement lisible ; si le JavaScript de l’application ne démarre pas, le masque se retire au bout de quinze secondes.
+L’accueil présente un écran de chargement EPICC avec une progression réelle pendant le téléchargement et le décodage de ses images, y compris les illustrations SVG et les images des projets clients. Toutes les images de la page sont chargées avant de révéler le contenu. Après douze secondes, un bouton permet d’entrer sans attendre ; le lien vers la gestion reste accessible pendant le chargement. Une image en erreur ne bloque pas l’ouverture. Sans JavaScript, le contenu reste directement lisible ; si le JavaScript de l’application ne démarre pas, le masque se retire au bout de quinze secondes.
 
 Les photographies et illustrations sont servies dans leur format et leur résolution d’origine, sans recompression ni rasterisation des SVG. Les nouvelles images téléversées dans la gestion (clients et offres) sont validées, puis enregistrées et servies avec leurs octets d’origine. La limite d’envoi reste 5 Mo et 40 millions de pixels. Si un fichier avait déjà été compressé par une version précédente, téléverser à nouveau son original : les détails perdus ne peuvent pas être reconstitués depuis le fichier compressé. Les images privées conservent leur protection.
 
@@ -150,6 +149,6 @@ Les ressources sont servies localement, sans appel à une police ou à une image
 
 - Visuels originaux de la maquette dans `apps/web/public/images/vitrine`, servis localement sans URL temporaire Figma.
 - Roboto Mono normale et italique (graisse 700), auto-hébergée ; licence SIL conservée dans `apps/web/public/fonts/OFL-RobotoMono.txt`.
-- Photographies d’illustration du répertoire provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
+- Photographies d’illustration des projets clients provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
 - Police manuscrite Caveat, distribuée sous SIL Open Font License ; licence conservée dans `apps/web/public/fonts/OFL-Caveat.txt`.
 - Grain SVG procédural et rubans adhésifs CSS créés pour cette interface. Les pièces jointes d’inspiration ne sont pas publiées dans le site.
