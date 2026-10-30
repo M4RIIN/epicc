@@ -128,11 +128,11 @@ export default function Connect({
           <h2>Projets clients</h2>
           <p>
             Modifiez les images depuis chaque projet client. Elles apparaissent
-            dans le répertoire et sur la fiche publique du projet.
+            dans la section « Les projets clients » de la vitrine.
           </p>
           <p>
             Les fiches publiées apparaissent sur la vitrine. L’ordre croissant
-            détermine leur place dans le répertoire.
+            détermine leur place dans la section « Les projets clients ».
           </p>
           {clients.length === 0 && (
             <p>Aucun client. Ajoutez votre première fiche.</p>
@@ -164,8 +164,8 @@ export default function Connect({
                   </Link>
                   {client.published && (
                     <p>
-                      <Link to={`/clients/${client.slug}`}>
-                        Voir la fiche publique
+                      <Link to={`/#projet-${client.slug}`}>
+                        Voir le projet sur la vitrine
                       </Link>
                     </p>
                   )}

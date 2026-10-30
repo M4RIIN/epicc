@@ -610,3 +610,51 @@ html[data-home-loading] .vitrine-loading {
 .vitrine-loading-slow {
   margin-bottom: 20px;
 }
+
+.vitrine-projects {
+  margin: 8.854167cqw 7.65625% 0;
+  padding-bottom: 8.854167cqw;
+  scroll-margin-top: 32px;
+}
+.vitrine-projects > h2 {
+  text-align: center;
+}
+.vitrine-projects-list {
+  display: grid;
+  gap: 4.375cqw;
+  margin-top: 4.375cqw;
+}
+.vitrine-project {
+  width: 100%;
+  margin: 0;
+  scroll-margin-top: 32px;
+}
+.vitrine-project:nth-child(even) {
+  width: 58%;
+  justify-self: end;
+}
+.vitrine-project > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+.vitrine-project figcaption {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+}
+.vitrine-project h3 {
+  margin: 0;
+  font: inherit;
+}
+@media (max-width: 540px) {
+  .vitrine-projects {
+    margin-top: 60px;
+  }
+  .vitrine-projects-list {
+    gap: 32px;
+    margin-top: 32px;
+  }
+}

@@ -88,13 +88,12 @@ for (const javaScriptEnabled of [false, true]) {
         });
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
-      await expect(page).toHaveURL(/\/connect$/);
       expect((await request.get('/clients/client-test')).status()).toBe(404);
       expect(await (await request.get('/sitemap.xml')).text()).not.toContain(
         '/clients/client-test',
       );
-      expect(await (await request.get('/clients')).text()).not.toContain(
-        'Découvrir Client de test',
+      expect(await (await request.get('/')).text()).not.toContain(
+        'id="projet-client-test"',
       );
       await page.getByRole('link', { name: 'Modifier Client de test' }).click();
       const preview = page.locator('.admin-preview');
@@ -108,26 +107,21 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByLabel('Publier sur la vitrine').check();
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
-      const published = await request.get('/clients/client-test');
-      expect(published.status()).toBe(200);
-      const html = await published.text();
-      expect(html).toContain('Description publique du client de test.');
-      expect(html).toContain(
-        'name="description" content="Description publique du client de test."',
+      await page.goto('/#projet-client-test');
+      const project = page.locator('#projet-client-test');
+      await expect(project.getByRole('heading')).toHaveText('Client de test');
+      await expect(project.locator('img')).toHaveAttribute('src', publicImage);
+      await expect(project.locator('img')).toHaveAttribute(
+        'alt',
+        'Image de test déterministe',
       );
-      expect(html).toContain(
-        'rel="canonical" href="http://127.0.0.1:3190/clients/client-test"',
-      );
-      expect(html).toContain('alt="Image de test déterministe"');
       expect((await request.get(publicImage)).headers()['content-type']).toBe(
         'image/png',
       );
-      expect(await (await request.get('/sitemap.xml')).text()).toContain(
-        '/clients/client-test',
-      );
-      await page.goto('/clients?secteur=Univers+de+test');
-      await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-        1,
+      expect((await request.get('/clients/client-test')).status()).toBe(404);
+      await expect(page.locator('.vitrine-project').first()).toHaveAttribute(
+        'id',
+        'projet-client-test',
       );
       await page.goto('/connect');
       await page
@@ -147,19 +141,18 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
       expect((await request.get(publicImage)).status()).toBe(404);
-      await page.goto('/clients?secteur=Univers+de+test');
+      await page.goto('/');
       const replacementImage = await page
-        .locator('.client-card img')
+        .locator('#projet-client-test img')
         .getAttribute('src');
       expect(replacementImage).not.toBe(publicImage);
       expect(replacementImage).toMatch(/^\/api\/v1\/client-images\//);
       expect(
         (await request.get(replacementImage!)).headers()['content-type'],
       ).toBe('image/png');
-      await page.goto('/clients/client-test');
-      await expect(page.locator('.file-photo img')).toHaveAttribute(
-        'src',
-        replacementImage!,
+      await expect(page.locator('#projet-client-test img')).toHaveAttribute(
+        'alt',
+        'Image de test déterministe',
       );
       await page.goto('/');
       await expect(page.locator('#prestations img[src^="/api/"]')).toHaveCount(
@@ -171,11 +164,23 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByLabel('Ordre d’affichage').fill('999');
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
-      await page.goto('/clients');
+      await page
+        .getByRole('link', { name: 'Voir le projet sur la vitrine' })
+        .last()
+        .click();
+      await expect(page).toHaveURL(/#projet-client-test$/);
       await expect(
-        page.getByRole('link', { name: /^Découvrir / }).last(),
-      ).toHaveAccessibleName('Découvrir Client corrigé');
+        page.locator('.vitrine-project').last().getByRole('heading'),
+      ).toHaveText('Client corrigé');
       await page.goto('/connect');
+      await page.getByRole('link', { name: 'Modifier Client corrigé' }).click();
+      await page.getByLabel('Publier sur la vitrine').uncheck();
+      await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
+      await expect(page).toHaveURL(/\/connect$/);
+      expect(await (await request.get('/')).text()).not.toContain(
+        'id="projet-client-test"',
+      );
+      expect((await request.get(replacementImage!)).status()).toBe(404);
       await page.getByRole('link', { name: 'Modifier Client corrigé' }).click();
       await page
         .getByLabel('Je confirme la suppression de Client corrigé')
@@ -184,7 +189,9 @@ for (const javaScriptEnabled of [false, true]) {
         .getByRole('button', { name: 'Supprimer définitivement' })
         .click();
       await expect(page).toHaveURL(/\/connect$/);
-      expect((await request.get('/clients/client-test')).status()).toBe(404);
+      expect(await (await request.get('/')).text()).not.toContain(
+        'id="projet-client-test"',
+      );
       expect((await request.get(replacementImage!)).status()).toBe(404);
       expect(await (await request.get('/sitemap.xml')).text()).not.toContain(
         '/clients/client-test',

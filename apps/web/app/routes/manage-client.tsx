@@ -151,8 +151,8 @@ export default function ManageClient({
           />
         </label>
         <p>
-          L’adresse reste stable après création pour préserver les liens et le
-          référencement.
+          Cet identifiant reste stable après création et permet de retrouver le
+          projet dans la vitrine.
         </p>
         {fields.map(([name, label, max]) => (
           <label key={name}>
