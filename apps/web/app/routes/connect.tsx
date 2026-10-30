@@ -44,7 +44,10 @@ export async function action({ request }: Route.ActionArgs) {
       headers: { 'Set-Cookie': await logoutAdmin(session) },
     });
   }
-  const error = login(String(form.get('email')), String(form.get('password')));
+  const error = await login(
+    String(form.get('email')),
+    String(form.get('password')),
+  );
   if (error)
     return data(
       { error, email: String(form.get('email') ?? '') },

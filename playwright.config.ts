@@ -1,16 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
-import { randomUUID } from 'node:crypto';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { testDatabaseName, testDatabaseUrl } from './e2e/database';
 
-const database = (process.env.EPICC_E2E_DATABASE ??= join(
-  tmpdir(),
-  `epicc-e2e-${randomUUID()}.sqlite`,
-));
+const database = (process.env.EPICC_E2E_DATABASE ??= testDatabaseName('e2e'));
 
 export default defineConfig({
   testDir: './e2e',
-  globalTeardown: './e2e/teardown.ts',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
@@ -29,13 +23,15 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run build && npm run start',
+    command: 'npm run build && node --import tsx e2e/server.ts',
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10000 },
     url: 'http://127.0.0.1:3190/api/health',
     reuseExistingServer: false,
     timeout: 120_000,
     env: {
+      NODE_ENV: 'production',
       PORT: '3190',
-      CLIENTS_DB_PATH: database,
+      DATABASE_URL: testDatabaseUrl(database),
       ADMIN_EMAIL: 'test@questboard.test',
       ADMIN_PASSWORD: 'testtest',
       SESSION_SECRET: 'secret-de-test-deterministe-avec-plus-de-32-caracteres',

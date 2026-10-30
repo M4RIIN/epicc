@@ -1,113 +1,79 @@
-import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import type { PoolClient } from 'pg';
 import { clientSchema } from '@epicc/content-contracts';
 import type { Client } from '@epicc/content-contracts';
-import { initialClients } from './clients.seed';
+import { Database } from './database';
 
-// Une connexion par processus ; SQLite sérialise les écritures et leur transaction.
+export type UploadedImage = { mime: string; content: Uint8Array };
 export class ClientStore {
-  private readonly db: DatabaseSync;
-
-  constructor(path = process.env.CLIENTS_DB_PATH ?? 'data/clients.sqlite') {
-    if (path !== ':memory:')
-      mkdirSync(dirname(resolve(path)), { recursive: true });
-    this.db = new DatabaseSync(path);
-    this.db.exec(`PRAGMA busy_timeout = 5000;
-      PRAGMA journal_mode = WAL;
-      CREATE TABLE IF NOT EXISTS clients (slug TEXT PRIMARY KEY, content TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS images (id TEXT PRIMARY KEY, mime TEXT NOT NULL, content BLOB NOT NULL);
-      CREATE TABLE IF NOT EXISTS migrations (id TEXT PRIMARY KEY);`);
-    this.db.exec('BEGIN IMMEDIATE');
-    try {
-      if (
-        !this.db
-          .prepare("SELECT id FROM migrations WHERE id = 'seed-clients'")
-          .get()
-      ) {
-        for (const [position, client] of initialClients.entries()) {
-          this.save({ ...client, published: true, position });
-        }
-        this.db
-          .prepare('INSERT INTO migrations VALUES (?)')
-          .run('seed-clients');
-      }
-      this.db.exec('COMMIT');
-    } catch (error) {
-      this.db.exec('ROLLBACK');
-      throw error;
-    }
-  }
-
-  list(includeDrafts = false): Client[] {
-    return this.db
-      .prepare('SELECT content FROM clients')
-      .all()
-      .map((row) => clientSchema.parse(JSON.parse(row.content as string)))
+  constructor(readonly database: Database) {}
+  async list(includeDrafts = false): Promise<Client[]> {
+    const result = await this.database.pool.query(
+      'SELECT content FROM clients',
+    );
+    return result.rows
+      .map((row) => clientSchema.parse(row.content))
       .filter((client) => includeDrafts || client.published)
       .sort((a, b) => a.position - b.position || a.slug.localeCompare(b.slug));
   }
-
-  save(client: Client) {
-    this.db
-      .prepare(
-        'INSERT INTO clients VALUES (?, ?) ON CONFLICT(slug) DO UPDATE SET content = excluded.content',
-      )
-      .run(client.slug, JSON.stringify(clientSchema.parse(client)));
-  }
-
-  write(client: Client, image?: { mime: string; content: Uint8Array }) {
-    this.db.exec('BEGIN IMMEDIATE');
-    try {
+  async write(client: Client, image?: UploadedImage, creating = false) {
+    await this.database.transaction(async (connection) => {
       if (image) {
         const id = randomUUID();
-        this.db
-          .prepare('INSERT INTO images VALUES (?, ?, ?)')
-          .run(id, image.mime, image.content);
+        await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
+          id,
+          image.mime,
+          Buffer.from(image.content),
+        ]);
         client = { ...client, image: `/api/v1/client-images/${id}` };
       }
-      this.save(client);
-      this.removeUnusedImages();
-      this.db.exec('COMMIT');
-    } catch (error) {
-      this.db.exec('ROLLBACK');
-      throw error;
-    }
+      const content = clientSchema.parse(client);
+      if (creating) {
+        await connection.query('INSERT INTO clients VALUES ($1, $2)', [
+          client.slug,
+          content,
+        ]);
+      } else {
+        await connection.query(
+          'UPDATE clients SET content = $2 WHERE slug = $1',
+          [client.slug, content],
+        );
+      }
+      await connection.query(
+        "INSERT INTO migrations VALUES ('postgres-edited') ON CONFLICT DO NOTHING",
+      );
+      await removeUnusedImages(connection);
+    });
   }
-
-  delete(slug: string) {
-    this.db.exec('BEGIN IMMEDIATE');
-    try {
-      this.db.prepare('DELETE FROM clients WHERE slug = ?').run(slug);
-      this.removeUnusedImages();
-      this.db.exec('COMMIT');
-    } catch (error) {
-      this.db.exec('ROLLBACK');
-      throw error;
-    }
+  async delete(slug: string) {
+    await this.database.transaction(async (connection) => {
+      await connection.query('DELETE FROM clients WHERE slug = $1', [slug]);
+      await connection.query(
+        "INSERT INTO migrations VALUES ('postgres-edited') ON CONFLICT DO NOTHING",
+      );
+      await removeUnusedImages(connection);
+    });
   }
-
-  private removeUnusedImages() {
-    this.db.exec(`DELETE FROM images WHERE NOT EXISTS (
-      SELECT 1 FROM clients WHERE json_extract(content, '$.image') = '/api/v1/client-images/' || images.id
-    )`);
+  async image(id: string, admin = false) {
+    if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))
+      return undefined;
+    const result = await this.database.pool.query<{
+      mime: string;
+      content: Buffer;
+    }>(
+      `SELECT mime, content FROM images WHERE id = $1 AND ($2 OR EXISTS (
+        SELECT 1 FROM clients WHERE (content->>'published')::boolean
+        AND content->>'image' = '/api/v1/client-images/' || images.id
+      ))`,
+      [id, admin],
+    );
+    return result.rows[0];
   }
-
-  image(id: string, admin = false) {
-    // Les images de brouillons ne sont jamais accessibles publiquement.
-    return this.db
-      .prepare(
-        `SELECT images.mime, images.content FROM images WHERE id = ? AND (? = 1 OR EXISTS (
-      SELECT 1 FROM clients WHERE json_extract(content, '$.published') = 1
-      AND json_extract(content, '$.image') = '/api/v1/client-images/' || images.id
-    ))`,
-      )
-      .get(id, admin ? 1 : 0) as
-      { mime: string; content: Uint8Array } | undefined;
-  }
-
-  close() {
-    this.db.close();
-  }
+}
+export async function removeUnusedImages(connection: PoolClient) {
+  await connection.query(`DELETE FROM images WHERE NOT EXISTS (
+    SELECT 1 FROM clients WHERE content->>'image' = '/api/v1/client-images/' || images.id
+  ) AND NOT EXISTS (
+    SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
+  )`);
 }

@@ -39,3 +39,21 @@ export const clientSchema = z.object({
   position: z.number().int().min(0).max(99999),
 });
 export type Client = z.infer<typeof clientSchema>;
+
+export const offerSchema = z
+  .object({
+    slug: text.max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    name: text.max(150),
+    description: text.max(3000),
+    image: z
+      .string()
+      .regex(/^\/api\/v1\/offer-images\/[a-f0-9-]+$/)
+      .nullable(),
+    alt: z.string().trim().max(300),
+    position: z.number().int().min(0).max(99999),
+  })
+  .refine((offer) => !offer.image || offer.alt.length > 0, {
+    message: 'Décrivez l’image pour les lecteurs d’écran.',
+    path: ['alt'],
+  });
+export type Offer = z.infer<typeof offerSchema>;

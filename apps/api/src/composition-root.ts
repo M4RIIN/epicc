@@ -3,8 +3,11 @@ import { InMemoryPageRepository } from '@epicc/content-infrastructure';
 import { createApi } from './app';
 import { ClientStore } from './clients.store';
 import { createClientsApi } from './clients.api';
+import { Database } from './database';
+import { createOffersApi } from './offers.api';
+import { createAuthApi } from './auth.api';
 
-export function composeApi() {
+export function composeApi(database: Database) {
   const pages = new InMemoryPageRepository([
     new Page({
       slug: 'accueil',
@@ -15,5 +18,8 @@ export function composeApi() {
       published: true,
     }),
   ]);
-  return createApi(pages).route('/', createClientsApi(new ClientStore()));
+  return createApi(pages)
+    .route('/', createClientsApi(new ClientStore(database)))
+    .route('/', createOffersApi(database))
+    .route('/', createAuthApi(database));
 }

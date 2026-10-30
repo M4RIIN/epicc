@@ -1,45 +1,57 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
 import { ClientStore } from './clients.store';
 import { createClientsApi } from './clients.api';
+import { Database } from './database';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
+import {
+  manageTestDatabase,
+  testDatabaseName,
+  testDatabaseUrl,
+} from '../../../e2e/database';
 
 const secret = 'un-secret-de-test-de-plus-de-trente-deux-caracteres';
 const authorization = `Bearer ${createHash('sha256').update(`clients-api:${secret}`).digest('hex')}`;
-afterEach(() => vi.unstubAllEnvs());
+let database: Database;
+let name: string;
+beforeEach(async () => {
+  name = testDatabaseName('clients');
+  await manageTestDatabase(name, true);
+  database = new Database(testDatabaseUrl(name));
+  await database.migrate();
+});
+afterEach(async () => {
+  vi.unstubAllEnvs();
+  await database?.close();
+  if (name) await manageTestDatabase(name, false);
+});
 
 describe('gestion persistante des clients', () => {
-  it('conserve les modifications et une liste vide après réouverture', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'epicc-clients-'));
-    const path = join(dir, 'clients.sqlite');
-    let store = new ClientStore(path);
-    try {
-      const client = store.list(true)[0]!;
-      store.write({
-        ...client,
-        name: 'Client modifié',
-        position: 999,
-        published: false,
-      });
-      store.close();
-      store = new ClientStore(path);
-      expect(store.list().some((c) => c.slug === client.slug)).toBe(false);
-      expect(store.list(true).at(-1)?.name).toBe('Client modifié');
-      for (const item of store.list(true)) store.delete(item.slug);
-      store.close();
-      store = new ClientStore(path);
-      expect(store.list(true)).toEqual([]);
-    } finally {
-      store.close();
-      rmSync(dir, { recursive: true });
-    }
+  it('conserve les modifications et une liste vide après réouverture', async () => {
+    let store = new ClientStore(database);
+    const client = (await store.list(true))[0]!;
+    await store.write({
+      ...client,
+      name: 'Client modifié',
+      position: 999,
+      published: false,
+    });
+    await database.close();
+    database = new Database(testDatabaseUrl(name));
+    await database.migrate();
+    store = new ClientStore(database);
+    expect((await store.list()).some((c) => c.slug === client.slug)).toBe(
+      false,
+    );
+    expect((await store.list(true)).at(-1)?.name).toBe('Client modifié');
+    for (const item of await store.list(true)) await store.delete(item.slug);
+    await database.migrate();
+    expect(await store.list(true)).toEqual([]);
   });
 
   it('protège les lectures et écritures privées et refuse une configuration absente', async () => {
-    const store = new ClientStore(':memory:');
-    try {
+    const store = new ClientStore(database);
+    {
       const api = createClientsApi(store);
       expect((await api.request('/v1/admin/clients')).status).toBe(401);
       expect(
@@ -55,23 +67,21 @@ describe('gestion persistante des clients', () => {
         (await api.request('/v1/admin/clients', { headers: { authorization } }))
           .status,
       ).toBe(200);
-      vi.stubEnv('ADMIN_PASSWORD', '');
+      vi.stubEnv('SESSION_SECRET', '');
       expect(
         (await api.request('/v1/admin/clients', { headers: { authorization } }))
           .status,
       ).toBe(401);
-    } finally {
-      store.close();
     }
   });
 
   it('valide les fiches, refuse les doublons et masque les images des brouillons', async () => {
     vi.stubEnv('SESSION_SECRET', secret);
     vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-    const store = new ClientStore(':memory:');
-    try {
+    const store = new ClientStore(database);
+    {
       const api = createClientsApi(store);
-      const original = store.list(true)[0]!;
+      const original = (await store.list(true))[0]!;
       const post = (client: unknown, intent = 'update', file?: File) => {
         const form = new FormData();
         form.set('client', JSON.stringify(client));
@@ -107,7 +117,9 @@ describe('gestion persistante des clients', () => {
           )
         ).status,
       ).toBe(200);
-      const draft = store.list(true).find((c) => c.slug === original.slug)!;
+      const draft = (await store.list(true)).find(
+        (c) => c.slug === original.slug,
+      )!;
       expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
         404,
       );
@@ -123,12 +135,10 @@ describe('gestion persistante des clients', () => {
       const image = await api.request(draft.image.replace('/api', ''));
       expect(image.headers.get('content-type')).toBe('image/png');
       expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
-      store.delete(original.slug);
+      await store.delete(original.slug);
       expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
         404,
       );
-    } finally {
-      store.close();
     }
   });
 });
