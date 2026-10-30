@@ -370,3 +370,26 @@ test('un chargement lent permet de continuer ou de rejoindre la gestion', async 
     release();
   }
 });
+
+test('l’ouverture conserve un cadre 16:9 sur ordinateur et les photos des projets gardent leurs proportions', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto('/');
+  await expect(page.locator('.vitrine-loading')).toBeHidden({ timeout: 15000 });
+  const opening = await page.locator('.vitrine-opening').boundingBox();
+  expect(opening!.width / opening!.height).toBeCloseTo(16 / 9, 2);
+  const photos = await page
+    .locator('.vitrine-project img')
+    .evaluateAll((images) =>
+      images.map((node) => {
+        const image = node as HTMLImageElement;
+        return {
+          natural: image.naturalWidth / image.naturalHeight,
+          rendered: image.width / image.height,
+        };
+      }),
+    );
+  for (const photo of photos)
+    expect(photo.rendered).toBeCloseTo(photo.natural, 1);
+});

@@ -60,7 +60,7 @@ body:has(.vitrine) {
 }
 .vitrine-opening {
   position: relative;
-  aspect-ratio: 1920 / 1395;
+  aspect-ratio: 16 / 9;
   overflow: clip;
 }
 .vitrine-cover {
@@ -73,14 +73,15 @@ body:has(.vitrine) {
 }
 .vitrine-cover > img {
   width: 100%;
-  height: 111.15%;
-  object-fit: fill;
+  height: 100%;
+  object-fit: cover;
 }
 .vitrine-opening-art {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1920 / 1395;
 }
 .vitrine-navigation {
   position: absolute;
@@ -658,11 +659,9 @@ html[data-home-loading] .vitrine-loading {
 }
 .vitrine-project-photo-large {
   width: 100%;
-  aspect-ratio: 4 / 5;
 }
 .vitrine-project-photo-small {
   width: 58%;
-  aspect-ratio: 3 / 4;
 }
 .vitrine-project:nth-child(4n + 1) .vitrine-project-photo-large {
   width: 82%;
