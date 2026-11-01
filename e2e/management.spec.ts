@@ -230,7 +230,7 @@ test('les deux colonnes suivent les placements de la capture sans aligner leurs 
   const originals = (await (
     await request.get('/api/v1/admin/clients', { headers })
   ).json()) as Client[];
-  const counts = [4, 2, 2, 2, 1, 2];
+  const counts = [4, 2, 1, 2, 1, 2];
   try {
     for (const [index, original] of originals.entries()) {
       let current = original;
@@ -265,7 +265,9 @@ test('les deux colonnes suivent les placements de la capture sans aligner leurs 
         (node) => node.querySelector('img')!.getBoundingClientRect().top,
       ),
     );
-    const reference = [23, 0, 452, 223, 720, 488];
+    const reference = [67, 0, 1558, 629, 2033, 1374].map(
+      (value) => (value * 680) / 1920,
+    );
     for (const [index, top] of tops.entries())
       expect(top - tops[1]!).toBeCloseTo(reference[index]!, 0);
     const photos = await page
@@ -277,20 +279,19 @@ test('les deux colonnes suivent les placements de la capture sans aligner leurs 
         }),
       );
     const expected = [
-      [79, 101],
-      [43, 67],
-      [62, 95],
-      [87, 130],
-      [41, 61],
-      [81, 143],
-      [57, 92],
-      [101, 153],
-      [105, 158],
-      [49, 86],
-      [83, 125],
-      [81, 147],
-      [101, 103],
-    ];
+      [222, 283],
+      [120, 189],
+      [177, 266],
+      [247, 371],
+      [116, 173],
+      [230, 405],
+      [288, 432],
+      [297, 446],
+      [137, 244],
+      [235, 352],
+      [228, 418],
+      [285, 290],
+    ].map((frame) => frame.map((value) => (value * 680) / 1920));
     for (const [index, image] of photos.entries()) {
       expect(image.width).toBeCloseTo(expected[index]![0]!, 0);
       expect(image.height).toBeCloseTo(expected[index]![1]!, 0);
@@ -315,4 +316,43 @@ test('les deux colonnes suivent les placements de la capture sans aligner leurs 
       expect(response.status()).toBe(200);
     }
   }
+});
+
+test('un projet peut afficher uniquement son nom et conserver un nom modifié', async ({
+  page,
+}) => {
+  await page.goto('/connect');
+  await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
+  await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
+  await page.getByRole('button', { name: 'Se connecter' }).click();
+  await page.getByRole('link', { name: 'Ajouter un projet' }).click();
+  await page
+    .getByLabel('Nom du projet', { exact: true })
+    .fill('Projet typographique de test');
+  await page.getByLabel('Afficher sur la vitrine', { exact: true }).check();
+  await page.getByRole('button', { name: 'Enregistrer le projet' }).click();
+  await expect(page.getByRole('status')).toHaveText('Projet enregistré.');
+  await page.goto('/#projet-projet-typographique-de-test');
+  const project = page.locator('#projet-projet-typographique-de-test');
+  await expect(project.getByRole('heading')).toHaveText(
+    'Projet typographique de test',
+  );
+  await expect(project.locator('img')).toHaveCount(0);
+  await page.goto('/connect/clients/projet-typographique-de-test');
+  await page
+    .getByLabel('Nom du projet', { exact: true })
+    .fill('Projet typographique corrigé');
+  await page.getByRole('button', { name: 'Enregistrer le projet' }).click();
+  await expect(page.getByRole('status')).toHaveText('Projet enregistré.');
+  await page.goto('/#projet-projet-typographique-de-test');
+  await expect(project.getByRole('heading')).toHaveText(
+    'Projet typographique corrigé',
+  );
+  await page.goto('/connect/clients/projet-typographique-de-test');
+  await page.getByText('Supprimer ce projet', { exact: true }).click();
+  await page
+    .getByLabel('Je confirme la suppression de Projet typographique corrigé')
+    .check();
+  await page.getByRole('button', { name: 'Supprimer définitivement' }).click();
+  await expect(page).toHaveURL(/\/connect$/);
 });

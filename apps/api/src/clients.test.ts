@@ -120,23 +120,23 @@ describe('gestion persistante des clients', () => {
       const draft = (await store.list(true)).find(
         (c) => c.slug === original.slug,
       )!;
-      expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
+      expect((await api.request(draft.image!.replace('/api', ''))).status).toBe(
         404,
       );
       expect(
         (
           await api.request(
-            draft.image.replace('/api/v1/client-images', '/v1/admin/images'),
+            draft.image!.replace('/api/v1/client-images', '/v1/admin/images'),
             { headers: { authorization } },
           )
         ).status,
       ).toBe(200);
       expect((await post({ ...draft, published: true })).status).toBe(200);
-      const image = await api.request(draft.image.replace('/api', ''));
+      const image = await api.request(draft.image!.replace('/api', ''));
       expect(image.headers.get('content-type')).toBe('image/png');
       expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
       await store.delete(original.slug);
-      expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
+      expect((await api.request(draft.image!.replace('/api', ''))).status).toBe(
         404,
       );
     }
@@ -243,4 +243,39 @@ it('réordonne tous les projets dans une transaction et refuse une liste incompl
   expect((await store.list(true)).map((client) => client.position)).toEqual([
     0, 1, 2, 3, 4, 5,
   ]);
+});
+
+it('installe une référence sur les exemples intacts sans écraser les projets modifiés ou supprimés', async () => {
+  const store = new ClientStore(database);
+  const original = (await store.list(true))[0]!;
+  const reference = {
+    ...original,
+    slug: 'reference-de-test',
+    name: 'Référence de test',
+    image: null,
+    gallery: [],
+    nameArtwork: null,
+  };
+  await database.installReferenceProjects([reference]);
+  expect(await store.list(true)).toEqual([reference]);
+  await database.installReferenceProjects([
+    { ...reference, name: 'Autre référence' },
+  ]);
+  expect(await store.list(true)).toEqual([reference]);
+});
+
+it('préserve les contenus personnalisés lors de l’installation des références', async () => {
+  const store = new ClientStore(database);
+  const original = (await store.list(true))[0]!;
+  await store.write({ ...original, name: 'Projet personnalisé de test' });
+  const before = await store.list(true);
+  await database.installReferenceProjects([]);
+  expect(await store.list(true)).toEqual(before);
+});
+
+it('préserve une liste volontairement vidée lors de l’installation des références', async () => {
+  const store = new ClientStore(database);
+  for (const client of await store.list(true)) await store.delete(client.slug);
+  await database.installReferenceProjects([]);
+  expect(await store.list(true)).toEqual([]);
 });

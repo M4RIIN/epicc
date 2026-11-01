@@ -25,7 +25,8 @@ const defaultClient: Client = {
   sector: 'Projet client',
   place: 'Non renseigné',
   year: '2026',
-  image: '/images/botanique.jpg',
+  image: null,
+  nameArtwork: null,
   gallery: [],
   alt: '',
   tagline: 'Projet client',
@@ -88,11 +89,6 @@ export async function action({ request, params }: Route.ActionArgs) {
   if (!current) throw new Response('Projet introuvable.', { status: 404 });
   const name = String(form.get('name') ?? '').trim();
   const image = form.get('imageFile');
-  if (creating && !(image instanceof File && image.size))
-    return data(
-      { error: 'Ajoutez une photo principale au projet.', values: submitted },
-      { status: 400 },
-    );
   let slug = current.slug;
   if (creating) {
     const base =
@@ -128,6 +124,7 @@ export async function action({ request, params }: Route.ActionArgs) {
   });
   const result = clientSchema.safeParse({
     ...current,
+    image: form.get('removePrimary') === 'yes' ? null : current.image,
     slug,
     name,
     alt: String(form.get('alt') ?? current.alt).trim() || name,

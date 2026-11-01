@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Form, Link, useNavigation } from 'react-router';
 import type { Client } from '@epicc/content-contracts';
 
-function privateImage(src: string) {
-  return src.replace('/api/v1/client-images/', '/connect/images/');
+function privateImage(src: string | null) {
+  return src?.replace('/api/v1/client-images/', '/connect/images/');
 }
 function PhotoPreview({
   file,
@@ -133,6 +133,7 @@ export function ProjectEditor({
   const [name, setName] = useState(client.name);
   const [dirty, setDirty] = useState(false);
   const [mainFile, setMainFile] = useState<File>();
+  const [mainRemoved, setMainRemoved] = useState(false);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [removedNew, setRemovedNew] = useState<number[]>([]);
   const [removedExisting, setRemovedExisting] = useState<number[]>([]);
@@ -193,27 +194,32 @@ export function ProjectEditor({
           <div>
             <h2 id="photos-title">Les photos du projet</h2>
             <p className="admin-help">
-              Une photo principale et jusqu’à trois photos complémentaires. 5 Mo
-              par photo. Aperçu immédiat avant enregistrement.
+              Les photos sont facultatives. Une photo principale et jusqu’à
+              trois photos complémentaires. 5 Mo par photo. Aperçu immédiat
+              avant enregistrement.
             </p>
           </div>
           <div className="admin-photo-grid">
             <div className="admin-photo-card">
               <span className="admin-badge">Photo principale</span>
               <PhotoPreview
-                src={creating ? undefined : privateImage(client.image)}
+                src={
+                  creating || mainRemoved
+                    ? undefined
+                    : privateImage(client.image)
+                }
                 file={mainFile}
                 alt={name || 'Photo principale'}
               />
               <label>
-                {creating
+                {creating || !client.image
                   ? 'Ajouter la photo principale'
                   : 'Remplacer la photo principale'}
                 <input
                   type="file"
                   name="imageFile"
                   accept="image/jpeg,image/png,image/webp"
-                  required={creating}
+                  disabled={mainRemoved}
                   onChange={(event) => {
                     const files = Array.from(event.currentTarget.files ?? []);
                     const message = validateFiles(files, 1);
@@ -232,6 +238,23 @@ export function ProjectEditor({
                   maxLength={300}
                 />
               </label>
+              {client.image && (
+                <label className="admin-checkbox">
+                  <input
+                    type="checkbox"
+                    name="removePrimary"
+                    value="yes"
+                    checked={mainRemoved}
+                    onChange={(event) => {
+                      setMainRemoved(event.currentTarget.checked);
+                      setMainFile(undefined);
+                    }}
+                  />
+                  {mainRemoved
+                    ? 'Photo principale retirée · décocher pour annuler'
+                    : 'Retirer la photo principale'}
+                </label>
+              )}
             </div>
             {client.gallery.map((photo, index) => (
               <ExistingPhoto

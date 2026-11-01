@@ -392,12 +392,12 @@ test('l’ouverture conserve un cadre 16:9 et les photos utilisent les cadrages 
       }),
     );
   const referenceRatios = [
-    79 / 101,
-    41 / 61,
-    57 / 92,
-    105 / 158,
-    83 / 125,
-    81 / 147,
+    222 / 283,
+    116 / 173,
+    288 / 432,
+    297 / 446,
+    235 / 352,
+    228 / 418,
   ];
   for (const [index, photo] of photos.entries()) {
     expect(photo.loaded).toBe(true);

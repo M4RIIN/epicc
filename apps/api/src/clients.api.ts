@@ -138,7 +138,7 @@ export function createClientsApi(store: ClientStore) {
     }
     if (
       !image &&
-      client.image.startsWith('/api/') &&
+      client.image?.startsWith('/api/') &&
       !(await store.list(true)).some(
         (item) => item.slug === client.slug && item.image === client.image,
       )

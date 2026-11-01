@@ -13,7 +13,7 @@ const text = z.string().trim().min(1, 'Ce champ est obligatoire.');
 const clientImagePath = z
   .string()
   .regex(
-    /^\/(?:images\/(?:botanique|atelier|cafe)\.jpg|api\/v1\/client-images\/[a-f0-9-]+)$/,
+    /^\/(?:images\/(?:projets\/[a-z0-9-]+\.png|(?:botanique|atelier|cafe)\.jpg)|api\/v1\/client-images\/[a-f0-9-]+)$/,
   );
 export const clientPhotoSchema = z.object({
   image: clientImagePath,
@@ -31,7 +31,16 @@ export const clientSchema = z.object({
   sector: text.max(100),
   place: text.max(150),
   year: z.string().regex(/^\d{4}$/, 'Indiquez une année sur quatre chiffres.'),
-  image: clientImagePath,
+  image: clientImagePath.nullable(),
+  nameArtwork: z
+    .object({
+      image: z.string().regex(/^\/images\/projets\/nom-[a-z0-9-]+\.png$/),
+      name: text.max(150),
+      width: z.number().int().positive(),
+      height: z.number().int().positive(),
+    })
+    .nullable()
+    .default(null),
   gallery: clientPhotoSchema.array().max(3).default([]),
   alt: text.max(300),
   tagline: text.max(300),

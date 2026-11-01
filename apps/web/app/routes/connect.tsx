@@ -237,19 +237,28 @@ function ClientCard({
       : client.published;
   return (
     <li className="paper admin-project-card" aria-busy={pending}>
-      <img
-        className="admin-list-thumb"
-        src={client.image.replace('/api/v1/client-images/', '/connect/images/')}
-        alt=""
-        loading="lazy"
-      />
+      {client.image || client.nameArtwork ? (
+        <img
+          className="admin-list-thumb"
+          src={
+            client.image?.replace(
+              '/api/v1/client-images/',
+              '/connect/images/',
+            ) ?? client.nameArtwork?.image
+          }
+          alt=""
+          loading="lazy"
+        />
+      ) : (
+        <span className="admin-badge">Sans photo</span>
+      )}
       <div className="admin-project-info">
         <h3>{client.name}</h3>
         <p>
           <span className="admin-badge">
             {optimisticPublished ? 'En ligne' : 'Masqué'}
           </span>{' '}
-          · {1 + client.gallery.length} photo(s)
+          · {(client.image ? 1 : 0) + client.gallery.length} photo(s)
         </p>
         <Link className="text-link" to={`/connect/clients/${client.slug}`}>
           Modifier {client.name} ↗
