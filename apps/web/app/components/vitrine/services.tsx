@@ -12,7 +12,7 @@ export function Services({ offers }: { offers: Offer[] }) {
         Les prestations
       </h2>
       <dl>
-        {offers.map(({ slug, name, description, image, alt }, index) => (
+        {offers.map(({ slug, name, description }, index) => (
           <div className="vitrine-service" key={slug}>
             <dt>
               {['creation-de-marque', 'evenementiel'].includes(slug) ? (
@@ -37,19 +37,6 @@ export function Services({ offers }: { offers: Offer[] }) {
               )}
             </dt>
             <dd>{description}</dd>
-            {image && (
-              <dd
-                className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
-              >
-                <img
-                  src={image}
-                  alt={alt}
-                  loading="lazy"
-                  width={960}
-                  height={640}
-                />
-              </dd>
-            )}
             {index < offers.length - 1 && (
               <svg
                 className="vitrine-service-rule"

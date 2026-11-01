@@ -60,7 +60,7 @@ body:has(.vitrine) {
 }
 .vitrine-opening {
   position: relative;
-  aspect-ratio: 1920 / 1395;
+  aspect-ratio: 16 / 9;
   overflow: clip;
 }
 .vitrine-cover {
@@ -73,14 +73,15 @@ body:has(.vitrine) {
 }
 .vitrine-cover > img {
   width: 100%;
-  height: 111.15%;
-  object-fit: fill;
+  height: 100%;
+  object-fit: cover;
 }
 .vitrine-opening-art {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1920 / 1395;
 }
 .vitrine-navigation {
   position: absolute;
@@ -547,24 +548,6 @@ body:has(.vitrine) {
   }
 }
 
-.vitrine-offer-visual {
-  grid-column: 1 / -1;
-  padding-block: 1.5cqw;
-}
-.vitrine-offer-visual img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-}
-.vitrine-offer-large {
-  width: 100%;
-}
-.vitrine-offer-small {
-  width: 58%;
-  justify-self: end;
-}
-
 .vitrine-loading {
   display: none;
 }
@@ -627,4 +610,75 @@ html[data-home-loading] .vitrine-loading {
 }
 .vitrine-loading-slow {
   margin-bottom: 20px;
+}
+
+.vitrine-projects {
+  --project-unit: calc(100cqw / 1920);
+  position: relative;
+  margin-top: 8.854167cqw;
+  width: 100%;
+  height: calc(var(--projects-height) * var(--project-unit));
+  scroll-margin-top: 32px;
+}
+.vitrine-projects > h2 {
+  position: absolute;
+  top: calc(2 * var(--project-unit));
+  left: calc(861 * var(--project-unit));
+  width: calc(282 * var(--project-unit));
+  height: calc(27 * var(--project-unit));
+}
+.vitrine-projects > h2 img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vitrine-projects-list {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.vitrine-project {
+  position: absolute;
+  top: calc(var(--project-top) * var(--project-unit));
+  left: 0;
+  width: 100%;
+  height: calc(var(--project-height) * var(--project-unit));
+  margin: 0;
+}
+.vitrine-project-photos img {
+  position: absolute;
+  display: block;
+  left: calc(var(--photo-x) * var(--project-unit));
+  top: calc(var(--photo-y) * var(--project-unit));
+  width: calc(var(--photo-width) * var(--project-unit));
+  height: calc(var(--photo-height) * var(--project-unit));
+  max-width: none;
+  object-fit: cover;
+}
+.vitrine-project figcaption {
+  position: absolute;
+  left: calc(var(--caption-x) * var(--project-unit));
+  top: calc(var(--caption-y) * var(--project-unit));
+  width: calc(var(--caption-width) * var(--project-unit));
+  min-height: calc(var(--caption-height) * var(--project-unit));
+}
+.vitrine-project h3 {
+  margin: 0;
+  color: #484848;
+  font:
+    400 max(10px, 3.7cqw) / 1 Caveat,
+    cursive;
+  letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
+}
+.vitrine-project-name-artwork {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+@media (max-width: 540px) {
+  .vitrine-projects {
+    margin-top: 60px;
+  }
 }

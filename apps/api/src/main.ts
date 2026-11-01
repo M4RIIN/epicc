@@ -6,6 +6,7 @@ import { createRequestHandler } from 'react-router';
 import type { ServerBuild } from 'react-router';
 import { fileURLToPath } from 'node:url';
 import { composeApi } from './composition-root';
+import { referenceProjects } from './reference-projects';
 import { Database } from './database';
 
 const production = process.env.NODE_ENV === 'production';
@@ -24,6 +25,7 @@ app.use('/connect*', async (context, next) => {
 const database = new Database();
 try {
   await database.migrate();
+  await database.installReferenceProjects(referenceProjects);
 } catch {
   await database.close();
   throw new Error(

@@ -1,4 +1,6 @@
 import type { Route } from './+types/home';
+import { loadClients } from '../services/clients.server';
+import { Projects } from '../components/vitrine/projects';
 import { loadOffers } from '../services/offers.server';
 import { getSiteOrigin } from '../services/site.server';
 import { LoadingScreen } from '../components/vitrine/loading-screen';
@@ -9,7 +11,8 @@ import { Manifesto } from '../components/vitrine/manifesto';
 import '../components/vitrine/vitrine.css';
 
 export async function loader() {
-  return { origin: getSiteOrigin(), offers: await loadOffers() };
+  const [offers, clients] = await Promise.all([loadOffers(), loadClients()]);
+  return { origin: getSiteOrigin(), offers, clients };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -40,6 +43,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <Services offers={loaderData.offers} />
         <Biography />
         <Manifesto />
+        <Projects clients={loaderData.clients} />
       </main>
     </>
   );

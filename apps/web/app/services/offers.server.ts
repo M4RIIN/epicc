@@ -9,16 +9,3 @@ export async function loadOffers() {
     });
   return offerSchema.array().parse(await response.json());
 }
-export async function saveOffer(slug: string, form: FormData) {
-  const response = await clientsRequest(
-    `admin/offers/${encodeURIComponent(slug)}`,
-    { method: 'POST', body: form },
-    true,
-  );
-  if (response.ok) return null;
-  if ([400, 404].includes(response.status)) {
-    const result = (await response.json()) as { error?: string };
-    return result.error ?? 'Offre introuvable.';
-  }
-  return 'Enregistrement impossible. Réessayez dans quelques instants.';
-}

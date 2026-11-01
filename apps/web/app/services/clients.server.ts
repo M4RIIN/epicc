@@ -27,9 +27,12 @@ export async function clientsRequest(
       signal: AbortSignal.timeout(10000),
     });
   } catch {
-    throw new Response('Le répertoire est temporairement indisponible.', {
-      status: 503,
-    });
+    throw new Response(
+      'Les projets clients sont temporairement indisponibles.',
+      {
+        status: 503,
+      },
+    );
   }
 }
 export async function loadClients(admin = false) {
@@ -39,9 +42,12 @@ export async function loadClients(admin = false) {
     admin,
   );
   if (!response.ok)
-    throw new Response('Le répertoire est temporairement indisponible.', {
-      status: 503,
-    });
+    throw new Response(
+      'Les projets clients sont temporairement indisponibles.',
+      {
+        status: 503,
+      },
+    );
   return clientSchema.array().parse(await response.json());
 }
 export async function saveClient(slug: string, form: FormData) {

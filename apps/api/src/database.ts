@@ -1,3 +1,5 @@
+import { isDeepStrictEqual } from 'node:util';
+import type { Client } from '@epicc/content-contracts';
 import { Pool, type PoolClient } from 'pg';
 import { randomBytes, scrypt as deriveKey, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
@@ -105,6 +107,53 @@ export class Database {
           ]);
         }
       }
+    });
+  }
+  async installReferenceProjects(projects: Client[]) {
+    await this.transaction(async (connection) => {
+      await connection.query('SELECT pg_advisory_xact_lock(310031)');
+      if (
+        (
+          await connection.query(
+            "SELECT id FROM migrations WHERE id = 'reference-projects-v1'",
+          )
+        ).rowCount
+      )
+        return;
+      const imported = (
+        await connection.query(
+          "SELECT id FROM migrations WHERE id = 'import-sqlite'",
+        )
+      ).rowCount;
+      const current = await connection.query<{
+        slug: string;
+        content: unknown;
+      }>('SELECT slug, content FROM clients FOR UPDATE');
+      const untouched =
+        !imported &&
+        current.rows.length === initialClients.length &&
+        initialClients.every((client, position) => {
+          const row = current.rows.find((item) => item.slug === client.slug);
+          return (
+            row &&
+            isDeepStrictEqual(row.content, {
+              ...client,
+              position,
+              published: true,
+            })
+          );
+        });
+      if (untouched) {
+        await connection.query('DELETE FROM clients');
+        for (const project of projects)
+          await connection.query('INSERT INTO clients VALUES ($1, $2)', [
+            project.slug,
+            project,
+          ]);
+      }
+      await connection.query(
+        "INSERT INTO migrations VALUES ('reference-projects-v1')",
+      );
     });
   }
   async authenticate(email: string, password: string) {
