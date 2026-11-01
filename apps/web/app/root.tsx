@@ -13,7 +13,9 @@ import type { ReactNode } from 'react';
 import './styles.css';
 
 export function Layout({ children }: { children: ReactNode }) {
-  const isHome = useLocation().pathname === '/';
+  const { pathname } = useLocation();
+  const isHome = pathname === '/';
+  const isAdmin = pathname === '/connect' || pathname.startsWith('/connect/');
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
@@ -37,7 +39,7 @@ export function Layout({ children }: { children: ReactNode }) {
         {!isHome && (
           <header className="site-header">
             <Link className="brand" to="/" aria-label="EPICC, accueil">
-              EPICC<span aria-hidden="true">✳</span>
+              EPICC{!isAdmin && <span aria-hidden="true">✳</span>}
             </Link>
             <nav aria-label="Navigation principale">
               <Link to="/clients#clients">Les rencontres</Link>
@@ -52,7 +54,7 @@ export function Layout({ children }: { children: ReactNode }) {
         {!isHome && (
           <footer className="site-footer">
             <Link className="brand" to="/">
-              EPICC<span aria-hidden="true">✳</span>
+              EPICC{!isAdmin && <span aria-hidden="true">✳</span>}
             </Link>
             <p>Des idées, des liens, de belles histoires.</p>
             <span>STUDIO INDÉPENDANT · ESPRIT COLLECTIF</span>
