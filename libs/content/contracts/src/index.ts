@@ -58,7 +58,12 @@ export const offerSchema = z
   });
 export type Offer = z.infer<typeof offerSchema>;
 
-export { vitrineProjects, type Piece } from './vitrine-projects';
+export {
+  vitrineProjects,
+  projectSides,
+  type Piece,
+  type VitrineProject,
+} from './vitrine-projects';
 
 export const projectImageSchema = z.object({
   file: text.max(150),

@@ -8,10 +8,10 @@ import { readImage } from './image-upload';
 import { removeUnusedImages } from './clients.store';
 
 const pieces = vitrineProjects.flatMap((project) =>
-  project.pieces.map((piece, index) => ({
+  project.pieces.map((piece) => ({
     file: piece.file,
     image: null,
-    alt: index === 0 ? project.name : (piece.alt ?? project.name),
+    alt: piece.role === 'name' ? project.name : (piece.alt ?? project.name),
   })),
 );
 
