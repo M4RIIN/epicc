@@ -41,6 +41,28 @@ export function Biography() {
             height={954}
             alt="Chloé enfant, à table, une cuillère à la main."
           />
+          <div className="vitrine-childhood-strip" aria-hidden="true">
+            {[0, 1, 2, 3].map((index) => (
+              <span
+                key={index}
+                className={
+                  index % 2 === 0
+                    ? 'vitrine-childhood-strip-photo'
+                    : 'vitrine-childhood-strip-rotated'
+                }
+              >
+                <Artwork
+                  file={
+                    index % 2 === 0
+                      ? 'projets-WhatsAppImage20261029At0954011.jpg'
+                      : 'projets-WhatsAppImage20261029At09292611.jpg'
+                  }
+                  width={index % 2 === 0 ? 135 : 89.768}
+                  height={index % 2 === 0 ? 90 : 159.446}
+                />
+              </span>
+            ))}
+          </div>
         </figure>
       </div>
       <div className="vitrine-chapters">
