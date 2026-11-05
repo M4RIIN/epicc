@@ -108,7 +108,7 @@ export const vitrineProjects: VitrineProject[] = [
         file: 'Gkmkqt.png',
         width: 136.95,
         height: 243.47,
-        alt: 'Composition d’œufs blancs.',
+        alt: 'Balles de golf blanches, détail du projet Casamatta.',
         role: 'photo',
       },
     ],

@@ -297,6 +297,41 @@ for (const javaScriptEnabled of [false, true]) {
         page.getByRole('heading', { name: 'Les projets clients', exact: true }),
       ).toBeVisible();
       await expect(page.locator('.admin-project-images img')).toHaveCount(26);
+      await expect(
+        page.getByRole('heading', { name: 'Colonne gauche' }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('heading', { name: 'Colonne droite' }),
+      ).toBeVisible();
+      const viandeCard = page.getByRole('article', {
+        name: 'Viande des Sorgues',
+        exact: true,
+      });
+      await expect(viandeCard.locator('.admin-project-titles img')).toHaveCount(
+        1,
+      );
+      await expect(viandeCard.locator('.admin-project-photos img')).toHaveCount(
+        4,
+      );
+      const adminTitle = (await viandeCard
+        .locator('.admin-project-titles img')
+        .first()
+        .boundingBox())!;
+      const adminPhoto = (await viandeCard
+        .locator('.admin-project-photos img')
+        .first()
+        .boundingBox())!;
+      expect(Math.abs(adminTitle.y - adminPhoto.y)).toBeLessThan(1);
+
+      await expect(
+        viandeCard.locator('.admin-project-photos a').nth(1),
+      ).toHaveAttribute('href', '/connect/projets/Rectangle4.png');
+      await expect(
+        page
+          .getByRole('article', { name: 'Annafurna', exact: true })
+          .locator('.admin-project-photos img'),
+      ).toHaveCount(2);
+
       expect(
         (
           await context.request.post(target, { form: { alt: 'Sans CSRF' } })
