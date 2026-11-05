@@ -67,7 +67,17 @@ railway up --project ed8fc074-7306-4773-b03c-fd468da68e68 \
   --service 18ea4b9e-e7eb-41c5-b15e-d83f26cc15f6 --detach
 ```
 
-Attendre ensuite le statut `SUCCESS` et vérifier le domaine public : la commande détachée revient avant la fin du déploiement. Les mises à jour automatiques depuis GitHub ne sont pas configurées. Ne pas injecter simultanément `RAILWAY_API_TOKEN`.
+Attendre ensuite le statut `SUCCESS` et vérifier le domaine public : la commande détachée revient avant la fin du déploiement. Ne pas injecter simultanément `RAILWAY_API_TOKEN`.
+
+### Déploiement automatique depuis main
+
+Le workflow [Vérifications](../.github/workflows/ci.yml) déploie le service `EPICC` dans `development` après chaque push sur `main`, notamment après la fusion d’une PR. Le job attend la réussite de toutes les vérifications, y compris les tests navigateur. Les PR et les pushs sur `develop` exécutent les vérifications sans déployer.
+
+Avant la première exécution, créer un [jeton de projet Railway](https://docs.railway.com/cli/deploying#using-project-tokens) limité à l’environnement `development` dans les paramètres du projet. Dans GitHub, ouvrir **Settings → Environments → development → Environment secrets** et ajouter ce jeton sous le nom `RAILWAY_TOKEN`. Un secret de dépôt portant le même nom convient également. Ne jamais coller ce jeton dans le dépôt ou les journaux. Pour conserver un déploiement automatique, l’environnement GitHub `development` ne doit pas exiger d’approbation manuelle.
+
+Le workflow installe la CLI Railway en version `5.71.0` et cible explicitement le projet, l’environnement et le service existants. Un secret absent provoque un échec explicite. Les déploiements sont sérialisés sans interrompre celui en cours. La commande utilise `--ci` pour suivre le résultat du déploiement, avec une limite de 20 minutes pour le job ; un dépassement de ce délai n’annule pas nécessairement le déploiement distant. Consulter alors Railway avant de relancer le job.
+
+Après fusion, vérifier le résultat du job **Déployer sur Railway development** dans GitHub Actions et le contrôle de démarrage `/api/health` dans Railway. Il n’est pas nécessaire d’activer en parallèle les déploiements natifs GitHub dans Railway.
 
 ### Recette du déploiement
 

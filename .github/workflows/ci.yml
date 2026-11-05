@@ -39,3 +39,33 @@ jobs:
         with:
           name: traces-navigateur
           path: test-results/
+  deploy-development:
+    name: Déployer sur Railway development
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: development
+      url: https://epicc-development.up.railway.app
+    concurrency:
+      group: railway-development
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Installer la CLI Railway
+        run: npm install --global @railway/cli@5.71.0
+      - name: Déployer le service EPICC
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo '::error::Ajouter le secret GitHub Actions RAILWAY_TOKEN avec un jeton du projet Railway limité à development.'
+            exit 1
+          fi
+          railway up --ci --project ed8fc074-7306-4773-b03c-fd468da68e68 \
+            --environment development \
+            --service 18ea4b9e-e7eb-41c5-b15e-d83f26cc15f6
