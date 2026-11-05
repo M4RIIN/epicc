@@ -2,6 +2,7 @@ export const artworkPath = '/images/vitrine/';
 
 type ArtworkProps = {
   file: string;
+  src?: string | null;
   className?: string;
   alt?: string;
   width: number;
@@ -12,6 +13,7 @@ type ArtworkProps = {
 /** Les dessins restent des images ; les textes courants sont du HTML. */
 export function Artwork({
   file,
+  src,
   className,
   alt = '',
   width,
@@ -20,7 +22,7 @@ export function Artwork({
 }: ArtworkProps) {
   return (
     <img
-      src={`${artworkPath}${file}`}
+      src={src ?? `${artworkPath}${file}`}
       decoding="async"
       alt={alt}
       width={width}

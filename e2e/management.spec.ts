@@ -253,3 +253,119 @@ for (const javaScriptEnabled of [false, true]) {
     }
   });
 }
+
+for (const javaScriptEnabled of [false, true]) {
+  test(`remplacement des projets clients sans changer la composition, JavaScript ${javaScriptEnabled}`, async ({
+    browser,
+    request,
+  }, testInfo) => {
+    const context = await browser.newContext({ javaScriptEnabled });
+    try {
+      const page = await context.newPage();
+      const layout = async () =>
+        page.locator('.vitrine-project-piece').evaluateAll((pieces) =>
+          pieces.map((piece) => {
+            const rect = piece.getBoundingClientRect();
+            const image = piece.querySelector('img')!;
+            return {
+              width: rect.width,
+              height: rect.height,
+              left: rect.left,
+              top: (piece as HTMLElement).offsetTop,
+              fit: getComputedStyle(image).objectFit,
+              transform: getComputedStyle(image).transform,
+            };
+          }),
+        );
+      const before = [];
+      for (const width of [1440, 375, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        await expect(page.locator('.vitrine-loading')).toBeHidden({
+          timeout: 15000,
+        });
+        before.push(await layout());
+      }
+      const target = '/connect/projets/Rectangle5.png';
+      await page.goto(target);
+      await expect(page).toHaveURL(/\/connect$/);
+      await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
+      await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
+      await page.getByRole('button', { name: 'Se connecter' }).click();
+      await expect(
+        page.getByRole('heading', { name: 'Les projets clients', exact: true }),
+      ).toBeVisible();
+      await expect(page.locator('.admin-project-images img')).toHaveCount(26);
+      expect(
+        (
+          await context.request.post(target, { form: { alt: 'Sans CSRF' } })
+        ).status(),
+      ).toBe(403);
+      expect(
+        (
+          await request.post('/api/v1/admin/project-images/Rectangle5.png')
+        ).status(),
+      ).toBe(401);
+      await page
+        .getByRole('link', { name: 'Modifier l’image 1 de Viande des Sorgues' })
+        .click();
+      const alt = 'Nouveau visuel du projet de test';
+      await page.getByLabel('Texte alternatif de l’image').fill(alt);
+      await page.getByLabel('Remplacer par une image').setInputFiles({
+        name: 'test.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
+          'base64',
+        ),
+      });
+      await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
+      await expect(page).toHaveURL(/\/connect#project-images$/);
+      if (javaScriptEnabled) {
+        await page.setViewportSize({ width: 1440, height: 1000 });
+        await page.screenshot({
+          path: testInfo.outputPath('gestion-projets.png'),
+          fullPage: true,
+        });
+      }
+      let src = '';
+      for (const [index, width] of [1440, 375, 320].entries()) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        await expect(page.locator('.vitrine-loading')).toBeHidden({
+          timeout: 15000,
+        });
+        const image = page.getByRole('img', { name: alt, exact: true });
+        await expect(image).toHaveAttribute('width', '222');
+        await expect(image).toHaveAttribute('height', '283');
+        src = (await image.getAttribute('src'))!;
+        expect(await layout()).toEqual(before[index]);
+      }
+      expect((await request.get(src)).headers()['content-type']).toBe(
+        'image/png',
+      );
+      const html = await (await request.get('/')).text();
+      expect(html).toContain(`alt="${alt}"`);
+      expect(html).toContain('rel="canonical"');
+      expect(await (await request.get('/robots.txt')).text()).toContain(
+        'Allow: /api/v1/project-images/',
+      );
+      await page.goto(target);
+      expect((await page.request.get(target)).headers()['x-robots-tag']).toBe(
+        'noindex, nofollow',
+      );
+      await page.getByRole('button', { name: 'Rétablir l’original' }).click();
+      await expect(page).toHaveURL(/\/connect#project-images$/);
+      expect((await request.get(src)).status()).toBe(404);
+      await page.goto('/');
+      await expect(
+        page.getByRole('img', {
+          name: 'Gros plan sur une tomate rouge.',
+          exact: true,
+        }),
+      ).toHaveAttribute('src', '/images/vitrine/projets-Rectangle5.png');
+    } finally {
+      await context.close();
+    }
+  });
+}
