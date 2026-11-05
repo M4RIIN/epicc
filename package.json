@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts",
+    "admin:reset-password": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts --reset-password",
     "admin:create": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts"
   },
   "dependencies": {

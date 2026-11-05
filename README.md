@@ -118,6 +118,16 @@ La commande initialise les tables si nécessaire, crée le compte et affiche une
 
 La création de compte nécessite une connexion PostgreSQL durable : les bases temporaires utilisées par les tests ne constituent pas un compte utilisable sur l’hébergement réel.
 
+### Réinitialiser le mot de passe d’un administrateur
+
+Si le compte existe déjà, changer `ADMIN_PASSWORD` dans la configuration ne modifie pas son mot de passe enregistré. Sur le serveur ayant accès à la base de l’application, fournir `DATABASE_URL`, `ADMIN_EMAIL` et le nouveau `ADMIN_PASSWORD`, puis exécuter :
+
+```sh
+npm run admin:reset-password
+```
+
+La commande remplace uniquement le mot de passe du compte indiqué. Elle refuse un compte absent ou un mot de passe inférieur à huit caractères. Le mot de passe fourni n’est pas affiché. Sans `ADMIN_PASSWORD`, elle génère et affiche une seule fois un nouveau mot de passe, comme la commande de création. Aucun redémarrage de l’application n’est nécessaire après cette opération.
+
 ### Images des offres
 
 Depuis `/connect`, ouvrir « Modifier l’image » pour l’une des cinq offres. Téléverser un JPEG, PNG ou WebP de 5 Mo maximum, renseigner son texte alternatif, puis enregistrer. Une prévisualisation permet de retrouver le visuel ; il peut être remplacé ou retiré. Les modifications sont immédiatement visibles sur l’accueil, y compris sans JavaScript. Le visuel est recadré en 3:2 ; la largeur alterne entre 100 % et 58 % selon la position de l’offre, sur bureau comme sur mobile. Les images remplacées ou retirées sont supprimées de la base lorsqu’elles ne sont plus référencées. Les offres initiales conservent leurs libellés illustrés et n’ont pas de photographie ajoutée automatiquement.
