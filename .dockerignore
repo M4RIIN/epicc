@@ -1,0 +1,15 @@
+.git
+.github
+.claude
+.questboard
+.env
+.env.*
+**/node_modules
+**/.nx
+**/.react-router
+dist
+coverage
+playwright-report
+test-results
+data
+*.log

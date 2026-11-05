@@ -64,6 +64,8 @@ La gestion des clients comprend une authentification administrateur, des session
 
 ## Exécuter le build
 
+Pour l’hébergement Railway avec PostgreSQL, consulter le [guide de configuration](docs/railway.md). Le Dockerfile à la racine construit et sert les deux applications dans une seule image.
+
 ```sh
 npm run build
 PUBLIC_SITE_URL=https://www.exemple.fr PORT=3100 npm start
