@@ -1,4 +1,5 @@
 import type { Route } from './+types/home';
+import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
 import { getContactEmail, getSiteOrigin } from '../services/site.server';
 import { LoadingScreen } from '../components/vitrine/loading-screen';
@@ -14,6 +15,7 @@ export async function loader() {
   return {
     origin: getSiteOrigin(),
     offers: await loadOffers(),
+    projectImages: await loadProjectImages(),
     contactEmail: getContactEmail(),
   };
 }
@@ -46,7 +48,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <Services offers={loaderData.offers} />
         <Biography />
         <Manifesto />
-        <Projects />
+        <Projects images={loaderData.projectImages} />
         <Contact email={loaderData.contactEmail} />
       </main>
     </>

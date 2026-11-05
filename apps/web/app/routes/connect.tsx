@@ -11,6 +11,8 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
+import { vitrineProjects } from '@epicc/content-contracts';
+import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
 import { loadClients } from '../services/clients.server';
 
@@ -32,6 +34,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       configured: adminConfigured(),
       csrf: session.get('csrf') as string,
       clients: authenticated ? await loadClients(true) : [],
+      projectImages: authenticated ? await loadProjectImages() : [],
       offers: authenticated ? await loadOffers() : [],
     },
     { headers: { 'Set-Cookie': await commitAdmin(session) } },
@@ -66,7 +69,8 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients, offers } = loaderData;
+  const { authenticated, configured, csrf, clients, offers, projectImages } =
+    loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
@@ -78,8 +82,8 @@ export default function Connect({
       {!authenticated ? (
         <div className="admin-panel paper">
           <p>
-            Connectez-vous pour gérer les fiches clients et les images des
-            offres.
+            Connectez-vous pour gérer les images des projets clients, des offres
+            et les fiches du répertoire.
           </p>
           {!configured && (
             <p role="status">
@@ -116,6 +120,53 @@ export default function Connect({
         </div>
       ) : (
         <>
+          <section
+            id="project-images"
+            aria-labelledby="project-images-title"
+            className="admin-panel paper"
+          >
+            <p className="eyebrow">01 / La vitrine</p>
+            <h2 id="project-images-title">Les projets clients</h2>
+            <p>
+              Les visuels du collage de la page d’accueil. Choisissez une image
+              à remplacer : la composition reste identique.
+            </p>
+            <div className="admin-projects">
+              {vitrineProjects.map((project) => (
+                <article key={project.name} className="admin-project-card">
+                  <h3>{project.name}</h3>
+                  <ul className="admin-project-images">
+                    {project.pieces.map((piece, index) => {
+                      const image = projectImages.find(
+                        (item) => item.file === piece.file,
+                      )!;
+                      return (
+                        <li key={piece.file}>
+                          <Link to={`/connect/projets/${piece.file}`}>
+                            <img
+                              src={
+                                image.image ??
+                                `/images/vitrine/projets-${piece.file}`
+                              }
+                              alt=""
+                              width={240}
+                              height={160}
+                              loading="lazy"
+                            />
+                            <span>
+                              Modifier{' '}
+                              {index === 0 ? 'le logo' : `l’image ${index}`} de{' '}
+                              {project.name} ↗
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </section>
           <section aria-labelledby="offers-title" className="admin-panel paper">
             <h2 id="offers-title">Images des offres</h2>
             <p>
@@ -148,8 +199,8 @@ export default function Connect({
             </Form>
           </div>
           <p>
-            Les fiches publiées apparaissent sur la vitrine. L’ordre croissant
-            détermine leur place dans le répertoire.
+            Les fiches publiées apparaissent dans le répertoire « Les rencontres
+            ». L’ordre croissant détermine leur place dans le répertoire.
           </p>
           {clients.length === 0 && (
             <p>Aucun client. Ajoutez votre première fiche.</p>

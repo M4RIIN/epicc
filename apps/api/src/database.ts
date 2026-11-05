@@ -51,6 +51,7 @@ export class Database {
         CREATE TABLE IF NOT EXISTS migrations (id TEXT PRIMARY KEY);
         CREATE TABLE IF NOT EXISTS clients (slug TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS images (id UUID PRIMARY KEY, mime TEXT NOT NULL, content BYTEA NOT NULL);
+        CREATE TABLE IF NOT EXISTS project_images (file TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS offers (slug TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS administrators (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL);
       `);

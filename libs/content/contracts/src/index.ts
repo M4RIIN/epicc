@@ -57,3 +57,15 @@ export const offerSchema = z
     path: ['alt'],
   });
 export type Offer = z.infer<typeof offerSchema>;
+
+export { vitrineProjects, type Piece } from './vitrine-projects';
+
+export const projectImageSchema = z.object({
+  file: text.max(150),
+  image: z
+    .string()
+    .regex(/^\/api\/v1\/project-images\/[a-f0-9-]+$/)
+    .nullable(),
+  alt: text.max(300),
+});
+export type ProjectImage = z.infer<typeof projectImageSchema>;
