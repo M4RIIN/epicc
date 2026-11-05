@@ -184,6 +184,7 @@ export default function Connect({
                                       >
                                         <Link
                                           to={`/connect/projets/${piece.file}`}
+                                          aria-label={`Modifier ${role === 'name' ? `le logo${index ? ` ${index + 1}` : ''}` : `l’image ${index + 1}`} de ${project.name} ↗`}
                                         >
                                           <img
                                             src={
@@ -206,12 +207,11 @@ export default function Connect({
                                             }}
                                             loading="lazy"
                                           />
-                                          <span>
-                                            Modifier{' '}
+                                          <span aria-hidden="true">
                                             {role === 'name'
-                                              ? `le logo${index ? ` ${index + 1}` : ''}`
-                                              : `l’image ${index + 1}`}{' '}
-                                            de {project.name} ↗
+                                              ? `Logo${index ? ` ${index + 1}` : ''}`
+                                              : `Photo ${index + 1}`}{' '}
+                                            ↗
                                           </span>
                                         </Link>
                                       </li>
