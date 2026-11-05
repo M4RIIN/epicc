@@ -420,3 +420,61 @@ test('un chargement lent permet de continuer ou de rejoindre la gestion', async 
     release();
   }
 });
+
+test('les projets et le contact complètent la vitrine sur bureau et mobile', async ({
+  browser,
+}, testInfo) => {
+  test.setTimeout(60000);
+  for (const javaScriptEnabled of [false, true]) {
+    const context = await browser.newContext({ javaScriptEnabled });
+    try {
+      const page = await context.newPage();
+      await page.goto('/');
+      await expect(page.locator('.vitrine-loading')).toBeHidden({
+        timeout: 15000,
+      });
+      await page
+        .getByRole('link', { name: 'Projets clients', exact: true })
+        .click();
+      await expect(page).toHaveURL(/#projets$/);
+      await expect(
+        page.getByRole('heading', { name: 'Les projets clients' }),
+      ).toBeInViewport();
+      await expect(page.locator('.vitrine-project')).toHaveCount(13);
+      await page.getByText('Menu', { exact: true }).click();
+      await page.getByRole('link', { name: 'Contact', exact: true }).click();
+      await expect(page).toHaveURL(/#contact$/);
+      await expect(
+        page.getByRole('heading', { name: 'Contact', exact: true }),
+      ).toBeInViewport();
+      await page.getByLabel('Nom', { exact: true }).fill('Exemple');
+      await page.getByLabel('Prénom', { exact: true }).fill('Camille');
+      await page
+        .getByLabel('Demande', { exact: true })
+        .fill('Une demande de test pour un lancement de marque.');
+      await expect(page.locator('.vitrine-contact-form')).toHaveAttribute(
+        'action',
+        'mailto:test@questboard.test',
+      );
+      await expect(
+        page.getByRole('button', { name: 'Parlons de votre projet' }),
+      ).toBeEnabled();
+      for (const width of [1920, 768, 375, 320]) {
+        await page.setViewportSize({ width, height: 1000 });
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        if (javaScriptEnabled && [1920, 375].includes(width)) {
+          await page.screenshot({
+            path: testInfo.outputPath(`vitrine-${width}.png`),
+            fullPage: true,
+          });
+        }
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});

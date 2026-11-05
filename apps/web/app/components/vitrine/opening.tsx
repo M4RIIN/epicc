@@ -69,6 +69,8 @@ export function Opening() {
             <a href="#prestations">Les prestations</a>
             <a href="#a-propos">À propos de Chloé</a>
             <a href="#epicc">L’esprit EPICC</a>
+            <a href="#projets">Les projets clients</a>
+            <a href="#contact">Contact</a>
             <Link to="/clients">Les rencontres</Link>
             <Link to="/connect">Espace de gestion</Link>
           </div>
@@ -78,15 +80,9 @@ export function Opening() {
             Connexion <span aria-hidden="true">↗</span>
           </Link>
           <div className="vitrine-navigation-sections">
-            <a href="#prestations" aria-label="Menu — Les prestations">
-              Menu
-            </a>
-            <a href="#a-propos" aria-label="Menu — À propos">
-              Menu
-            </a>
-            <a href="#epicc" aria-label="Menu — EPICC, c’est quoi">
-              Menu
-            </a>
+            <a href="#a-propos">À propos</a>
+            <a href="#prestations">Les offres</a>
+            <a href="#projets">Projets clients</a>
           </div>
         </div>
       </nav>

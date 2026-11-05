@@ -134,7 +134,7 @@ Le verrouillage transitoire d’`undici` dans `package.json` impose la version c
 
 ## Direction visuelle et répertoire clients
 
-L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé et manifeste. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
+L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé, manifeste, réalisations et contact. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
 
 Le répertoire sur `/clients` conserve le carnet de rencontres : papier grainé, encre bleue et notes manuscrites. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
 
@@ -153,3 +153,11 @@ Les ressources sont servies localement, sans appel à une police ou à une image
 - Photographies d’illustration du répertoire provenant d’Unsplash : [végétal](https://unsplash.com/photos/ef046c08a56e), [atelier](https://unsplash.com/photos/64674bd600d8), [café](https://unsplash.com/photos/236099ec97a0). Sources de téléchargement : `images.unsplash.com/photo-1497250681960-ef046c08a56e`, `photo-1441986300917-64674bd600d8`, `photo-1445116572660-236099ec97a0`.
 - Police manuscrite Caveat, distribuée sous SIL Open Font License ; licence conservée dans `apps/web/public/fonts/OFL-Caveat.txt`.
 - Grain SVG procédural et rubans adhésifs CSS créés pour cette interface. Les pièces jointes d’inspiration ne sont pas publiées dans le site.
+
+### Réalisations et contact de la vitrine
+
+La section `#projets` reprend les photographies et les noms manuscrits du cadre Figma `411:3`. Les images originales sont conservées dans `apps/web/public/images/vitrine/projets-*` avec leur format réel, sans recompression. La composition bureau conserve les emplacements et les recadrages de la maquette ; sur mobile, les images sont regroupées par projet dans l’ordre de lecture. Ces réalisations statiques sont distinctes des fiches éditables du répertoire `/clients`.
+
+La navigation donne accès aux offres, à la présentation, aux projets et au contact. Le menu déroulant conserve aussi l’accès au répertoire et à la gestion. Les liens fonctionnent sans JavaScript.
+
+La section `#contact` comprend les champs nom, prénom et demande. Fournir `CONTACT_EMAIL` dans l’environnement du serveur pour activer le bouton : le formulaire ouvre la messagerie du visiteur avec un message à relire avant envoi. Sans JavaScript, le formulaire utilise le protocole natif `mailto:`. Une messagerie configurée est nécessaire ; aucun mail ne part du serveur et aucune demande n’est enregistrée. Sans adresse valide, le bouton est désactivé et un message explique son indisponibilité. Cette variable ne contient que l’adresse de contact publique ; aucun secret ni accès de messagerie n’est nécessaire pour ce fonctionnement.

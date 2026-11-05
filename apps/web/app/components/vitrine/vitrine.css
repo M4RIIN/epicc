@@ -628,3 +628,305 @@ html[data-home-loading] .vitrine-loading {
 .vitrine-loading-slow {
   margin-bottom: 20px;
 }
+
+/* Réalisations : collage éditorial, puis figures en lecture verticale sur mobile. */
+.vitrine-projects {
+  margin-top: 11.71875cqw;
+  scroll-margin-top: 32px;
+}
+.vitrine-projects h2 {
+  text-align: center;
+}
+.vitrine-projects-collage {
+  position: relative;
+  height: 225.833333cqw;
+  margin-top: 5.260417cqw;
+}
+.vitrine-project {
+  display: contents;
+}
+.vitrine-project-piece {
+  position: absolute;
+  left: var(--piece-x);
+  top: var(--piece-y);
+  width: var(--piece-width);
+  height: var(--piece-height);
+  overflow: hidden;
+}
+.vitrine-project-piece img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+.vitrine-project-crop img {
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+.vitrine-project-mirror {
+  transform: scaleX(-1);
+}
+.vitrine-project-notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.vitrine-project-notes li {
+  position: absolute;
+  font-size: var(--vitrine-copy);
+}
+.vitrine-project-note-ecluse {
+  top: 179.739583cqw;
+  left: 29.0625%;
+}
+.vitrine-project-note-fitness {
+  top: 191.822917cqw;
+  left: 38.75%;
+}
+.vitrine-project-note-allegria {
+  top: 198.489583cqw;
+  left: 20.260417%;
+}
+.vitrine-contact {
+  position: relative;
+  margin-top: 3.072917cqw;
+  padding-top: 9.739583cqw;
+  padding-bottom: 10cqw;
+  scroll-margin-top: 32px;
+}
+.vitrine-contact h2 {
+  margin-left: 8.072917%;
+  width: 54.114583%;
+}
+.vitrine-contact-collage img {
+  position: absolute;
+  max-width: none;
+}
+.vitrine-contact-dish {
+  top: 0;
+  left: 65.208333%;
+  width: 12.864583%;
+  transform: scaleX(-1) rotate(0.86deg);
+}
+.vitrine-contact-portrait {
+  top: 9.114583cqw;
+  left: 78.645833%;
+  width: 4.675417%;
+  transform: rotate(-108.05deg);
+}
+.vitrine-contact-invitation {
+  position: relative;
+  width: 30.15625%;
+  margin: -3.645833cqw 0 0 62.1875%;
+}
+.vitrine-contact-invitation p {
+  font-size: clamp(18px, 1.875cqw, 36px);
+}
+.vitrine-contact-invitation img {
+  position: absolute;
+  width: 56.5442%;
+  right: 6%;
+  top: 1.5cqw;
+  transform: rotate(6.3deg);
+}
+.vitrine-contact-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  margin: 3.125cqw 21.927083% 0 19.84375%;
+}
+.vitrine-contact-form label {
+  cursor: pointer;
+}
+.vitrine-contact-form input,
+.vitrine-contact-form textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 8px 0;
+  margin-bottom: 12px;
+  color: var(--vitrine-ink);
+  background: transparent;
+  font: inherit;
+  text-transform: none;
+  letter-spacing: -0.04em;
+  background-image: url('/images/vitrine/projets-Line18.svg');
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 1px;
+}
+.vitrine-contact-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.vitrine-contact-form :focus-visible {
+  outline: 2px solid var(--vitrine-ink);
+  outline-offset: 4px;
+}
+.vitrine-contact-send {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 16px;
+}
+.vitrine-contact-send p {
+  max-width: 55%;
+  font-size: var(--vitrine-small);
+  text-transform: none;
+  letter-spacing: -0.04em;
+}
+.vitrine-contact-send button {
+  border: 1px solid var(--vitrine-ink);
+  background: var(--vitrine-paper);
+  padding: 12px 16px;
+  font: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.vitrine-contact-send button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.vitrine-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 8cqw 8%;
+}
+.vitrine-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.vitrine-navigation-sections {
+  width: auto;
+  gap: 2.6cqw;
+  white-space: nowrap;
+}
+.vitrine-navigation-actions {
+  gap: 3cqw;
+}
+@media (max-width: 700px) {
+  .vitrine-projects {
+    margin: 70px 7.65625% 0;
+  }
+  .vitrine-projects-collage {
+    height: auto;
+    margin-top: 40px;
+    display: grid;
+    gap: 44px;
+  }
+  .vitrine-project {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 16px;
+  }
+  .vitrine-project-piece {
+    position: static;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--piece-ratio);
+  }
+  .vitrine-project-name {
+    grid-column: 1 / -1;
+    width: min(80%, 320px);
+    justify-self: start;
+  }
+  .vitrine-project:nth-child(even) .vitrine-project-name {
+    justify-self: end;
+  }
+  .vitrine-project-notes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .vitrine-project-notes li {
+    position: static;
+  }
+  .vitrine-contact {
+    margin-top: 60px;
+    padding-top: 35cqw;
+    padding-bottom: 20px;
+  }
+  .vitrine-contact h2 {
+    width: 84%;
+    margin-left: 4%;
+  }
+  .vitrine-contact-dish {
+    width: 20%;
+    left: 61%;
+  }
+  .vitrine-contact-portrait {
+    width: 8%;
+    left: 80%;
+    top: 17cqw;
+  }
+  .vitrine-contact-invitation {
+    width: 70%;
+    margin: 8cqw 8% 16cqw auto;
+  }
+  .vitrine-contact-invitation img {
+    top: 7cqw;
+    width: 66%;
+    right: 0;
+  }
+  .vitrine-contact-form {
+    margin: 0 8%;
+  }
+  .vitrine-contact-send {
+    flex-direction: column;
+  }
+  .vitrine-contact-send p {
+    max-width: 100%;
+  }
+  .vitrine-footer {
+    flex-direction: column;
+    margin-top: 60px;
+  }
+  .vitrine-navigation {
+    font-size: 12px;
+  }
+  .vitrine-navigation-actions {
+    flex-direction: column;
+    align-items: end;
+    gap: 16px;
+  }
+  .vitrine-navigation-sections {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: end;
+  }
+}
+.vitrine-childhood-strip {
+  position: absolute;
+  bottom: 16%;
+  right: 0;
+  display: flex;
+  width: 67%;
+  height: 17%;
+  overflow: hidden;
+}
+.vitrine-childhood-strip > span {
+  position: relative;
+  overflow: hidden;
+  flex: 135;
+  height: 100%;
+}
+.vitrine-childhood-strip > .vitrine-childhood-strip-rotated {
+  flex: 159.446;
+}
+.vitrine-childhood-strip-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vitrine-childhood-strip-rotated img {
+  position: absolute;
+  width: 56.3%;
+  height: 177.62%;
+  left: 21.85%;
+  top: -38.81%;
+  transform: rotate(-90deg);
+}

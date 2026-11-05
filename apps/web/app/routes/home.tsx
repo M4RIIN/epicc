@@ -1,15 +1,21 @@
 import type { Route } from './+types/home';
 import { loadOffers } from '../services/offers.server';
-import { getSiteOrigin } from '../services/site.server';
+import { getContactEmail, getSiteOrigin } from '../services/site.server';
 import { LoadingScreen } from '../components/vitrine/loading-screen';
 import { Opening } from '../components/vitrine/opening';
 import { Services } from '../components/vitrine/services';
 import { Biography } from '../components/vitrine/biography';
 import { Manifesto } from '../components/vitrine/manifesto';
+import { Projects } from '../components/vitrine/projects';
+import { Contact } from '../components/vitrine/contact';
 import '../components/vitrine/vitrine.css';
 
 export async function loader() {
-  return { origin: getSiteOrigin(), offers: await loadOffers() };
+  return {
+    origin: getSiteOrigin(),
+    offers: await loadOffers(),
+    contactEmail: getContactEmail(),
+  };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
@@ -40,6 +46,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <Services offers={loaderData.offers} />
         <Biography />
         <Manifesto />
+        <Projects />
+        <Contact email={loaderData.contactEmail} />
       </main>
     </>
   );
