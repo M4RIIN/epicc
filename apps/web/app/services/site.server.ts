@@ -3,7 +3,7 @@ export function getSiteOrigin() {
 }
 
 export function getContactEmail() {
-  const email = process.env.CONTACT_EMAIL?.trim();
+  const email = (process.env.CONTACT_EMAIL ?? 'test@test.com').trim();
   return email && /^[^\s@?&#]+@[^\s@?&#]+\.[^\s@?&#]+$/.test(email)
     ? email
     : null;
