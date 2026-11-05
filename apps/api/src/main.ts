@@ -43,16 +43,26 @@ if (production) {
   app.use('/assets/*', serveStatic({ root: clientRoot }));
   app.use('/images/*', serveStatic({ root: clientRoot }));
   app.use('/fonts/*', serveStatic({ root: clientRoot }));
-  app.all('*', (context) => {
-    const request = context.req.raw;
-    if (!process.env.PUBLIC_SITE_URL) return handleRequest(request);
-    // L’origine publique reste exacte derrière un proxy qui termine HTTPS.
-    // Aucun en-tête X-Forwarded-* fourni par le visiteur n’est utilisé.
-    const url = new URL(request.url);
-    const origin = new URL(process.env.PUBLIC_SITE_URL);
-    url.protocol = origin.protocol;
-    url.host = origin.host;
-    return handleRequest(new Request(url, request));
+  // L’adaptation des formulaires reste dans le bundle web avec les sessions.
+  const prepareRequest = (
+    build.entry.module as ServerBuild['entry']['module'] & {
+      prepareRequest?: (request: Request) => Promise<Request>;
+    }
+  ).prepareRequest;
+  app.all('*', async (context) => {
+    let request = context.req.raw;
+    if (process.env.PUBLIC_SITE_URL) {
+      // Le domaine configuré reste prioritaire ; les en-têtes Forwarded ne font pas foi.
+      const url = new URL(request.url);
+      const origin = new URL(process.env.PUBLIC_SITE_URL);
+      url.protocol = origin.protocol;
+      url.host = origin.host;
+      url.port = origin.port;
+      request = new Request(url, request);
+    }
+    return handleRequest(
+      prepareRequest ? await prepareRequest(request) : request,
+    );
   });
 }
 

@@ -79,7 +79,7 @@ Ce lancement reste local : publier et configurer le domaine est une étape d’h
 | `INTERNAL_API_ORIGIN` | `http://127.0.0.1:3101` en développement ; boucle locale sur `PORT` en production | Origine de l’API utilisée par le rendu SSR ; aussi cible du proxy Vite en développement |
 | `PUBLIC_SITE_URL`     | `http://localhost:3100`                                                           | Origine publique des URLs canoniques, Open Graph et du sitemap                          |
 
-Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Pour changer le port Hono en développement, fournir aussi `INTERNAL_API_ORIGIN`. Ne pas exposer ces paramètres dans le bundle navigateur. Le processus de production doit disposer de `dist/`, du `package.json` et de ses dépendances d’exécution (`npm ci --omit=dev`).
+Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Derrière un proxy, ce domaine reste prioritaire pour les actions de gestion. Sans domaine public configuré, les formulaires de gestion peuvent retrouver l’origine du navigateur uniquement après validation de leur jeton CSRF et du cookie signé ; les en-têtes `Forwarded` ne sont pas utilisés comme preuve. Pour changer le port Hono en développement, fournir aussi `INTERNAL_API_ORIGIN`. Ne pas exposer ces paramètres dans le bundle navigateur. Le processus de production doit disposer de `dist/`, du `package.json` et de ses dépendances d’exécution (`npm ci --omit=dev`).
 
 ## Gestion des clients
 
