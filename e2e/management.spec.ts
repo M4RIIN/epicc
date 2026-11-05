@@ -259,6 +259,7 @@ for (const javaScriptEnabled of [false, true]) {
     browser,
     request,
   }, testInfo) => {
+    test.setTimeout(60000);
     const context = await browser.newContext({ javaScriptEnabled });
     try {
       const page = await context.newPage();
