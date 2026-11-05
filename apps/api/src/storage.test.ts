@@ -6,7 +6,10 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { importSqlite } from './import-sqlite';
-import { createAdministrator } from './create-admin';
+import {
+  createAdministrator,
+  resetAdministratorPassword,
+} from './create-admin';
 import { composeApi } from './composition-root';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
@@ -252,4 +255,54 @@ it('crée un administrateur persistant sans écraser un compte existant', async 
     ['test@questboard.test'],
   );
   expect(result.rows[0].password_hash).not.toContain('testtest');
+});
+
+it('réinitialise seulement le compte ciblé et conserve son nouveau mot de passe au redémarrage', async () => {
+  await createAdministrator(database, 'autre@questboard.test', 'testtest');
+  await resetAdministratorPassword(
+    database,
+    ' TEST@questboard.test ',
+    'nouveau-mot-de-passe-de-test',
+  );
+  expect(await database.authenticate('test@questboard.test', 'testtest')).toBe(
+    false,
+  );
+  expect(
+    await database.authenticate(
+      'test@questboard.test',
+      'nouveau-mot-de-passe-de-test',
+    ),
+  ).toBe(true);
+  expect(await database.authenticate('autre@questboard.test', 'testtest')).toBe(
+    true,
+  );
+  await database.close();
+  database = new Database(testDatabaseUrl(name));
+  await database.migrate();
+  expect(
+    await database.authenticate(
+      'test@questboard.test',
+      'nouveau-mot-de-passe-de-test',
+    ),
+  ).toBe(true);
+});
+
+it('refuse une réinitialisation invalide ou un compte absent sans modifier les comptes existants', async () => {
+  await expect(
+    resetAdministratorPassword(
+      database,
+      'absent@questboard.test',
+      'nouveau-mot-de-passe-de-test',
+    ),
+  ).rejects.toThrow('introuvable');
+  await expect(
+    resetAdministratorPassword(database, 'test@questboard.test', 'court'),
+  ).rejects.toThrow();
+  expect(await database.authenticate('test@questboard.test', 'testtest')).toBe(
+    true,
+  );
+  expect(
+    (await database.pool.query('SELECT count(*) FROM administrators')).rows[0]
+      .count,
+  ).toBe('1');
 });

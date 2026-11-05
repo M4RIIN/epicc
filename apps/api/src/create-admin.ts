@@ -31,10 +31,31 @@ export async function createAdministrator(
   return credentials.email;
 }
 
+export async function resetAdministratorPassword(
+  database: Database,
+  email: string,
+  password: string,
+) {
+  const credentials = credentialsSchema.parse({
+    email: email.trim(),
+    password,
+  });
+  const result = await database.pool.query(
+    'UPDATE administrators SET password_hash = $2 WHERE email = $1 RETURNING email',
+    [credentials.email, await hashPassword(credentials.password)],
+  );
+  if (!result.rowCount)
+    throw new Error(
+      'Ce compte administrateur est introuvable. Aucun compte n’a été créé.',
+    );
+  return credentials.email;
+}
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
+  const resetting = process.argv.includes('--reset-password');
   const email = process.env.ADMIN_EMAIL;
   if (!email)
     throw new Error(
@@ -45,8 +66,13 @@ if (
   const database = new Database();
   try {
     await database.migrate({ provisionAdmin: false });
-    const created = await createAdministrator(database, email, password);
-    console.info(`Compte administrateur créé : ${created}`);
+    if (resetting) {
+      await resetAdministratorPassword(database, email, password);
+      console.info('Mot de passe administrateur réinitialisé.');
+    } else {
+      const created = await createAdministrator(database, email, password);
+      console.info(`Compte administrateur créé : ${created}`);
+    }
     if (!process.env.ADMIN_PASSWORD)
       console.info(`Mot de passe généré (à conserver) : ${password}`);
     console.info(
@@ -58,7 +84,7 @@ if (
         ? 'Adresse e-mail ou mot de passe invalide.'
         : error instanceof Error && error.message.startsWith('Ce compte')
           ? error.message
-          : 'Création impossible. Vérifiez la connexion PostgreSQL et les droits du compte serveur.',
+          : 'Opération impossible. Vérifiez la connexion PostgreSQL et les droits du compte serveur.',
     );
     process.exitCode = 1;
   } finally {
