@@ -11,7 +11,7 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
-import { vitrineProjects } from '@epicc/content-contracts';
+import { vitrineProjects, projectSides } from '@epicc/content-contracts';
 import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
 import { loadClients } from '../services/clients.server';
@@ -128,42 +128,110 @@ export default function Connect({
             <p className="eyebrow">01 / La vitrine</p>
             <h2 id="project-images-title">Les projets clients</h2>
             <p>
-              Les visuels du collage de la page d’accueil. Choisissez une image
-              à remplacer : la composition reste identique.
+              Les mêmes colonnes et les mêmes séries de photos que sur la
+              vitrine. Chaque titre est aligné avec la première photo de son
+              projet ; les photos suivantes sont affichées dans leur ordre
+              vertical.
             </p>
-            <div className="admin-projects">
-              {vitrineProjects.map((project) => (
-                <article key={project.name} className="admin-project-card">
-                  <h3>{project.name}</h3>
-                  <ul className="admin-project-images">
-                    {project.pieces.map((piece, index) => {
-                      const image = projectImages.find(
-                        (item) => item.file === piece.file,
-                      )!;
-                      return (
-                        <li key={piece.file}>
-                          <Link to={`/connect/projets/${piece.file}`}>
-                            <img
-                              src={
-                                image.image ??
-                                `/images/vitrine/projets-${piece.file}`
-                              }
-                              alt=""
-                              width={240}
-                              height={160}
-                              loading="lazy"
-                            />
-                            <span>
-                              Modifier{' '}
-                              {index === 0 ? 'le logo' : `l’image ${index}`} de{' '}
-                              {project.name} ↗
-                            </span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </article>
+            <div className="admin-project-columns">
+              {projectSides.map((side) => (
+                <section
+                  className="admin-project-column"
+                  key={side}
+                  aria-labelledby={`admin-project-${side}`}
+                >
+                  <h3 id={`admin-project-${side}`}>
+                    Colonne {side === 'left' ? 'gauche' : 'droite'}
+                  </h3>
+                  <div className="admin-projects">
+                    {vitrineProjects
+                      .filter((project) => project.side === side)
+                      .map((project) => (
+                        <article
+                          key={project.name}
+                          className="admin-project-card"
+                          data-side={side}
+                          aria-label={project.name}
+                        >
+                          <h4>{project.name}</h4>
+                          <div className="admin-project-images">
+                            {(['name', 'photo'] as const).map((role) => (
+                              <ul
+                                key={role}
+                                className={
+                                  role === 'name'
+                                    ? 'admin-project-titles'
+                                    : 'admin-project-photos'
+                                }
+                                aria-label={
+                                  role === 'name'
+                                    ? 'Titres du projet'
+                                    : 'Photos du projet'
+                                }
+                              >
+                                {project.pieces
+                                  .filter((piece) => piece.role === role)
+                                  .map((piece, index) => {
+                                    const image = projectImages.find(
+                                      (item) => item.file === piece.file,
+                                    )!;
+                                    return (
+                                      <li
+                                        key={piece.file}
+                                        style={{
+                                          width: `${Math.min(100, (piece.width / (role === 'name' ? 600 : 300)) * 100)}%`,
+                                        }}
+                                      >
+                                        <Link
+                                          to={`/connect/projets/${piece.file}`}
+                                        >
+                                          <img
+                                            src={
+                                              image.image ??
+                                              `/images/vitrine/projets-${piece.file}`
+                                            }
+                                            alt=""
+                                            width={piece.width}
+                                            height={piece.height}
+                                            style={{
+                                              aspectRatio:
+                                                piece.width / piece.height,
+                                              objectFit:
+                                                role === 'name'
+                                                  ? 'contain'
+                                                  : 'cover',
+                                              transform: piece.mirror
+                                                ? 'scaleX(-1)'
+                                                : undefined,
+                                            }}
+                                            loading="lazy"
+                                          />
+                                          <span>
+                                            Modifier{' '}
+                                            {role === 'name'
+                                              ? `le logo${index ? ` ${index + 1}` : ''}`
+                                              : `l’image ${index + 1}`}{' '}
+                                            de {project.name} ↗
+                                          </span>
+                                        </Link>
+                                      </li>
+                                    );
+                                  })}
+                              </ul>
+                            ))}
+                          </div>
+                          {!project.pieces.some(
+                            (piece) => piece.role === 'photo',
+                          ) && (
+                            <p className="admin-project-empty">
+                              Titre seul · Aucune photo dans la vitrine
+                              actuelle.
+                            </p>
+                          )}
+                        </article>
+                      ))}
+                  </div>
+                </section>
               ))}
             </div>
           </section>

@@ -629,7 +629,7 @@ html[data-home-loading] .vitrine-loading {
   margin-bottom: 20px;
 }
 
-/* Réalisations : collage éditorial, puis figures en lecture verticale sur mobile. */
+/* Deux colonnes indépendantes : titre et première photo partagent la même ligne. */
 .vitrine-projects {
   margin-top: 11.71875cqw;
   scroll-margin-top: 32px;
@@ -638,53 +638,78 @@ html[data-home-loading] .vitrine-loading {
   text-align: center;
 }
 .vitrine-projects-collage {
-  position: relative;
-  height: 225.833333cqw;
-  margin-top: 5.260417cqw;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.666667cqw;
+  margin: 5.260417cqw 5.416667% 0;
+}
+.vitrine-project-column {
+  display: grid;
+  gap: 4.166667cqw;
+  min-width: 0;
 }
 .vitrine-project {
-  display: contents;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15.46875cqw);
+  align-items: start;
+  gap: 1.666667cqw;
+  min-width: 0;
+}
+.vitrine-project-names {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  justify-items: end;
+  gap: 0.833333cqw;
+  min-width: 0;
+}
+.vitrine-project-photos {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 1.041667cqw;
+  min-width: 0;
+}
+.vitrine-project-column-right .vitrine-project {
+  grid-template-columns: minmax(0, 15.46875cqw) minmax(0, 1fr);
+}
+.vitrine-project-column-right .vitrine-project-names {
+  grid-column: 2;
+  justify-items: start;
+}
+.vitrine-project-column-right .vitrine-project-photos {
+  grid-column: 1;
+  align-items: start;
 }
 .vitrine-project-piece {
-  position: absolute;
-  left: var(--piece-x);
-  top: var(--piece-y);
-  width: var(--piece-width);
-  height: var(--piece-height);
+  width: min(100%, var(--piece-width));
+  aspect-ratio: var(--piece-ratio);
   overflow: hidden;
+  flex-shrink: 0;
 }
 .vitrine-project-piece img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
-}
-.vitrine-project-crop img {
   object-fit: cover;
-  object-position: 50% 50%;
+}
+.vitrine-project-name img {
+  object-fit: contain;
 }
 .vitrine-project-mirror {
   transform: scaleX(-1);
 }
 .vitrine-project-notes {
   list-style: none;
-  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2.5cqw;
+  margin: 4.166667cqw 7.65625% 0;
   padding: 0;
-}
-.vitrine-project-notes li {
-  position: absolute;
-  font-size: var(--vitrine-copy);
-}
-.vitrine-project-note-ecluse {
-  top: 179.739583cqw;
-  left: 29.0625%;
-}
-.vitrine-project-note-fitness {
-  top: 191.822917cqw;
-  left: 38.75%;
-}
-.vitrine-project-note-allegria {
-  top: 198.489583cqw;
-  left: 20.260417%;
+  font-size: var(--vitrine-small);
 }
 .vitrine-contact {
   position: relative;
@@ -811,39 +836,36 @@ html[data-home-loading] .vitrine-loading {
     margin: 70px 7.65625% 0;
   }
   .vitrine-projects-collage {
-    height: auto;
-    margin-top: 40px;
-    display: grid;
+    grid-template-columns: 1fr;
+    margin: 40px 0 0;
     gap: 44px;
   }
-  .vitrine-project {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: center;
+  .vitrine-project-column {
+    gap: 44px;
+  }
+  .vitrine-project,
+  .vitrine-project-column-right .vitrine-project {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
     gap: 16px;
   }
+  .vitrine-project-column-right .vitrine-project {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  }
+  .vitrine-project-names {
+    gap: 10px;
+  }
+  .vitrine-project-photos {
+    gap: 12px;
+  }
   .vitrine-project-piece {
-    position: static;
     width: 100%;
-    height: auto;
-    aspect-ratio: var(--piece-ratio);
   }
-  .vitrine-project-name {
-    grid-column: 1 / -1;
-    width: min(80%, 320px);
-    justify-self: start;
-  }
-  .vitrine-project:nth-child(even) .vitrine-project-name {
-    justify-self: end;
+  .vitrine-project-photo {
+    width: min(100%, calc(var(--piece-width) * 3));
   }
   .vitrine-project-notes {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
     gap: 24px;
-  }
-  .vitrine-project-notes li {
-    position: static;
+    margin: 40px 0 0;
   }
   .vitrine-contact {
     margin-top: 60px;

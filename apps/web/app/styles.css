@@ -1300,33 +1300,86 @@ nav a:hover,
   outline: 2px solid #000;
   outline-offset: 4px;
 }
+.admin-project-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 32px;
+}
+.admin-project-column {
+  min-width: 0;
+}
+.admin-project-column > h3 {
+  padding-bottom: 16px;
+  border-bottom: 2px solid #000;
+}
 .admin-projects {
   display: grid;
-  gap: 32px;
-  margin-top: 32px;
+  gap: 28px;
 }
 .admin-project-card {
   min-width: 0;
-  border-top: 1px solid #000;
-  padding-top: 16px;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 20px;
+}
+.admin-project-card h4 {
+  margin: 0 0 16px;
+  text-transform: uppercase;
 }
 .admin-project-images {
-  list-style: none;
-  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  gap: 20px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.admin-project-images ul {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.admin-project-titles {
+  grid-column: 1;
+  grid-row: 1;
+  justify-items: end;
+}
+.admin-project-photos {
+  grid-column: 2;
+  grid-row: 1;
+  justify-items: end;
+}
+.admin-project-card[data-side='right'] .admin-project-images {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+}
+.admin-project-card[data-side='right'] .admin-project-titles {
+  grid-column: 2;
+  justify-items: start;
+}
+.admin-project-card[data-side='right'] .admin-project-photos {
+  grid-column: 1;
+  justify-items: start;
 }
 .admin-project-images a {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  font-size: 11px;
 }
 .admin-project-images img {
   width: 100%;
-  height: 160px;
-  object-fit: contain;
-  border: 1px solid #ddd;
-  padding: 12px;
+  height: auto;
+}
+.admin-project-empty {
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 850px) {
+  .admin-project-columns {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
 }
 .admin-project-preview {
   width: min(100%, 420px);

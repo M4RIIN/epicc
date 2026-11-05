@@ -31,6 +31,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   )!;
   return {
     project: project.name,
+    side: project.side,
+    imageNumber:
+      project.pieces
+        .filter((item) => item.role === piece.role)
+        .findIndex((item) => item.file === piece.file) + 1,
     piece,
     image,
     csrf: session.get('csrf') as string,
@@ -54,16 +59,19 @@ export default function ManageProjectImage({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { project, piece, image, csrf } = loaderData;
+  const { project, piece, image, csrf, side, imageNumber } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
       <Link to="/connect#project-images">← Retour aux projets clients</Link>
-      <p className="eyebrow">Les projets clients / Visuel</p>
+      <p className="eyebrow">
+        Colonne {side === 'left' ? 'gauche' : 'droite'} /{' '}
+        {piece.role === 'name' ? 'Titre' : 'Photo'} {imageNumber}
+      </p>
       <h1>{project}</h1>
       <p>
-        Remplacez le visuel. Son emplacement et ses dimensions restent ceux de
-        la vitrine, sur ordinateur comme sur mobile.
+        Remplacez ce visuel dans sa série. Le titre et la première photo restent
+        alignés ; les proportions et l’ordre des photos sont conservés.
       </p>
       <Form
         method="post"
@@ -85,7 +93,7 @@ export default function ManageProjectImage({
             src={image.image ?? `/images/vitrine/projets-${piece.file}`}
             alt={image.alt}
             style={{
-              objectFit: piece.crop ? 'cover' : 'fill',
+              objectFit: piece.role === 'name' ? 'contain' : 'cover',
               transform: piece.mirror ? 'scaleX(-1)' : undefined,
             }}
           />
