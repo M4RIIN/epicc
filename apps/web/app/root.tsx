@@ -13,7 +13,9 @@ import type { ReactNode } from 'react';
 import './styles.css';
 
 export function Layout({ children }: { children: ReactNode }) {
-  const isHome = useLocation().pathname === '/';
+  const pathname = useLocation().pathname;
+  const isHome = pathname === '/';
+  const isAdmin = pathname.startsWith('/connect');
   return (
     <html lang="fr" suppressHydrationWarning>
       <head>
@@ -30,7 +32,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className={isAdmin ? 'admin-shell' : undefined}>
         <a className="skip-link" href="#contenu">
           Aller au contenu
         </a>
