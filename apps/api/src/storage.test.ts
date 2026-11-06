@@ -75,9 +75,15 @@ it('enregistre et remplace les images des offres, protège les écritures et net
   let api = composeApi(database);
   const path = '/v1/admin/offers/creation-de-marque';
   expect((await api.request(path, { method: 'POST' })).status).toBe(401);
-  const post = (alt: string, image?: File, remove = false) => {
+  const post = (
+    alt: string,
+    image?: File,
+    remove = false,
+    target = 'image',
+  ) => {
     const form = new FormData();
     form.set('alt', alt);
+    form.set('target', target);
     if (image) form.set('image', image);
     if (remove) form.set('removeImage', 'yes');
     return api.request(path, {
@@ -110,6 +116,22 @@ it('enregistre et remplace les images des offres, protège les écritures et net
     ['creation-de-marque'],
   );
   const firstImage = before.rows[0].content.image as string;
+  expect(
+    (
+      await post(
+        'Visuel au survol',
+        new File([png], 'survol.png', { type: 'image/png' }),
+        false,
+        'hover',
+      )
+    ).status,
+  ).toBe(200);
+  const hoverImage = (
+    await database.pool.query('SELECT content FROM offers WHERE slug = $1', [
+      'creation-de-marque',
+    ])
+  ).rows[0].content.hoverImage as string;
+
   await database.close();
   database = new Database(testDatabaseUrl(name));
   await database.migrate();
@@ -128,6 +150,13 @@ it('enregistre et remplace les images des offres, protège les écritures et net
   ).toBe(200);
   expect((await api.request(firstImage.replace('/api', ''))).status).toBe(404);
   expect((await post('', undefined, true)).status).toBe(200);
+  expect((await api.request(hoverImage.replace('/api', ''))).status).toBe(200);
+  expect(
+    (await database.pool.query('SELECT count(*) FROM images')).rows[0].count,
+  ).toBe('1');
+  expect((await post('', undefined, true, 'hover')).status).toBe(200);
+  expect((await api.request(hoverImage.replace('/api', ''))).status).toBe(404);
+
   expect(
     (await database.pool.query('SELECT count(*) FROM images')).rows[0].count,
   ).toBe('0');

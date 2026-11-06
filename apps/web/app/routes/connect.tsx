@@ -252,13 +252,14 @@ export default function Connect({
             <h2 id="offers-title">Images des offres</h2>
             <p>
               Les visuels alternent entre grand et petit format selon la
-              position de l’offre.
+              position de l’offre. Chaque offre dispose aussi d’une image de
+              survol indépendante.
             </p>
             <ul className="admin-offers">
               {offers.map((offer, index) => (
                 <li key={offer.slug}>
                   <Link to={`/connect/offres/${offer.slug}`}>
-                    Modifier l’image : {offer.name} ↗
+                    Modifier les images : {offer.name} ↗
                   </Link>
                   <span>
                     {' '}

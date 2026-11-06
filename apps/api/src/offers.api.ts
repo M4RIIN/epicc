@@ -28,10 +28,14 @@ export function createOffersApi(database: Database) {
       .parse(result.rows.map((row) => row.content));
     const sourcesFor = await publicImageSources(
       database,
-      offers.map((offer) => offer.image),
+      offers.flatMap((offer) => [offer.image, offer.hoverImage ?? null]),
     );
     return c.json(
-      offers.map((offer) => ({ ...offer, sources: sourcesFor(offer.image) })),
+      offers.map((offer) => ({
+        ...offer,
+        sources: sourcesFor(offer.image),
+        hoverSources: sourcesFor(offer.hoverImage ?? null),
+      })),
     );
   });
   api.get('/v1/offer-images/:id', async (c) => {
@@ -47,6 +51,7 @@ export function createOffersApi(database: Database) {
     }>(
       `SELECT ${width === null ? 'mime, content, storage_key' : 'id'} FROM images WHERE id = $1 AND EXISTS (
       SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
+      OR content->>'hoverImage' = '/api/v1/offer-images/' || images.id
     )`,
       [id],
     );
@@ -70,6 +75,9 @@ export function createOffersApi(database: Database) {
     );
     if (!result.rows[0]) return c.notFound();
     const current = offerSchema.parse(result.rows[0].content);
+    const hover = form.get('target') === 'hover';
+    const imageField = hover ? 'hoverImage' : 'image';
+    const altField = hover ? 'hoverAlt' : 'alt';
     let image;
     try {
       image = await readImage(form.get('image'));
@@ -79,12 +87,12 @@ export function createOffersApi(database: Database) {
     const id = image ? randomUUID() : null;
     const parsed = offerSchema.safeParse({
       ...current,
-      image: id
+      [imageField]: id
         ? `/api/v1/offer-images/${id}`
         : form.get('removeImage') === 'yes'
           ? null
-          : current.image,
-      alt: String(form.get('alt') ?? ''),
+          : (current[imageField] ?? null),
+      [altField]: String(form.get('alt') ?? ''),
     });
     if (!parsed.success)
       return c.json(
@@ -93,6 +101,7 @@ export function createOffersApi(database: Database) {
       );
     await database.images.write(id, image, async (connection) => {
       await assertImageReference(connection, parsed.data.image);
+      await assertImageReference(connection, parsed.data.hoverImage ?? null);
       await connection.query('UPDATE offers SET content = $2 WHERE slug = $1', [
         slug,
         parsed.data,

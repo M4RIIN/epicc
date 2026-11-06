@@ -62,12 +62,23 @@ export const offerSchema = z
       .regex(/^\/api\/v1\/offer-images\/[a-f0-9-]+$/)
       .nullable(),
     alt: z.string().trim().max(300),
+    hoverImage: z
+      .string()
+      .regex(/^\/api\/v1\/offer-images\/[a-f0-9-]+$/)
+      .nullable()
+      .optional(),
+    hoverAlt: z.string().trim().max(300).optional(),
+    hoverSources: responsiveImageSourcesSchema.optional(),
     position: z.number().int().min(0).max(99999),
     sources: responsiveImageSourcesSchema.optional(),
   })
   .refine((offer) => !offer.image || offer.alt.length > 0, {
     message: 'Décrivez l’image pour les lecteurs d’écran.',
     path: ['alt'],
+  })
+  .refine((offer) => !offer.hoverImage || Boolean(offer.hoverAlt?.length), {
+    message: 'Décrivez l’image de survol pour les lecteurs d’écran.',
+    path: ['hoverAlt'],
   });
 export type Offer = z.infer<typeof offerSchema>;
 
