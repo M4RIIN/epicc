@@ -65,6 +65,7 @@ export class ImageStore {
     id: string | null,
     image: UploadedImage | undefined,
     work: (connection: PoolClient) => Promise<T>,
+    { pruneUnused = true } = {},
   ) {
     const key = image && id && this.storage ? `media/${id}` : null;
     if (key) await this.reserve(key);
@@ -102,10 +103,10 @@ export class ImageStore {
             'DELETE FROM media_deletions WHERE storage_key = $1',
             [key],
           );
-        await removeUnusedImages(connection);
+        if (pruneUnused) await removeUnusedImages(connection);
         return value;
       });
-      await this.cleanup();
+      if (pruneUnused) await this.cleanup();
       return result;
     } catch (error) {
       // La référence précédente reste intacte si le PUT ou la transaction échoue.
@@ -114,7 +115,7 @@ export class ImageStore {
           'UPDATE media_deletions SET available_at = now() WHERE storage_key = $1',
           [key],
         );
-        await this.cleanup();
+        if (pruneUnused) await this.cleanup();
       }
       throw error;
     }

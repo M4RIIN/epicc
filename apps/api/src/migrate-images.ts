@@ -3,6 +3,10 @@ import { createHash } from 'node:crypto';
 import { Database } from './database';
 import { importProjectOriginals } from './project-originals';
 import { existsSync } from 'node:fs';
+import {
+  inventoryProjectMedia,
+  verifyProjectMedia,
+} from './project-media-audit';
 
 export async function purgeLegacy(database: Database) {
   if (!database.images.storage)
@@ -35,20 +39,44 @@ if (
 ) {
   const database = new Database();
   try {
-    await database.migrate({ provisionAdmin: false });
-    if (process.argv.includes('--purge-legacy')) await purgeLegacy(database);
-    else if (process.argv.includes('--cleanup'))
-      await database.images.cleanup();
-    else {
-      if (!database.images.storage)
-        throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
-      await importProjectOriginals(
-        database,
-        existsSync('apps/web/public/images/vitrine')
-          ? 'apps/web/public/images/vitrine'
-          : 'dist/apps/web/client/images/vitrine',
+    const root = existsSync('apps/web/public/images/vitrine')
+      ? 'apps/web/public/images/vitrine'
+      : 'dist/apps/web/client/images/vitrine';
+    if (process.argv.includes('--inventory')) {
+      console.info(
+        'INVENTAIRE_MEDIAS',
+        JSON.stringify(await inventoryProjectMedia(database)),
       );
-      await database.images.migrateLegacy();
+    } else if (process.argv.includes('--verify')) {
+      console.info(
+        'VERIFICATION_MEDIAS',
+        JSON.stringify(await verifyProjectMedia(database, root)),
+      );
+    } else {
+      const before = await inventoryProjectMedia(database);
+      console.info('INVENTAIRE_MEDIAS', JSON.stringify(before));
+      await database.migrate({ provisionAdmin: false });
+      if (process.argv.includes('--purge-legacy')) await purgeLegacy(database);
+      else if (process.argv.includes('--cleanup'))
+        await database.images.cleanup();
+      else {
+        if (!database.images.storage)
+          throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
+        await importProjectOriginals(database, root);
+        await database.images.migrateLegacy();
+        const after = await inventoryProjectMedia(database);
+        if (JSON.stringify(before.contents) !== JSON.stringify(after.contents))
+          throw new Error(
+            'Les contenus ont changé pendant l’import : vérification nécessaire.',
+          );
+        console.info(
+          'VERIFICATION_MEDIAS',
+          JSON.stringify({
+            ...(await verifyProjectMedia(database, root)),
+            editedContentsPreserved: true,
+          }),
+        );
+      }
     }
     console.info(
       'Traitement des images terminé. Les références sont conservées.',
