@@ -1,11 +1,12 @@
+import { assertImageReference } from './images.store';
 import { randomUUID } from 'node:crypto';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { projectImageSchema, vitrineProjects } from '@epicc/content-contracts';
 import type { Database } from './database';
 import { authorized } from './clients.api';
-import { readImage } from './image-upload';
-import { removeUnusedImages } from './clients.store';
+import { readImage, uploadBodyLimit } from './image-upload';
+import { imageResponse } from './image-response';
 
 const pieces = vitrineProjects.flatMap((project) =>
   project.pieces.map((piece) => ({
@@ -38,17 +39,19 @@ export function createProjectsApi(database: Database) {
     const id = c.req.param('id');
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))
       return c.notFound();
-    const result = await database.pool.query<{ mime: string; content: Buffer }>(
-      `SELECT mime, content FROM images WHERE id = $1 AND EXISTS (
+    const result = await database.pool.query<{
+      mime: string;
+      content: Buffer | null;
+      storage_key: string | null;
+    }>(
+      `SELECT mime, content, storage_key FROM images WHERE id = $1 AND EXISTS (
         SELECT 1 FROM project_images WHERE content->>'image' = '/api/v1/project-images/' || images.id
       )`,
       [id],
     );
-    const image = result.rows[0];
-    if (!image) return c.notFound();
-    c.header('Content-Type', image.mime);
-    c.header('X-Content-Type-Options', 'nosniff');
-    return c.body(Buffer.from(image.content));
+    if (!result.rows[0]) return c.notFound();
+    const image = await database.images.read(result.rows[0]);
+    return imageResponse(c, image);
   });
   api.use('/v1/admin/project-images/*', async (c, next) => {
     c.header('X-Robots-Tag', 'noindex, nofollow');
@@ -58,7 +61,7 @@ export function createProjectsApi(database: Database) {
   });
   api.use(
     '/v1/admin/project-images/*',
-    bodyLimit({ maxSize: 6 * 1024 * 1024 }),
+    bodyLimit({ maxSize: uploadBodyLimit() }),
   );
   api.post('/v1/admin/project-images/:file', async (c) => {
     const file = c.req.param('file');
@@ -66,11 +69,10 @@ export function createProjectsApi(database: Database) {
       return c.json({ error: 'Visuel introuvable.' }, 404);
     const form = await c.req.formData();
     if (form.get('restore') === 'yes') {
-      await database.transaction(async (connection) => {
+      await database.images.write(null, undefined, async (connection) => {
         await connection.query('DELETE FROM project_images WHERE file = $1', [
           file,
         ]);
-        await removeUnusedImages(connection);
       });
       return c.json({ ok: true });
     }
@@ -100,18 +102,12 @@ export function createProjectsApi(database: Database) {
         },
         400,
       );
-    await database.transaction(async (connection) => {
-      if (image)
-        await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
-          id,
-          image.mime,
-          Buffer.from(image.content),
-        ]);
+    await database.images.write(id, image, async (connection) => {
+      await assertImageReference(connection, parsed.data.image);
       await connection.query(
         'INSERT INTO project_images VALUES ($1, $2) ON CONFLICT (file) DO UPDATE SET content = EXCLUDED.content',
         [file, parsed.data],
       );
-      await removeUnusedImages(connection);
     });
     return c.json({ ok: true });
   });

@@ -27,7 +27,7 @@ export async function importSqlite(database: Database, path: string) {
       await connection.query('DELETE FROM clients');
       for (const row of images) {
         await connection.query(
-          'INSERT INTO images VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+          'INSERT INTO images (id, mime, content) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
           [row.id, row.mime, Buffer.from(row.content as Uint8Array)],
         );
       }

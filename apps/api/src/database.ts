@@ -1,4 +1,6 @@
 import { Pool, type PoolClient } from 'pg';
+import { ImageStore } from './images.store';
+import { storageFromEnvironment, type ObjectStorage } from './object-storage';
 import { randomBytes, scrypt as deriveKey, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { initialClients } from './clients.seed';
@@ -20,7 +22,12 @@ export async function verifyPassword(password: string, hash: string) {
 
 export class Database {
   readonly pool: Pool;
-  constructor(url = process.env.DATABASE_URL) {
+  readonly images: ImageStore;
+  constructor(
+    url = process.env.DATABASE_URL,
+    storage: ObjectStorage | undefined = storageFromEnvironment(),
+  ) {
+    this.images = new ImageStore(this, storage);
     if (!url) throw new Error('DATABASE_URL est obligatoire (PostgreSQL).');
     this.pool = new Pool({
       connectionString: url,
@@ -54,6 +61,17 @@ export class Database {
         CREATE TABLE IF NOT EXISTS project_images (file TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS offers (slug TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS administrators (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL);
+      `);
+      await client.query(`
+        ALTER TABLE images ALTER COLUMN content DROP NOT NULL;
+        ALTER TABLE images ADD COLUMN IF NOT EXISTS storage_key TEXT UNIQUE;
+        ALTER TABLE images ADD COLUMN IF NOT EXISTS byte_size BIGINT;
+        ALTER TABLE images ADD COLUMN IF NOT EXISTS width INTEGER;
+        ALTER TABLE images ADD COLUMN IF NOT EXISTS height INTEGER;
+        ALTER TABLE images ADD COLUMN IF NOT EXISTS sha256 TEXT;
+        CREATE TABLE IF NOT EXISTS media_deletions (
+          storage_key TEXT PRIMARY KEY, available_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        );
       `);
       if (
         !(

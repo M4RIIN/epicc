@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { StorageUnavailable, ImageReferenceChanged } from './images.store';
 import { secureHeaders } from 'hono/secure-headers';
 import {
   GetPublishedPage,
@@ -30,7 +31,14 @@ export function createApi(pages: PageRepository) {
     if (error instanceof PageNotFoundError) {
       return context.json({ error: error.message }, 404);
     }
-    console.error(error);
+    if (error instanceof ImageReferenceChanged) {
+      return context.json({ error: error.message }, 409);
+    }
+    if (error instanceof StorageUnavailable) {
+      context.header('Cache-Control', 'no-store');
+      return context.json({ error: error.message }, 503);
+    }
+    console.error('Erreur interne de l’API.');
     return context.json({ error: 'Une erreur interne est survenue.' }, 500);
   });
   return api;
