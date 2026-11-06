@@ -21,7 +21,7 @@ Railway fournit `PORT` ; le serveur l’utilise et écoute sur `0.0.0.0`. Ne pas
 
 Les [références de variables Railway](https://docs.railway.com/variables) évitent de recopier les identifiants PostgreSQL. Ne pas importer un `.env` local ni utiliser une base de test pour cet hébergement.
 
-Configurer le [contrôle de démarrage](https://docs.railway.com/deployments/healthchecks) sur `/api/health`, avec un délai de 120 secondes. Le serveur initialise les tables avant d’écouter ; ce contrôle confirme ensuite le fonctionnement HTTP, sans surveiller en continu la base. Aucun script de migration supplémentaire ni volume applicatif n’est nécessaire : les fiches, les images et les comptes sont stockés dans PostgreSQL.
+Configurer le [contrôle de démarrage](https://docs.railway.com/deployments/healthchecks) sur `/api/health`, avec un délai de 120 secondes. Le serveur initialise les tables avant d’écouter ; ce contrôle confirme ensuite le fonctionnement HTTP, sans surveiller en continu la base. Aucun script de migration supplémentaire ni volume applicatif n’est nécessaire : les fiches et les comptes sont stockés dans PostgreSQL. Pour les médias, configurer le bucket privé et les variables décrites dans [Stockage des images](stockage-images.md) ; le mode PostgreSQL historique reste disponible pendant la transition.
 
 Les sauvegardes manuelles et planifiées de volumes nécessitent une offre Railway Pro. Un volume persistant conserve les données entre redémarrages, mais ne remplace pas une sauvegarde. Si l’offre ne permet pas les sauvegardes Railway, prévoir un export PostgreSQL régulier vers un stockage distinct avant d’y confier des données importantes.
 
