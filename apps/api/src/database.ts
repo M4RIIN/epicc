@@ -4,7 +4,7 @@ import { storageFromEnvironment, type ObjectStorage } from './object-storage';
 import { randomBytes, scrypt as deriveKey, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 import { initialClients } from './clients.seed';
-import { initialOffers } from './offers.seed';
+import { initialOffers, previousOffers } from './offers.seed';
 
 const scrypt = promisify(deriveKey);
 export async function hashPassword(password: string) {
@@ -103,6 +103,42 @@ export class Database {
           );
         }
         await client.query("INSERT INTO migrations VALUES ('seed-offers')");
+      }
+      // Mise à jour unique des textes d’origine, en conservant les images
+      // et toute rédaction qui aurait été personnalisée.
+      if (
+        !(
+          await client.query(
+            "SELECT id FROM migrations WHERE id = 'vitrine-offers-2026-11'",
+          )
+        ).rowCount
+      ) {
+        for (const offer of initialOffers) {
+          const previous = previousOffers.find(
+            (item) => item.slug === offer.slug,
+          );
+          if (previous) {
+            const { name, description, summary, position } = offer;
+            await client.query(
+              `UPDATE offers SET content = content || $2::jsonb
+               WHERE slug = $1 AND content->>'name' = $3 AND content->>'description' = $4`,
+              [
+                offer.slug,
+                { name, description, summary, position },
+                previous.name,
+                previous.description,
+              ],
+            );
+          } else {
+            await client.query(
+              'INSERT INTO offers VALUES ($1, $2) ON CONFLICT DO NOTHING',
+              [offer.slug, offer],
+            );
+          }
+        }
+        await client.query(
+          "INSERT INTO migrations VALUES ('vitrine-offers-2026-11')",
+        );
       }
       // Les variables servent uniquement à créer le compte initial ; aucun mot de passe en clair en base.
       if (

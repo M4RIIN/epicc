@@ -22,9 +22,10 @@ body:has(.vitrine) {
   --vitrine-copy: clamp(12px, 1.041667cqw, 20px);
   --vitrine-small: clamp(11px, 0.833333cqw, 16px);
   container-type: inline-size;
+  overflow-x: clip;
   width: 100%;
   max-width: 1920px;
-  min-height: min(316.3vw, 6073px);
+  min-height: 100vh;
   margin: 0 auto;
   background: var(--vitrine-paper);
   color: var(--vitrine-ink);
@@ -61,7 +62,7 @@ body:has(.vitrine) {
 .vitrine-opening {
   position: relative;
   aspect-ratio: 1920 / 1395;
-  overflow: clip;
+  overflow: visible;
 }
 .vitrine-cover {
   position: absolute;
@@ -81,6 +82,11 @@ body:has(.vitrine) {
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.vitrine-opening-art > g {
+  transform: translate(-95px, 340px) scale(1.1, 1.35);
 }
 .vitrine-navigation {
   position: absolute;
@@ -106,7 +112,7 @@ body:has(.vitrine) {
 .vitrine-navigation-sections {
   display: flex;
   justify-content: space-between;
-  width: 29%;
+  width: auto;
   gap: 24px;
 }
 .vitrine-menu summary {
@@ -135,9 +141,29 @@ body:has(.vitrine) {
   font-size: max(13px, 0.9375cqw);
 }
 .vitrine-services {
+  position: relative;
   width: 68.489583%;
-  margin: 6.666667cqw 0 0 7.864583%;
+  margin: 0 0 0 7.65625%;
   scroll-margin-top: 32px;
+}
+.vitrine-service-notes {
+  position: relative;
+  height: 8.854167cqw;
+}
+.vitrine-evening {
+  position: absolute;
+  top: -0.5cqw;
+  left: -0.25cqw;
+  font-size: 5.208333cqw;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  text-transform: none;
+}
+.vitrine-benchmark {
+  position: absolute;
+  top: 3.333333cqw;
+  left: 50.625cqw;
+  font-size: var(--vitrine-small);
 }
 .vitrine-services dl {
   margin: 0;
@@ -145,55 +171,66 @@ body:has(.vitrine) {
 .vitrine-service {
   position: relative;
   display: grid;
-  grid-template-columns: 30.41825% 1fr;
-  align-items: center;
-  min-height: 4.322917cqw;
-  padding-block: 0.625cqw;
+  grid-template-columns: 45% 1fr;
+  align-items: start;
+  min-height: 7.8125cqw;
+}
+.vitrine-service:nth-child(2) {
+  min-height: 9.895833cqw;
 }
 .vitrine-service:nth-child(3) {
-  min-height: 2.8125cqw;
+  min-height: 7.708333cqw;
 }
 .vitrine-service:nth-child(4) {
-  min-height: 5.729167cqw;
+  min-height: 6.979167cqw;
+}
+.vitrine-service:nth-child(5) {
+  min-height: 5.677083cqw;
+}
+.vitrine-service:nth-child(6) {
+  min-height: 6.875cqw;
 }
 .vitrine-service dt {
   padding-right: 16px;
 }
+.vitrine-service-name {
+  display: block;
+  font-size: var(--vitrine-heading);
+  line-height: 1.333333;
+  letter-spacing: -0.06em;
+}
+.vitrine-service-summary {
+  display: block;
+  margin-top: 0.625cqw;
+  white-space: pre-line;
+  line-height: 1.55;
+}
+.vitrine-service-annotation {
+  position: absolute;
+  left: -2.7cqw;
+  top: 0.25cqw;
+  font:
+    400 2.083333cqw / 1 Caveat,
+    cursive;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  transform: rotate(-8deg);
+}
+.vitrine-service[data-offer='restructuration-de-restaurants']
+  .vitrine-service-annotation {
+  top: 1.2cqw;
+}
 .vitrine-service dd {
   margin: 0;
+  padding-top: 2.5cqw;
+  text-align: right;
+  white-space: pre-line;
 }
-.vitrine-service-rule {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 1px;
-  overflow: visible;
-}
-.vitrine-brand-label {
-  position: relative;
-  display: block;
-  width: 10.46875cqw;
-  height: 3.072917cqw;
-}
-.vitrine-brand-label img {
-  position: absolute;
-  width: 7.708333cqw;
-  transform: rotate(-5deg);
-}
-.vitrine-brand-label img:first-child {
-  left: -0.364583cqw;
-  top: -0.520833cqw;
-}
-.vitrine-brand-label img:last-child {
-  left: 2.447917cqw;
-  top: 1.041667cqw;
-}
-.vitrine-event-label {
-  width: 10.989583cqw;
-  transform: rotate(-3.5deg);
+.vitrine-service .vitrine-offer-visual {
+  padding-top: 1.5cqw;
 }
 .vitrine-biography {
-  margin: 10.364583cqw 7.65625% 0;
+  margin: 2.135417cqw 7.65625% 0;
   scroll-margin-top: 32px;
 }
 .vitrine-biography-heading {
@@ -228,6 +265,7 @@ body:has(.vitrine) {
 }
 .vitrine-childhood {
   position: relative;
+  grid-column: 2;
   aspect-ratio: 953.819 / 537;
   width: 49.678073cqw;
   overflow: hidden;
@@ -349,33 +387,6 @@ body:has(.vitrine) {
     min-height: 100vh;
     padding-bottom: 20vw;
   }
-  .vitrine-services {
-    width: 84.6875%;
-  }
-  .vitrine-service {
-    min-height: 70px;
-    padding-block: 16px;
-    grid-template-columns: 32% 1fr;
-  }
-  .vitrine-service:nth-child(3),
-  .vitrine-service:nth-child(4) {
-    min-height: 70px;
-  }
-  .vitrine-brand-label {
-    width: 130px;
-    height: 50px;
-  }
-  .vitrine-brand-label img {
-    width: 90px;
-  }
-  .vitrine-brand-label img:last-child {
-    left: 28px;
-    top: 15px;
-  }
-  .vitrine-event-label {
-    width: 130px;
-    max-width: 100%;
-  }
   .vitrine-biography {
     margin-top: 12cqw;
   }
@@ -446,20 +457,6 @@ body:has(.vitrine) {
     max-width: none;
     left: -23%;
   }
-  .vitrine-services {
-    margin-top: 40px;
-  }
-  .vitrine-service {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding-block: 22px;
-  }
-  .vitrine-brand-label {
-    height: 65px;
-  }
-  .vitrine-event-label {
-    width: 145px;
-  }
   .vitrine-biography {
     margin-top: 60px;
   }
@@ -485,6 +482,7 @@ body:has(.vitrine) {
     padding: 0;
   }
   .vitrine-childhood {
+    grid-column: 1;
     width: 100%;
   }
   .vitrine-chapters {
@@ -567,7 +565,8 @@ body:has(.vitrine) {
 
 /* Deux colonnes indépendantes : titre et première photo partagent la même ligne. */
 .vitrine-projects {
-  margin-top: 11.71875cqw;
+  position: relative;
+  margin-top: 10.46875cqw;
   scroll-margin-top: 32px;
 }
 .vitrine-projects h2 {
@@ -578,11 +577,11 @@ body:has(.vitrine) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 1.666667cqw;
-  margin: 5.260417cqw 5.416667% 0;
+  margin: 6.875cqw 3.75% 0 5.416667%;
 }
 .vitrine-project-column {
   display: grid;
-  gap: 4.166667cqw;
+  gap: 0;
   min-width: 0;
 }
 .vitrine-project-group {
@@ -626,12 +625,15 @@ body:has(.vitrine) {
   align-items: start;
 }
 .vitrine-project-piece {
+  position: relative;
   width: min(100%, var(--piece-width));
   aspect-ratio: var(--piece-ratio);
   overflow: hidden;
   flex-shrink: 0;
 }
 .vitrine-project-piece img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -642,19 +644,100 @@ body:has(.vitrine) {
 .vitrine-project-mirror {
   transform: scaleX(-1);
 }
+/* Le rythme vertical vient du collage : les hauteurs minimales laissent
+   les photos ajoutées depuis la gestion agrandir leur groupe naturellement. */
+.vitrine-project-column-left {
+  padding-top: 3.489583cqw;
+}
+.vitrine-project[data-project='Viande des Sorgues'] {
+  min-height: 77.65625cqw;
+}
+.vitrine-project[data-project='Club des riches'] {
+  min-height: 24.375cqw;
+}
+.vitrine-project[data-project='Club des riches'] .vitrine-project-names {
+  visibility: hidden;
+}
+.vitrine-project[data-project='Les Trois Sœurs'] {
+  min-height: 30.729167cqw;
+}
+.vitrine-project[data-project='L’Écluse Douze — Deux Mnu'],
+.vitrine-project-group {
+  min-height: 43.229167cqw;
+}
+.vitrine-project-group .vitrine-project {
+  min-height: 0;
+}
+.vitrine-project-group {
+  align-content: start;
+}
+.vitrine-project[data-project='La Spinière'] {
+  min-height: 27.604167cqw;
+}
+.vitrine-project[data-project='Annafurna'] {
+  min-height: 32.96875cqw;
+}
+.vitrine-project[data-project='Casamatta'] {
+  min-height: 38.802083cqw;
+}
+.vitrine-project[data-project='Origin'] {
+  min-height: 57.1875cqw;
+}
+.vitrine-project[data-project='Le Conseil'] {
+  min-height: 29.6875cqw;
+}
+.vitrine-project[data-project='Le Carré Vert'] {
+  min-height: 38.541667cqw;
+}
+.vitrine-project[data-project='Allegria'] {
+  min-height: 17.708333cqw;
+}
+.vitrine-project-column-right .vitrine-project-photos {
+  gap: 1.458333cqw;
+}
+.vitrine-project[data-project='Origin']
+  .vitrine-project-photo
+  + .vitrine-project-photo {
+  margin-top: 6.041667cqw;
+}
+.vitrine-project-piece > a {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vitrine-project-piece:has(a) {
+  overflow: visible;
+}
+.vitrine-project-piece a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+}
 .vitrine-project-notes {
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2.5cqw;
-  margin: 4.166667cqw 7.65625% 0;
+  margin: 0;
   padding: 0;
   font-size: var(--vitrine-small);
 }
+.vitrine-project-notes li {
+  position: absolute;
+}
+.vitrine-project-notes li:nth-child(1) {
+  top: 187.135417cqw;
+  left: 29.166667%;
+}
+.vitrine-project-notes li:nth-child(2) {
+  top: 199.21875cqw;
+  left: 38.645833%;
+}
+.vitrine-project-notes li:nth-child(3) {
+  top: 205.885417cqw;
+  left: 20.3125%;
+}
 .vitrine-contact {
   position: relative;
-  margin-top: 3.072917cqw;
+  margin-top: 4.635417cqw;
   padding-top: 9.739583cqw;
   padding-bottom: 10cqw;
   scroll-margin-top: 32px;
@@ -783,6 +866,22 @@ body:has(.vitrine) {
   }
   .vitrine-project-column {
     gap: 44px;
+    padding-top: 0;
+  }
+  .vitrine-project[data-project],
+  .vitrine-project-group {
+    min-height: 0;
+  }
+  .vitrine-project[data-project='Club des riches'] .vitrine-project-names {
+    visibility: visible;
+  }
+  .vitrine-project[data-project='Origin']
+    .vitrine-project-photo
+    + .vitrine-project-photo {
+    margin-top: 0;
+  }
+  .vitrine-project-column-right .vitrine-project-photos {
+    gap: 12px;
   }
   .vitrine-project,
   .vitrine-project-column-right .vitrine-project {
@@ -806,8 +905,14 @@ body:has(.vitrine) {
     width: min(100%, calc(var(--piece-width) * 3));
   }
   .vitrine-project-notes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 24px;
     margin: 40px 0 0;
+  }
+  .vitrine-project-notes li {
+    position: static;
   }
   .vitrine-contact {
     margin-top: 60px;
@@ -893,4 +998,63 @@ body:has(.vitrine) {
   left: 21.85%;
   top: -38.81%;
   transform: rotate(-90deg);
+}
+
+@media (max-width: 900px) {
+  .vitrine-services {
+    width: 84.6875%;
+    margin-top: 32px;
+  }
+  .vitrine-service-notes {
+    height: 70px;
+  }
+  .vitrine-evening {
+    font-size: clamp(32px, 5.2cqw, 50px);
+  }
+  .vitrine-benchmark {
+    top: 24px;
+    left: auto;
+    right: 0;
+  }
+  .vitrine-service,
+  .vitrine-service:nth-child(n) {
+    min-height: 0;
+    padding-block: 20px;
+    gap: 20px;
+  }
+  .vitrine-service dd {
+    padding-top: 36px;
+  }
+  .vitrine-service-summary {
+    margin-top: 12px;
+  }
+  .vitrine-service-annotation {
+    position: static;
+    display: inline;
+    font-size: 24px;
+  }
+}
+@media (max-width: 540px) {
+  .vitrine-opening-art > g {
+    transform: translate(-95px, 340px) scale(1.1, 1.35);
+  }
+  .vitrine-services {
+    margin-top: 32px;
+  }
+  .vitrine-service,
+  .vitrine-service:nth-child(n) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-block: 24px;
+  }
+  .vitrine-service dd {
+    padding-top: 0;
+    text-align: left;
+  }
+  .vitrine-service-summary {
+    font-size: 13px;
+  }
+  .vitrine-biography-intro {
+    display: block;
+  }
 }

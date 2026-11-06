@@ -299,7 +299,7 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   expect(errors).toEqual([]);
 });
 
-test('la connexion reste directement accessible sans JavaScript et les visuels utilisent leurs originaux', async ({
+test('la connexion reste accessible depuis le menu sans JavaScript et les visuels utilisent leurs originaux', async ({
   browser,
   request,
 }) => {
@@ -308,8 +308,9 @@ test('la connexion reste directement accessible sans JavaScript et les visuels u
     const page = await context.newPage();
     await page.goto('/');
     await expect(page.locator('main.vitrine')).toBeVisible();
+    await page.getByText('Menu', { exact: true }).click();
     const connection = page.getByRole('link', {
-      name: 'Connexion',
+      name: 'Espace de gestion',
       exact: false,
     });
     for (const width of [1440, 375, 320]) {

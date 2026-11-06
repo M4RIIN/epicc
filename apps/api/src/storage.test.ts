@@ -142,7 +142,7 @@ it('annule entièrement une écriture en échec', async () => {
   ).rejects.toThrow('Échec de test');
   expect(
     (await database.pool.query('SELECT count(*) FROM offers')).rows[0].count,
-  ).toBe('5');
+  ).toBe('6');
 });
 
 it('reprend SQLite sans modifier la source et refuse une seconde importation', async () => {
@@ -305,4 +305,51 @@ it('refuse une réinitialisation invalide ou un compte absent sans modifier les 
     (await database.pool.query('SELECT count(*) FROM administrators')).rows[0]
       .count,
   ).toBe('1');
+});
+
+it('met à jour les offres d’origine sans perdre les images ni écraser les textes personnalisés', async () => {
+  const { previousOffers, initialOffers } = await import('./offers.seed');
+  const image = '/api/v1/offer-images/00000000-0000-0000-0000-000000000066';
+  await database.pool.query('DELETE FROM offers');
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id='vitrine-offers-2026-11'",
+  );
+  for (const offer of previousOffers) {
+    await database.pool.query('INSERT INTO offers VALUES ($1, $2)', [
+      offer.slug,
+      {
+        ...offer,
+        image,
+        alt: 'Visuel de test conservé',
+        ...(offer.slug === 'evenementiel'
+          ? {
+              name: 'Une offre personnalisée',
+              description: 'Une description personnalisée.',
+            }
+          : {}),
+      },
+    ]);
+  }
+  await database.migrate();
+  const rows = (
+    await database.pool.query('SELECT content FROM offers')
+  ).rows.map((row) => row.content);
+  expect(rows).toHaveLength(6);
+  const launch = rows.find((offer) => offer.slug === 'creation-de-marque');
+  expect(launch).toEqual({
+    ...initialOffers[0],
+    image,
+    alt: 'Visuel de test conservé',
+  });
+  expect(rows.find((offer) => offer.slug === 'evenementiel')).toMatchObject({
+    name: 'Une offre personnalisée',
+    description: 'Une description personnalisée.',
+    image,
+  });
+  await database.pool.query("DELETE FROM offers WHERE slug='graphisme'");
+  await database.migrate();
+  expect(
+    (await database.pool.query("SELECT 1 FROM offers WHERE slug='graphisme'"))
+      .rowCount,
+  ).toBe(0);
 });

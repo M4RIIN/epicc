@@ -26,7 +26,7 @@ export function Biography() {
         />
       </header>
       <div className="vitrine-biography-intro">
-        <p>
+        <p className="vitrine-sr-only">
           Quand j’étais toute petite,
           <br />
           je voulais <em>“être un restaurant”</em>

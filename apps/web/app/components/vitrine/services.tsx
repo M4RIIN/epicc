@@ -1,5 +1,4 @@
 import type { Offer } from '@epicc/content-contracts';
-import { Artwork, artworkPath } from './artwork';
 
 export function Services({ offers }: { offers: Offer[] }) {
   return (
@@ -11,60 +10,63 @@ export function Services({ offers }: { offers: Offer[] }) {
       <h2 className="vitrine-sr-only" id="services-title">
         Les prestations
       </h2>
+      <div className="vitrine-service-notes" aria-hidden="true">
+        <span className="vitrine-evening">ce soir</span>
+        <span className="vitrine-benchmark">Benchmark</span>
+      </div>
       <dl>
-        {offers.map(({ slug, name, description, image, alt }, index) => (
-          <div className="vitrine-service" key={slug}>
-            <dt>
-              {['creation-de-marque', 'evenementiel'].includes(slug) ? (
-                <>
-                  <span className="vitrine-sr-only">{name}</span>
-                  {slug === 'creation-de-marque' ? (
-                    <span className="vitrine-brand-label" aria-hidden="true">
-                      <Artwork file="Rectangle3.png" width={662} height={369} />
-                      <Artwork file="Rectangle4.png" width={650} height={370} />
-                    </span>
+        {offers.map(
+          ({ slug, name, summary, description, image, alt }, index) => (
+            <div className="vitrine-service" key={slug} data-offer={slug}>
+              <dt>
+                <span className="vitrine-service-name">
+                  {slug === 'creation-de-marque' &&
+                  name === 'Lancement de marque' ? (
+                    <>
+                      Lancement de{' '}
+                      <span className="vitrine-service-annotation">marque</span>
+                    </>
                   ) : (
-                    <Artwork
-                      file="Rectangle1.png"
-                      width={1150}
-                      height={332}
-                      className="vitrine-event-label"
-                    />
+                    name
                   )}
-                </>
-              ) : (
-                name
-              )}
-            </dt>
-            <dd>{description}</dd>
-            {image && (
+                </span>
+                {slug === 'restructuration-de-restaurants' && (
+                  <span
+                    className="vitrine-service-annotation"
+                    aria-hidden="true"
+                  >
+                    Identité
+                  </span>
+                )}
+                {summary && (
+                  <span className="vitrine-service-summary">{summary}</span>
+                )}
+              </dt>
               <dd
-                className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
+                className={
+                  slug === 'creation-de-marque' && summary
+                    ? 'vitrine-sr-only'
+                    : undefined
+                }
               >
-                <img
-                  src={image}
-                  alt={alt}
-                  loading="lazy"
-                  width={960}
-                  height={640}
-                />
+                {description}
               </dd>
-            )}
-            {index < offers.length - 1 && (
-              <svg
-                className="vitrine-service-rule"
-                viewBox="0 0 1315 1"
-                aria-hidden="true"
-              >
-                <image
-                  href={`${artworkPath}Line4.svg`}
-                  width="1315"
-                  height="1"
-                />
-              </svg>
-            )}
-          </div>
-        ))}
+              {image && (
+                <dd
+                  className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
+                >
+                  <img
+                    src={image}
+                    alt={alt}
+                    loading="lazy"
+                    width={960}
+                    height={640}
+                  />
+                </dd>
+              )}
+            </div>
+          ),
+        )}
       </dl>
     </section>
   );
