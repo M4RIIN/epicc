@@ -9,9 +9,7 @@ for (const javaScriptEnabled of [false, true]) {
     try {
       const page = await context.newPage();
       await page.goto('/');
-      await expect(page.locator('.vitrine-loading')).toBeHidden({
-        timeout: 15000,
-      });
+      await expect(page.locator('main.vitrine')).toBeVisible();
       const viande = page.getByRole('figure', {
         name: 'Viande des Sorgues',
         exact: true,

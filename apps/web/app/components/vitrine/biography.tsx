@@ -16,13 +16,13 @@ export function Biography() {
     >
       <header className="vitrine-biography-heading">
         <h2 id="biography-title">
-          Salut, moi c’est <span className="vitrine-sr-only">Chloé Gathla</span>
+          Salut, moi c’est <span className="vitrine-sr-only">Chloé Catala</span>
         </h2>
         <Artwork
           file="IllustrationSansTitre81.png"
           width={1701}
           height={398}
-          alt="Chloé Gathla"
+          alt="Chloé Catala"
         />
       </header>
       <div className="vitrine-biography-intro">

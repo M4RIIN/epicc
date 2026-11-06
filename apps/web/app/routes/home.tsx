@@ -2,7 +2,11 @@ import type { Route } from './+types/home';
 import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
 import { getContactEmail, getSiteOrigin } from '../services/site.server';
-import { LoadingScreen } from '../components/vitrine/loading-screen';
+import {
+  homeDescription,
+  homeTitle,
+  homeStructuredData,
+} from '../services/seo';
 import { Opening } from '../components/vitrine/opening';
 import { Services } from '../components/vitrine/services';
 import { Biography } from '../components/vitrine/biography';
@@ -12,37 +16,52 @@ import { Contact } from '../components/vitrine/contact';
 import '../components/vitrine/vitrine.css';
 
 export async function loader() {
+  const [offers, projectImages] = await Promise.all([
+    loadOffers(),
+    loadProjectImages(),
+  ]);
   return {
     origin: getSiteOrigin(),
-    offers: await loadOffers(),
-    projectImages: await loadProjectImages(),
+    offers,
+    projectImages,
     contactEmail: getContactEmail(),
   };
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  const title = 'EPICC — Communication, restauration & agroalimentaire';
-  const description =
-    'Chloé Gathla accompagne les acteurs de la restauration et de l’agroalimentaire : identité de marque, stratégie, réseaux sociaux et événementiel.';
+  if (!loaderData) {
+    return [
+      { title: 'EPICC — Contenu indisponible' },
+      { name: 'robots', content: 'noindex' },
+    ];
+  }
+  const title = homeTitle;
+  const description = homeDescription;
   return [
     { title },
+    {
+      'script:ld+json': homeStructuredData(
+        loaderData.origin,
+        loaderData.offers,
+      ),
+    },
     { name: 'description', content: description },
     { property: 'og:title', content: title },
     { property: 'og:description', content: description },
     { property: 'og:type', content: 'website' },
+    { property: 'og:site_name', content: 'EPICC' },
     { property: 'og:locale', content: 'fr_FR' },
-    { property: 'og:url', content: `${loaderData?.origin}/` },
-    { tagName: 'link', rel: 'canonical', href: `${loaderData?.origin}/` },
+    { property: 'og:url', content: `${loaderData.origin}/` },
+    { tagName: 'link', rel: 'canonical', href: `${loaderData.origin}/` },
   ];
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return (
     <>
-      <LoadingScreen />
       <main id="contenu" className="vitrine">
         <h1 className="vitrine-sr-only">
-          EPICC — Communication pour la restauration et l’agroalimentaire
+          EPICC — Chloé Catala, communication et identité visuelle à Toulouse
         </h1>
         <Opening />
         <Services offers={loaderData.offers} />

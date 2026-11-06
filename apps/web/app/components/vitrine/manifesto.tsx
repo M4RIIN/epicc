@@ -11,14 +11,14 @@ export function Manifesto() {
       <div className="vitrine-manifesto-intro">
         <p>Pour moi EPICC c’est…</p>
         <p>
-          Accompagner les acteurs de la restauration et de l’agroalimentaire
-          pour faire exister et développer leur marque, même lorsque leur
-          activité fonctionne déjà.
+          Chloé Catala accompagne les acteurs de la restauration et de
+          l’agroalimentaire à Toulouse et alentour pour faire exister et
+          développer leur marque, même lorsque leur activité fonctionne déjà.
         </p>
       </div>
       <figure
         className="vitrine-manifesto-collage"
-        aria-label="Du beau, du bon, du bien. Marque EPICC, créée le 20 septembre 2025 par Chloé Gathla."
+        aria-label="Du beau, du bon, du bien. Marque EPICC, créée le 20 septembre 2025 par Chloé Catala."
       >
         <Artwork
           file="Rectangle2.png"
@@ -71,7 +71,7 @@ export function Manifesto() {
             file="IllustrationSansTitre81.png"
             width={1701}
             height={398}
-            alt="Chloé Gathla"
+            alt="Chloé Catala"
           />
         </figcaption>
       </figure>
