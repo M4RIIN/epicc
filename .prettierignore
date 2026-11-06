@@ -8,3 +8,5 @@ test-results/
 package-lock.json
 .questboard/
 .claude/
+apps/web/public/images/optimized/
+apps/web/app/components/vitrine/image-manifest.generated.json

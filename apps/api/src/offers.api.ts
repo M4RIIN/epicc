@@ -7,6 +7,11 @@ import type { Database } from './database';
 import { authorized } from './clients.api';
 import { readImage, uploadBodyLimit } from './image-upload';
 import { imageResponse } from './image-response';
+import {
+  requestedImageWidth,
+  optimizedImageResponse,
+  publicImageSources,
+} from './image-variants';
 
 export function createOffersApi(database: Database) {
   const api = new Hono();
@@ -18,25 +23,35 @@ export function createOffersApi(database: Database) {
     const result = await database.pool.query(
       "SELECT content FROM offers ORDER BY (content->>'position')::integer, slug",
     );
+    const offers = offerSchema
+      .array()
+      .parse(result.rows.map((row) => row.content));
+    const sourcesFor = await publicImageSources(
+      database,
+      offers.map((offer) => offer.image),
+    );
     return c.json(
-      offerSchema.array().parse(result.rows.map((row) => row.content)),
+      offers.map((offer) => ({ ...offer, sources: sourcesFor(offer.image) })),
     );
   });
   api.get('/v1/offer-images/:id', async (c) => {
     const id = c.req.param('id');
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))
       return c.notFound();
+    const width = requestedImageWidth(c);
+    if (width instanceof Response) return width;
     const result = await database.pool.query<{
       mime: string;
       content: Buffer | null;
       storage_key: string | null;
     }>(
-      `SELECT mime, content, storage_key FROM images WHERE id = $1 AND EXISTS (
+      `SELECT ${width === null ? 'mime, content, storage_key' : 'id'} FROM images WHERE id = $1 AND EXISTS (
       SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
     )`,
       [id],
     );
     if (!result.rows[0]) return c.notFound();
+    if (width !== null) return optimizedImageResponse(c, database, id, width);
     const image = await database.images.read(result.rows[0]);
     return imageResponse(c, image);
   });

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { Artwork, artworkPath } from './artwork';
+import { staticImageSources } from './image-sources';
 
 // Coordonnées du collage dans le repère Figma ; le viewBox conserve les proportions.
 const illustrations = [
@@ -32,6 +33,7 @@ export function Opening() {
           height={742}
           alt="Café renversé, tasse et sachets de sucre sur une table, dans une lumière granuleuse."
           eager
+          sizes="(max-width: 540px) 147vw, (max-width: 1920px) 107vw, 2051px"
         />
       </div>
       <svg
@@ -53,7 +55,10 @@ export function Opening() {
             />
           ))}
           <image
-            href={`${artworkPath}Rectangle.png`}
+            href={
+              staticImageSources('Rectangle.png')?.[0]?.src ??
+              `${artworkPath}Rectangle.png`
+            }
             x="0"
             y="0"
             width="96.33"

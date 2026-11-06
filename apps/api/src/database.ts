@@ -58,6 +58,12 @@ export class Database {
         CREATE TABLE IF NOT EXISTS migrations (id TEXT PRIMARY KEY);
         CREATE TABLE IF NOT EXISTS clients (slug TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS images (id UUID PRIMARY KEY, mime TEXT NOT NULL, content BYTEA NOT NULL);
+        CREATE TABLE IF NOT EXISTS image_variants (
+          image_id UUID NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+          version TEXT NOT NULL, width INTEGER NOT NULL,
+          content BYTEA NOT NULL, sha256 TEXT NOT NULL,
+          PRIMARY KEY (image_id, version, width)
+        );
         CREATE TABLE IF NOT EXISTS project_originals (file TEXT PRIMARY KEY, image_id UUID NOT NULL REFERENCES images(id));
         CREATE TABLE IF NOT EXISTS project_images (file TEXT PRIMARY KEY, content JSONB NOT NULL);
         CREATE TABLE IF NOT EXISTS offers (slug TEXT PRIMARY KEY, content JSONB NOT NULL);

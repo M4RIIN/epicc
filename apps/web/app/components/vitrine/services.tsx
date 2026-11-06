@@ -1,3 +1,4 @@
+import { Artwork } from './artwork';
 import type { Offer } from '@epicc/content-contracts';
 
 export function Services({ offers }: { offers: Offer[] }) {
@@ -16,7 +17,10 @@ export function Services({ offers }: { offers: Offer[] }) {
       </div>
       <dl>
         {offers.map(
-          ({ slug, name, summary, description, image, alt }, index) => (
+          (
+            { slug, name, summary, description, image, alt, sources },
+            index,
+          ) => (
             <div className="vitrine-service" key={slug} data-offer={slug}>
               <dt>
                 <span className="vitrine-service-name">
@@ -55,10 +59,16 @@ export function Services({ offers }: { offers: Offer[] }) {
                 <dd
                   className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
                 >
-                  <img
+                  <Artwork
+                    file=""
                     src={image}
+                    sources={sources}
+                    sizes={
+                      index % 2 === 0
+                        ? '(max-width: 900px) 85vw, (max-width: 1920px) 68.5vw, 1315px'
+                        : '(max-width: 900px) 49vw, (max-width: 1920px) 39.7vw, 763px'
+                    }
                     alt={alt}
-                    loading="lazy"
                     width={960}
                     height={640}
                   />

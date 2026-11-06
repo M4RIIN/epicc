@@ -13,30 +13,45 @@
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "react-router typegen && tsc --noEmit",
+        "command": "node ../../tools/optimize-vitrine-images.mjs && react-router typegen && tsc --noEmit",
         "cwd": "apps/web"
       },
-      "outputs": ["{projectRoot}/.react-router/types"]
+      "outputs": ["{projectRoot}/.react-router/types"],
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/optimize-vitrine-images.mjs"
+      ]
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "vitest run apps/web"
-      }
+        "command": "node tools/optimize-vitrine-images.mjs && vitest run apps/web"
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/optimize-vitrine-images.mjs"
+      ]
     },
     "build": {
       "executor": "nx:run-commands",
       "outputs": ["{workspaceRoot}/dist/apps/web"],
       "options": {
-        "command": "react-router build",
+        "command": "node ../../tools/optimize-vitrine-images.mjs && react-router build",
         "cwd": "apps/web"
-      }
+      },
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/tools/optimize-vitrine-images.mjs"
+      ]
     },
     "serve": {
       "executor": "nx:run-commands",
       "continuous": true,
       "options": {
-        "command": "react-router dev --host 0.0.0.0 --port 3100 --strictPort",
+        "command": "node ../../tools/optimize-vitrine-images.mjs && react-router dev --host 0.0.0.0 --port 3100 --strictPort",
         "cwd": "apps/web"
       }
     }
