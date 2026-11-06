@@ -1,5 +1,15 @@
 # Stockage des images
 
+## Visuels des réalisations et photos par client
+
+Les 26 visuels `projets-*` sont désormais importés au démarrage depuis les fichiers du build. La table `project_originals` rattache chaque emplacement à une image ; `images` conserve UUID, clé S3, MIME, dimensions natives, taille et SHA-256. En mode S3, la copie est relue et comparée avant d’enregistrer la référence. L’import reprend les fichiers manquants après une interruption, sans doublonner ceux déjà validés. Les originaux sont exclus du nettoyage pour permettre leur restauration. La commande `npm run media:migrate` effectue également cet import avant la migration des anciens binaires. Les fichiers versionnés restent disponibles comme sources de reprise.
+
+Dans `/connect`, chaque client possède un seul logo. L’Écluse Douze et Deux Mnu disposent de cartes séparées. La seconde apparition historique de L’Écluse Douze est un emplacement du même logo : un remplacement met les deux à jour sans changer la composition initiale. Une ancienne surcharge de cet emplacement reste utilisée si le logo principal n’avait pas encore été modifié.
+
+« Ajouter une photo » permet des ajouts successifs sans limite de nombre par client. Le fichier est validé selon les limites habituelles, sans recompression, puis rattaché au client en base. Les ajouts sont affichés après les photos existantes, dans l’ordre d’ajout. Le sélecteur propose Petite (123), Moyenne (222) et Grande (297), largeurs de référence sur une composition de 1920 pixels. Les proportions sont conservées et l’affichage reste adaptatif. Les dimensions historiques, recadrages et miroirs sont préservés jusqu’à un choix explicite de taille. Une photo ajoutée peut être supprimée ; les visuels initiaux peuvent être rétablis avec leurs dimensions et leur texte alternatif d’origine.
+
+La configuration locale ne fournit pas les accès S3. L’import a été vérifié sur PostgreSQL de test avec un stockage simulé, y compris la comparaison des 26 fichiers, les reprises et le rejet d’une copie non conforme. Aucun transfert vers le bucket hébergé n’est attesté par cette vérification.
+
 ## Architecture et compatibilité
 
 Le monorepo conserve React Router 8 / React 19, Hono, Nx et PostgreSQL. Les formulaires existants des clients, des offres et des projets passent par une session administrateur et un jeton CSRF côté web, puis une autorisation serveur côté API. Aucun identifiant S3 ne traverse le navigateur. Les images livrées avec le site dans `apps/web/public/images/` sont des ressources versionnées du build : elles restent en place. Aucun upload n’est conservé sur le disque applicatif.

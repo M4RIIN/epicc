@@ -1,6 +1,8 @@
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { Database } from './database';
+import { importProjectOriginals } from './project-originals';
+import { existsSync } from 'node:fs';
 
 export async function purgeLegacy(database: Database) {
   if (!database.images.storage)
@@ -37,7 +39,17 @@ if (
     if (process.argv.includes('--purge-legacy')) await purgeLegacy(database);
     else if (process.argv.includes('--cleanup'))
       await database.images.cleanup();
-    else await database.images.migrateLegacy();
+    else {
+      if (!database.images.storage)
+        throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
+      await importProjectOriginals(
+        database,
+        existsSync('apps/web/public/images/vitrine')
+          ? 'apps/web/public/images/vitrine'
+          : 'dist/apps/web/client/images/vitrine',
+      );
+      await database.images.migrateLegacy();
+    }
     console.info(
       'Traitement des images terminé. Les références sont conservées.',
     );

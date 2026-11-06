@@ -11,7 +11,11 @@ import {
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
-import { vitrineProjects, projectSides } from '@epicc/content-contracts';
+import {
+  projectClients,
+  clientPieces,
+  projectSides,
+} from '@epicc/content-contracts';
 import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
 import { loadClients } from '../services/clients.server';
@@ -144,92 +148,104 @@ export default function Connect({
                     Colonne {side === 'left' ? 'gauche' : 'droite'}
                   </h3>
                   <div className="admin-projects">
-                    {vitrineProjects
+                    {projectClients
                       .filter((project) => project.side === side)
-                      .map((project) => (
-                        <article
-                          key={project.name}
-                          className="admin-project-card"
-                          data-side={side}
-                          aria-label={project.name}
-                        >
-                          <h4>{project.name}</h4>
-                          <div className="admin-project-images">
-                            {(['name', 'photo'] as const).map((role) => (
-                              <ul
-                                key={role}
-                                className={
-                                  role === 'name'
-                                    ? 'admin-project-titles'
-                                    : 'admin-project-photos'
-                                }
-                                aria-label={
-                                  role === 'name'
-                                    ? 'Titres du projet'
-                                    : 'Photos du projet'
-                                }
-                              >
-                                {project.pieces
-                                  .filter((piece) => piece.role === role)
-                                  .map((piece, index) => {
-                                    const image = projectImages.find(
-                                      (item) => item.file === piece.file,
-                                    )!;
-                                    return (
-                                      <li
-                                        key={piece.file}
-                                        style={{
-                                          width: `${Math.min(100, (piece.width / (role === 'name' ? 600 : 300)) * 100)}%`,
-                                        }}
-                                      >
-                                        <Link
-                                          to={`/connect/projets/${piece.file}`}
-                                          aria-label={`Modifier ${role === 'name' ? `le logo${index ? ` ${index + 1}` : ''}` : `l’image ${index + 1}`} de ${project.name} ↗`}
+                      .map((client) => {
+                        const project = {
+                          ...client,
+                          pieces: clientPieces(client, projectImages),
+                        };
+                        return (
+                          <article
+                            key={project.name}
+                            className="admin-project-card"
+                            data-side={side}
+                            aria-label={project.name}
+                          >
+                            <h4>{project.name}</h4>
+                            <div className="admin-project-images">
+                              {(['name', 'photo'] as const).map((role) => (
+                                <ul
+                                  key={role}
+                                  className={
+                                    role === 'name'
+                                      ? 'admin-project-titles'
+                                      : 'admin-project-photos'
+                                  }
+                                  aria-label={
+                                    role === 'name'
+                                      ? 'Titres du projet'
+                                      : 'Photos du projet'
+                                  }
+                                >
+                                  {project.pieces
+                                    .filter((piece) => piece.role === role)
+                                    .map((piece, index) => {
+                                      const image = projectImages.find(
+                                        (item) => item.file === piece.file,
+                                      )!;
+                                      return (
+                                        <li
+                                          key={piece.file}
+                                          style={{
+                                            width: `${Math.min(100, (piece.width / (role === 'name' ? 600 : 300)) * 100)}%`,
+                                          }}
                                         >
-                                          <img
-                                            src={
-                                              image.image ??
-                                              `/images/vitrine/projets-${piece.file}`
-                                            }
-                                            alt=""
-                                            width={piece.width}
-                                            height={piece.height}
-                                            style={{
-                                              aspectRatio:
-                                                piece.width / piece.height,
-                                              objectFit:
-                                                role === 'name'
-                                                  ? 'contain'
-                                                  : 'cover',
-                                              transform: piece.mirror
-                                                ? 'scaleX(-1)'
-                                                : undefined,
-                                            }}
-                                            loading="lazy"
-                                          />
-                                          <span aria-hidden="true">
-                                            {role === 'name'
-                                              ? `Logo${index ? ` ${index + 1}` : ''}`
-                                              : `Photo ${index + 1}`}{' '}
-                                            ↗
-                                          </span>
-                                        </Link>
-                                      </li>
-                                    );
-                                  })}
-                              </ul>
-                            ))}
-                          </div>
-                          {!project.pieces.some(
-                            (piece) => piece.role === 'photo',
-                          ) && (
-                            <p className="admin-project-empty">
-                              Titre seul · Aucune photo dans la vitrine
-                              actuelle.
-                            </p>
-                          )}
-                        </article>
-                      ))}
+                                          <Link
+                                            to={`/connect/projets/${piece.file}`}
+                                            aria-label={`Modifier ${role === 'name' ? `le logo${index ? ` ${index + 1}` : ''}` : `l’image ${index + 1}`} de ${project.name} ↗`}
+                                          >
+                                            <img
+                                              src={
+                                                image.image ??
+                                                `/images/vitrine/projets-${piece.file}`
+                                              }
+                                              alt=""
+                                              width={piece.width}
+                                              height={piece.height}
+                                              style={{
+                                                aspectRatio:
+                                                  piece.width / piece.height,
+                                                objectFit:
+                                                  role === 'name'
+                                                    ? 'contain'
+                                                    : 'cover',
+                                                transform: piece.mirror
+                                                  ? 'scaleX(-1)'
+                                                  : undefined,
+                                              }}
+                                              loading="lazy"
+                                            />
+                                            <span aria-hidden="true">
+                                              {role === 'name'
+                                                ? `Logo${index ? ` ${index + 1}` : ''}`
+                                                : `Photo ${index + 1}`}{' '}
+                                              ↗
+                                            </span>
+                                          </Link>
+                                        </li>
+                                      );
+                                    })}
+                                </ul>
+                              ))}
+                            </div>
+                            <Link
+                              className="filter-button"
+                              to={`/connect/projets/nouvelle?project=${encodeURIComponent(project.name)}`}
+                            >
+                              Ajouter une photo
+                            </Link>
+                            {!project.pieces.some(
+                              (piece) => piece.role === 'photo',
+                            ) && (
+                              <p className="admin-project-empty">
+                                Titre seul · Aucune photo dans la vitrine
+                                actuelle.
+                              </p>
+                            )}
+                          </article>
+                        );
+                      })}
                   </div>
                 </section>
               ))}
