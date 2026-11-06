@@ -1,7 +1,9 @@
+import { ImageInput } from '../components/image-input';
 import { data, Form, Link, redirect, useNavigation } from 'react-router';
 import type { Route } from './+types/manage-offer';
 import {
   requireAdmin,
+  imageLimit,
   readAdminForm,
   verifyCsrf,
 } from '../services/admin.server';
@@ -20,7 +22,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   const index = offers.findIndex((offer) => offer.slug === params.slug);
   const offer = offers[index];
   if (!offer) throw new Response('Offre introuvable.', { status: 404 });
-  return { offer, large: index % 2 === 0, csrf: session.get('csrf') as string };
+  return {
+    maxImageBytes: imageLimit(),
+    offer,
+    large: index % 2 === 0,
+    csrf: session.get('csrf') as string,
+  };
 }
 export async function action({ request, params }: Route.ActionArgs) {
   const session = await requireAdmin(request);
@@ -67,18 +74,8 @@ export default function ManageOffer({
         ) : (
           <p>Aucune image pour cette offre.</p>
         )}
-        <label>
-          Remplacer par une image
-          <input
-            type="file"
-            name="imageFile"
-            accept="image/jpeg,image/png,image/webp"
-          />
-        </label>
-        <p>
-          JPEG, PNG ou WebP, 5 Mo maximum. L’image est recadrée pour conserver
-          le format de l’offre.
-        </p>
+        <ImageInput maxBytes={loaderData.maxImageBytes} />
+        <p>L’image est recadrée pour conserver le format de l’offre.</p>
         <label>
           Texte alternatif de l’image
           <input

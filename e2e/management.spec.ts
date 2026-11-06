@@ -79,6 +79,20 @@ for (const javaScriptEnabled of [false, true]) {
           mimeType: 'image/png',
           buffer: png,
         });
+      if (javaScriptEnabled) {
+        const selectedPreview = page.getByRole('img', {
+          name: 'Aperçu avant enregistrement',
+        });
+        await expect(selectedPreview).toBeVisible();
+        await expect(selectedPreview).toHaveAttribute('src', /^blob:/);
+        await expect
+          .poll(() =>
+            selectedPreview.evaluate(
+              (image: HTMLImageElement) => image.naturalWidth,
+            ),
+          )
+          .toBe(2);
+      }
       await page.getByRole('button', { name: 'Enregistrer la fiche' }).click();
       await expect(page).toHaveURL(/\/connect$/);
       await expect(page).toHaveURL(/\/connect$/);
