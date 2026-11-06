@@ -35,7 +35,6 @@ export function Layout({ children }: { children: ReactNode }) {
               EPICC<span aria-hidden="true">✳</span>
             </Link>
             <nav aria-label="Navigation principale">
-              <Link to="/clients#clients">Les rencontres</Link>
               <Link to="/#a-propos">Le studio</Link>
               <Link className="nav-connect" to="/connect">
                 Espace de gestion <span aria-hidden="true">↗</span>

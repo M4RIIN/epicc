@@ -1,5 +1,5 @@
 import { createCookieSessionStorage, redirect } from 'react-router';
-import { clientsRequest } from './clients.server';
+import { apiRequest } from './api.server';
 import { randomBytes } from 'node:crypto';
 import { imageUploadLimit } from '@epicc/content-contracts';
 
@@ -73,7 +73,7 @@ export function verifyCsrf(
 }
 export async function login(email: string, password: string) {
   if (!adminConfigured()) return 'Identifiants incorrects.';
-  const response = await clientsRequest(
+  const response = await apiRequest(
     'auth/login',
     {
       method: 'POST',

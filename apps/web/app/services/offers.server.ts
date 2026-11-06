@@ -1,8 +1,8 @@
 import { offerSchema } from '@epicc/content-contracts';
-import { clientsRequest } from './clients.server';
+import { apiRequest } from './api.server';
 
 export async function loadOffers() {
-  const response = await clientsRequest('offers');
+  const response = await apiRequest('offers');
   if (!response.ok)
     throw new Response('Les offres sont temporairement indisponibles.', {
       status: 503,
@@ -10,7 +10,7 @@ export async function loadOffers() {
   return offerSchema.array().parse(await response.json());
 }
 export async function saveOffer(slug: string, form: FormData) {
-  const response = await clientsRequest(
+  const response = await apiRequest(
     `admin/offers/${encodeURIComponent(slug)}`,
     { method: 'POST', body: form },
     true,

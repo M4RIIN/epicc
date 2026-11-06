@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
 import { Database } from './database';
-import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { importSqlite } from './import-sqlite';
 import {
   createAdministrator,
   resetAdministratorPassword,
@@ -172,88 +167,6 @@ it('annule entièrement une écriture en échec', async () => {
   expect(
     (await database.pool.query('SELECT count(*) FROM offers')).rows[0].count,
   ).toBe('6');
-});
-
-it('reprend SQLite sans modifier la source et refuse une seconde importation', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'epicc-import-'));
-  const path = join(directory, 'clients.sqlite');
-  const source = new DatabaseSync(path);
-  const client = (
-    await database.pool.query('SELECT content FROM clients LIMIT 1')
-  ).rows[0].content;
-  const id = '00000000-0000-4000-8000-000000000001';
-  const importedClient = {
-    ...client,
-    name: 'Client importé',
-    image: `/api/v1/client-images/${id}`,
-    published: false,
-  };
-  source.exec(
-    'CREATE TABLE clients (slug TEXT PRIMARY KEY, content TEXT NOT NULL); CREATE TABLE images (id TEXT PRIMARY KEY, mime TEXT NOT NULL, content BLOB NOT NULL)',
-  );
-  source
-    .prepare('INSERT INTO clients VALUES (?, ?)')
-    .run(client.slug, JSON.stringify(importedClient));
-  source
-    .prepare('INSERT INTO images VALUES (?, ?, ?)')
-    .run(id, 'image/png', png);
-  source.close();
-  try {
-    await importSqlite(database, path);
-    expect(
-      (await database.pool.query('SELECT content FROM clients')).rows.map(
-        (row) => row.content,
-      ),
-    ).toEqual([importedClient]);
-    expect(
-      (
-        await database.pool.query('SELECT content FROM images WHERE id = $1', [
-          id,
-        ])
-      ).rows[0].content,
-    ).toEqual(png);
-    await expect(importSqlite(database, path)).rejects.toThrow('déjà reçu');
-    const original = new DatabaseSync(path, { readOnly: true });
-    try {
-      expect(
-        original.prepare('SELECT content FROM clients').all(),
-      ).toHaveLength(1);
-    } finally {
-      original.close();
-    }
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
-});
-it('préserve une liste SQLite vide au prochain démarrage et refuse un import après modification PostgreSQL', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'epicc-import-vide-'));
-  const path = join(directory, 'clients.sqlite');
-  const source = new DatabaseSync(path);
-  source.exec(
-    'CREATE TABLE clients (slug TEXT PRIMARY KEY, content TEXT NOT NULL); CREATE TABLE images (id TEXT PRIMARY KEY, mime TEXT NOT NULL, content BLOB NOT NULL)',
-  );
-  source.close();
-  try {
-    await database.pool.query(
-      "INSERT INTO migrations VALUES ('postgres-edited')",
-    );
-    await expect(importSqlite(database, path)).rejects.toThrow(
-      'déjà été modifiée',
-    );
-    expect(
-      (await database.pool.query('SELECT count(*) FROM clients')).rows[0].count,
-    ).toBe('6');
-    await database.pool.query(
-      "DELETE FROM migrations WHERE id = 'postgres-edited'",
-    );
-    await importSqlite(database, path);
-    await database.migrate();
-    expect(
-      (await database.pool.query('SELECT count(*) FROM clients')).rows[0].count,
-    ).toBe('0');
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
 });
 
 it('crée un administrateur persistant sans écraser un compte existant', async () => {

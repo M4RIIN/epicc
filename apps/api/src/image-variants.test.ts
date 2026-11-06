@@ -172,13 +172,10 @@ it('vérifie les références publiques avant le cache et reprend après une err
     id,
     { mime: 'image/png', content: png, width: 1280, height: 960 },
     async (connection) => {
-      await connection.query(
-        'UPDATE clients SET content = content || $2::jsonb WHERE slug=$1',
-        [
-          'maison-sauge',
-          { published: false, image: `/api/v1/client-images/${id}` },
-        ],
-      );
+      await connection.query('INSERT INTO clients VALUES ($1, $2)', [
+        'ancien-client',
+        { published: false, image: `/api/v1/client-images/${id}` },
+      ]);
     },
   );
   for (const kind of ['offer', 'project']) {

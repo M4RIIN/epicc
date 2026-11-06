@@ -1,9 +1,8 @@
 import { Pool, type PoolClient } from 'pg';
-import { ImageStore } from './images.store';
+import { ImageStore, removeUnusedImages } from './images.store';
 import { storageFromEnvironment, type ObjectStorage } from './object-storage';
 import { randomBytes, scrypt as deriveKey, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { initialClients } from './clients.seed';
 import { initialOffers, previousOffers } from './offers.seed';
 
 const scrypt = promisify(deriveKey);
@@ -81,20 +80,21 @@ export class Database {
           storage_key TEXT PRIMARY KEY, available_at TIMESTAMPTZ NOT NULL DEFAULT now()
         );
       `);
+      // Retrait définitif du répertoire historique, sans toucher aux médias
+      // encore utilisés par les offres, les projets ou la vitrine.
       if (
         !(
           await client.query(
-            "SELECT id FROM migrations WHERE id = 'seed-clients'",
+            "SELECT id FROM migrations WHERE id = 'remove-client-directory'",
           )
         ).rowCount
       ) {
-        for (const [position, item] of initialClients.entries()) {
-          await client.query(
-            'INSERT INTO clients VALUES ($1, $2) ON CONFLICT DO NOTHING',
-            [item.slug, { ...item, published: true, position }],
-          );
-        }
-        await client.query("INSERT INTO migrations VALUES ('seed-clients')");
+        await client.query('SELECT pg_advisory_xact_lock(310032)');
+        await client.query('DELETE FROM clients');
+        await removeUnusedImages(client);
+        await client.query(
+          "INSERT INTO migrations VALUES ('remove-client-directory')",
+        );
       }
       if (
         !(

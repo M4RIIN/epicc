@@ -10,7 +10,6 @@ import {
   verifyProjectMedia,
 } from './project-media-audit';
 import { createProjectsApi } from './projects.api';
-import { ClientStore } from './clients.store';
 import { initialOffers, previousOffers } from './offers.seed';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
@@ -93,7 +92,9 @@ it('importe les 26 visuels sans changer leurs octets, conserve leurs métadonné
     );
   }
   // Une autre édition ne doit jamais nettoyer les originaux, nécessaires à la restauration.
-  await new ClientStore(database).delete('maison-sauge');
+  await database.images.write(null, undefined, async (connection) => {
+    await connection.query('DELETE FROM clients');
+  });
   expect(objects.size).toBe(26);
 }, 60000);
 

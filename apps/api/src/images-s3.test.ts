@@ -178,18 +178,15 @@ it('migre sans doublon et sans changer les URL, conserve puis purge les octets u
     (await database.pool.query('SELECT content FROM images')).rows[0].content,
   ).toBeNull();
 });
-it('protège les images des brouillons et les lectures administrateur', async () => {
-  const client = (
-    await database.pool.query('SELECT content FROM clients LIMIT 1')
-  ).rows[0].content;
+it('masque les images des anciennes fiches et protège les lectures administrateur', async () => {
   const id = randomUUID();
   await database.images.write(
     id,
     { mime: 'image/png', content: png },
     async (connection) => {
-      await connection.query('UPDATE clients SET content=$2 WHERE slug=$1', [
-        client.slug,
-        { ...client, published: false, image: `/api/v1/client-images/${id}` },
+      await connection.query('INSERT INTO clients VALUES ($1, $2)', [
+        'ancien-client',
+        { published: false, image: `/api/v1/client-images/${id}` },
       ]);
     },
   );

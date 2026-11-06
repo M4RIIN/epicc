@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { z } from 'zod';
 import type { Database } from './database';
-import { authorized } from './clients.api';
+import { authorized } from './api-authorization';
 
 export function createAuthApi(database: Database) {
   const api = new Hono();

@@ -18,7 +18,6 @@ import {
 } from '@epicc/content-contracts';
 import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
-import { loadClients } from '../services/clients.server';
 
 export function meta() {
   return [
@@ -37,7 +36,6 @@ export async function loader({ request }: Route.LoaderArgs) {
       authenticated,
       configured: adminConfigured(),
       csrf: session.get('csrf') as string,
-      clients: authenticated ? await loadClients(true) : [],
       projectImages: authenticated ? await loadProjectImages() : [],
       offers: authenticated ? await loadOffers() : [],
     },
@@ -73,8 +71,7 @@ export default function Connect({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { authenticated, configured, csrf, clients, offers, projectImages } =
-    loaderData;
+  const { authenticated, configured, csrf, offers, projectImages } = loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
@@ -86,8 +83,8 @@ export default function Connect({
       {!authenticated ? (
         <div className="admin-panel paper">
           <p>
-            Connectez-vous pour gérer les images des projets clients, des offres
-            et les fiches du répertoire.
+            Connectez-vous pour gérer les images des projets clients et des
+            offres.
           </p>
           {!configured && (
             <p role="status">
@@ -270,9 +267,6 @@ export default function Connect({
             </ul>
           </section>
           <div className="admin-toolbar">
-            <Link className="button" to="/connect/clients/nouveau">
-              Ajouter un client ↗
-            </Link>
             <Form method="post">
               <input type="hidden" name="csrf" value={csrf} />
               <button name="intent" value="logout" className="filter-button">
@@ -280,44 +274,6 @@ export default function Connect({
               </button>
             </Form>
           </div>
-          <p>
-            Les fiches publiées apparaissent dans le répertoire « Les rencontres
-            ». L’ordre croissant détermine leur place dans le répertoire.
-          </p>
-          {clients.length === 0 && (
-            <p>Aucun client. Ajoutez votre première fiche.</p>
-          )}
-          <ol className="admin-clients">
-            {clients.map((client) => (
-              <li key={client.slug} className="paper admin-row">
-                <div>
-                  <h2>{client.name}</h2>
-                  <p>
-                    {client.sector} · {client.place}
-                  </p>
-                  <p>
-                    {client.published ? 'Publié' : 'Brouillon'} · Ordre :{' '}
-                    {client.position}
-                  </p>
-                </div>
-                <div>
-                  <Link
-                    className="text-link"
-                    to={`/connect/clients/${client.slug}`}
-                  >
-                    Modifier {client.name} ↗
-                  </Link>
-                  {client.published && (
-                    <p>
-                      <Link to={`/clients/${client.slug}`}>
-                        Voir la fiche publique
-                      </Link>
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
         </>
       )}
     </main>

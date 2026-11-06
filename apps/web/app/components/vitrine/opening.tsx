@@ -99,7 +99,6 @@ export function Opening() {
             <a href="#epicc">L’esprit EPICC</a>
             <a href="#projets">Les projets clients</a>
             <a href="#contact">Contact</a>
-            <Link to="/clients">Les rencontres</Link>
             <Link to="/connect">Espace de gestion</Link>
           </div>
         </details>
