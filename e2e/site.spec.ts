@@ -9,17 +9,20 @@ test('la vitrine et ses métadonnées sont présentes sans JavaScript', async ({
   const html = await response.text();
   expect(html).toContain('<h1');
   expect(html).toContain('Salut, moi c’est');
-  expect(html).toContain('Accompagner les acteurs de la restauration');
+  expect(html).toContain(
+    'Chloé Catala accompagne les acteurs de la restauration',
+  );
+  expect(html).not.toContain('data-home-loading');
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'EPICC — Communication pour la restauration et l’agroalimentaire',
+      'EPICC — Chloé Catala, communication et identité visuelle à Toulouse',
     );
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
-      /Chloé Gathla accompagne/,
+      /Chloé Catala, EPICC/,
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
@@ -52,7 +55,7 @@ test('la navigation fonctionne après hydratation, avec les assets de production
   );
   await page.getByRole('link', { name: /Retour à la vitrine/ }).click();
   await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'EPICC — Communication',
+    'EPICC — Chloé Catala',
   );
   expect(errors).toEqual([]);
 });
@@ -269,7 +272,9 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   );
   expect(images.length).toBeGreaterThan(0);
   for (const image of images) {
-    expect(image.src).toMatch(/^\/images\/vitrine\//);
+    expect(image.src).toMatch(
+      /^\/(?:images\/vitrine\/|api\/v1\/project-images\/)/,
+    );
     expect(image.loaded).toBe(true);
     expect(image.visible).toBe(true);
   }
@@ -302,7 +307,7 @@ test('la connexion reste directement accessible sans JavaScript et les visuels u
   try {
     const page = await context.newPage();
     await page.goto('/');
-    await expect(page.locator('.vitrine-loading')).toBeHidden();
+    await expect(page.locator('main.vitrine')).toBeVisible();
     const connection = page.getByRole('link', {
       name: 'Connexion',
       exact: false,
@@ -336,7 +341,7 @@ test('la connexion reste directement accessible sans JavaScript et les visuels u
   }
 });
 
-test('l’écran de chargement attend aussi la dernière illustration avant de révéler toutes les images', async ({
+test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigation', async ({
   page,
 }) => {
   let release!: () => void;
@@ -349,75 +354,79 @@ test('l’écran de chargement attend aussi la dernière illustration avant de r
   });
   try {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('.vitrine-loading')).toBeVisible();
-    await expect(page.locator('main.vitrine')).toBeHidden();
-    release();
-    await expect(page.locator('.vitrine-loading')).toBeHidden({
-      timeout: 15000,
-    });
     await expect(page.locator('main.vitrine')).toBeVisible();
-    expect(
-      await page.locator('.vitrine img').evaluateAll((images) =>
-        images.every((node) => {
-          const image = node as HTMLImageElement;
-          return image.complete && image.naturalWidth > 0;
-        }),
-      ),
-    ).toBe(true);
-    await page.reload();
-    await expect(page.locator('.vitrine-loading')).toBeHidden({
-      timeout: 15000,
-    });
-    await expect(page.locator('main.vitrine')).toBeVisible();
+    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+      'loading',
+      'eager',
+    );
+    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+      'fetchpriority',
+      'high',
+    );
+    await expect(page.locator('.vitrine-childhood > img')).toHaveAttribute(
+      'loading',
+      'lazy',
+    );
+    await page.getByText('Menu', { exact: true }).click();
+    await expect(
+      page.getByRole('link', { name: 'À propos de Chloé', exact: true }),
+    ).toBeVisible();
   } finally {
     release();
   }
 });
 
-test('une image en erreur ne bloque pas le chargement', async ({ page }) => {
+test('une image en erreur ne bloque pas le contenu', async ({ page }) => {
   await page.route('**/images/vitrine/Group16.svg', (route) => route.abort());
   await page.goto('/');
-  await expect(page.locator('.vitrine-loading')).toBeHidden({ timeout: 15000 });
   await expect(page.locator('main.vitrine')).toBeVisible();
 });
 
-test('un chargement lent permet de continuer ou de rejoindre la gestion', async ({
-  page,
+test('les données structurées décrivent Chloé Catala et les prestations publiées', async ({
+  browser,
+  request,
 }) => {
-  let release!: () => void;
-  const pending = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  await page.clock.install();
-  await page.route(
-    '**/images/vitrine/Image29102026A17281.png',
-    async (route) => {
-      await pending;
-      await route.continue();
-    },
-  );
+  const context = await browser.newContext({ javaScriptEnabled: false });
   try {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await expect(page.locator('html')).toHaveAttribute(
-      'data-home-loading',
-      'true',
+    const page = await context.newPage();
+    await page.goto('/');
+    const structured = JSON.parse(
+      await page.locator('script[type="application/ld+json"]').innerText(),
     );
-    await expect(
-      page
-        .locator('.vitrine-loading')
-        .getByRole('link', { name: 'Connexion à la gestion' }),
-    ).toBeVisible();
-    await page.clock.fastForward(12001);
-    await expect(
-      page.getByText('Le chargement prend plus de temps que prévu.'),
-    ).toBeVisible();
-    await page
-      .getByRole('button', { name: 'Afficher le site sans attendre' })
-      .click();
-    await expect(page.locator('.vitrine-loading')).toBeHidden();
-    await expect(page.locator('main.vitrine')).toBeVisible();
+    const person = structured['@graph'].find(
+      (item: { '@type': string }) => item['@type'] === 'Person',
+    );
+    const organization = structured['@graph'].find(
+      (item: { '@type': string }) => item['@type'] === 'Organization',
+    );
+    expect(person.name).toBe('Chloé Catala');
+    expect(organization.areaServed.name).toContain('Toulouse');
+    const offers = await (await request.get('/api/v1/offers')).json();
+    expect(
+      organization.hasOfferCatalog.itemListElement.map(
+        (item: { itemOffered: { name: string; description: string } }) => ({
+          name: item.itemOffered.name,
+          description: item.itemOffered.description,
+        }),
+      ),
+    ).toEqual(
+      offers.map((offer: { name: string; description: string }) => ({
+        name: offer.name,
+        description: offer.description,
+      })),
+    );
+    await expect(page.locator('.vitrine-manifesto-intro')).toContainText(
+      'Toulouse et alentour',
+    );
+    await page.goto('/clients?q=lyon');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      'content',
+      'noindex, follow',
+    );
+    await page.goto('/clients');
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   } finally {
-    release();
+    await context.close();
   }
 });
 
@@ -430,9 +439,7 @@ test('les projets et le contact complètent la vitrine sur bureau et mobile', as
     try {
       const page = await context.newPage();
       await page.goto('/');
-      await expect(page.locator('.vitrine-loading')).toBeHidden({
-        timeout: 15000,
-      });
+      await expect(page.locator('main.vitrine')).toBeVisible();
       await page
         .getByRole('link', { name: 'Projets clients', exact: true })
         .click();

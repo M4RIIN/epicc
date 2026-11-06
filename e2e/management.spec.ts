@@ -296,9 +296,7 @@ for (const javaScriptEnabled of [false, true]) {
       for (const width of [1440, 375, 320]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto('/');
-        await expect(page.locator('.vitrine-loading')).toBeHidden({
-          timeout: 15000,
-        });
+        await expect(page.locator('main.vitrine')).toBeVisible();
         before.push(await layout());
       }
       const target = '/connect/projets/Rectangle5.png';
@@ -382,9 +380,7 @@ for (const javaScriptEnabled of [false, true]) {
       for (const [index, width] of [1440, 375, 320].entries()) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto('/');
-        await expect(page.locator('.vitrine-loading')).toBeHidden({
-          timeout: 15000,
-        });
+        await expect(page.locator('main.vitrine')).toBeVisible();
         const image = page.getByRole('img', { name: alt, exact: true });
         await expect(image).toHaveAttribute('width', '222');
         await expect(image).toHaveAttribute('height', '283');

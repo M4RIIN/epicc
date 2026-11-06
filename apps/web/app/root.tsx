@@ -21,14 +21,6 @@ export function Layout({ children }: { children: ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {isHome && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html:
-                "document.documentElement.dataset.homeLoading='boot';setTimeout(function(){if(document.documentElement.dataset.homeLoading==='boot')delete document.documentElement.dataset.homeLoading;},15000);",
-            }}
-          />
-        )}
         <Meta />
         <Links />
       </head>

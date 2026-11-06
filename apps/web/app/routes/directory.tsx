@@ -41,6 +41,9 @@ export function meta({ loaderData: data }: Route.MetaArgs) {
     ];
   return [
     { title: 'Les rencontres | EPICC' },
+    ...(data.query || data.sector
+      ? [{ name: 'robots', content: 'noindex, follow' }]
+      : []),
     { name: 'description', content: data.page.description },
     { property: 'og:title', content: data.page.title },
     { property: 'og:description', content: data.page.description },
