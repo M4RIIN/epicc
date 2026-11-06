@@ -33,6 +33,36 @@ export async function purgeLegacy(database: Database) {
     });
   }
 }
+export async function migrateProjectMedia(database: Database, root: string) {
+  if (!database.images.storage)
+    throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
+  const before = await inventoryProjectMedia(database);
+  console.info('INVENTAIRE_MEDIAS', JSON.stringify(before));
+  await database.migrate({ provisionAdmin: false });
+  const report = await importProjectOriginals(database, root);
+  await database.images.migrateLegacy();
+  const after = await inventoryProjectMedia(database);
+  // Une base vierge reçoit les données initiales ; seules les données déjà
+  // présentes avant la migration doivent rester strictement identiques.
+  const preserved = (
+    Object.keys(before.contents) as (keyof typeof before.contents)[]
+  ).every(
+    (table) =>
+      before.contents[table].count === 0 ||
+      before.contents[table].sha256 === after.contents[table].sha256,
+  );
+  if (!preserved)
+    throw new Error(
+      'Les contenus ont changé pendant l’import : vérification nécessaire.',
+    );
+  const verification = {
+    ...(await verifyProjectMedia(database, root)),
+    editedContentsPreserved: true,
+  };
+  console.info('VERIFICATION_MEDIAS', JSON.stringify(verification));
+  return { ...report, ...verification };
+}
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
@@ -52,32 +82,14 @@ if (
         'VERIFICATION_MEDIAS',
         JSON.stringify(await verifyProjectMedia(database, root)),
       );
-    } else {
-      const before = await inventoryProjectMedia(database);
-      console.info('INVENTAIRE_MEDIAS', JSON.stringify(before));
+    } else if (
+      process.argv.includes('--purge-legacy') ||
+      process.argv.includes('--cleanup')
+    ) {
       await database.migrate({ provisionAdmin: false });
       if (process.argv.includes('--purge-legacy')) await purgeLegacy(database);
-      else if (process.argv.includes('--cleanup'))
-        await database.images.cleanup();
-      else {
-        if (!database.images.storage)
-          throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
-        await importProjectOriginals(database, root);
-        await database.images.migrateLegacy();
-        const after = await inventoryProjectMedia(database);
-        if (JSON.stringify(before.contents) !== JSON.stringify(after.contents))
-          throw new Error(
-            'Les contenus ont changé pendant l’import : vérification nécessaire.',
-          );
-        console.info(
-          'VERIFICATION_MEDIAS',
-          JSON.stringify({
-            ...(await verifyProjectMedia(database, root)),
-            editedContentsPreserved: true,
-          }),
-        );
-      }
-    }
+      else await database.images.cleanup();
+    } else await migrateProjectMedia(database, root);
     console.info(
       'Traitement des images terminé. Les références sont conservées.',
     );

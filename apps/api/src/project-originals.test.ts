@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { vitrineProjects } from '@epicc/content-contracts';
 import { Database } from './database';
 import { importProjectOriginals } from './project-originals';
+import { migrateProjectMedia } from './migrate-images';
 import {
   inventoryProjectMedia,
   verifyProjectMedia,
@@ -147,3 +148,25 @@ it('arrête l’import avant toute écriture en cas de logos édités contradict
   expect(await inventoryProjectMedia(database)).toEqual(before);
   expect(objects.size).toBe(0);
 });
+
+it('initialise une base vierge et reprend la migration complète sans doublon', async () => {
+  await database.close();
+  await manageTestDatabase(name, false);
+  await manageTestDatabase(name, true);
+  database = new Database(testDatabaseUrl(name), storage);
+  expect(await migrateProjectMedia(database, root)).toMatchObject({
+    imported: 26,
+    skipped: 0,
+    conflicts: 0,
+    verified: 26,
+    metadataValid: true,
+    editedContentsPreserved: true,
+  });
+  expect(await migrateProjectMedia(database, root)).toMatchObject({
+    imported: 0,
+    skipped: 26,
+    conflicts: 0,
+    verified: 26,
+  });
+  expect(objects.size).toBe(26);
+}, 60000);
