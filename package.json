@@ -20,9 +20,12 @@
     "format:check": "prettier --check .",
     "db:import-sqlite": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/import-sqlite.ts",
     "admin:reset-password": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts --reset-password",
-    "admin:create": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts"
+    "admin:create": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/create-admin.ts",
+    "media:migrate": "tsx --tsconfig apps/api/tsconfig.json apps/api/src/migrate-images.ts",
+    "media:cleanup": "npm run media:migrate -- --cleanup"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1163.0",
     "@hono/node-server": "^2.1.5",
     "@react-router/node": "^8.5.0",
     "hono": "^4.13.13",

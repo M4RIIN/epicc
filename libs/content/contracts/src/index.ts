@@ -74,3 +74,11 @@ export const projectImageSchema = z.object({
   alt: text.max(300),
 });
 export type ProjectImage = z.infer<typeof projectImageSchema>;
+
+// Limite commune aux deux serveurs ; aucune variable d’environnement côté navigateur.
+export function imageUploadLimit(value?: string) {
+  const bytes = value === undefined ? 5 * 1024 * 1024 : Number(value);
+  if (!Number.isSafeInteger(bytes) || bytes < 1 || bytes > 50 * 1024 * 1024)
+    throw new Error('IMAGE_MAX_BYTES doit être un entier entre 1 et 52428800.');
+  return bytes;
+}

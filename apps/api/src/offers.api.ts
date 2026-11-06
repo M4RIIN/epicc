@@ -1,11 +1,12 @@
+import { assertImageReference } from './images.store';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { randomUUID } from 'node:crypto';
 import { offerSchema } from '@epicc/content-contracts';
 import type { Database } from './database';
 import { authorized } from './clients.api';
-import { readImage } from './image-upload';
-import { removeUnusedImages } from './clients.store';
+import { readImage, uploadBodyLimit } from './image-upload';
+import { imageResponse } from './image-response';
 
 export function createOffersApi(database: Database) {
   const api = new Hono();
@@ -25,24 +26,26 @@ export function createOffersApi(database: Database) {
     const id = c.req.param('id');
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))
       return c.notFound();
-    const result = await database.pool.query<{ mime: string; content: Buffer }>(
-      `SELECT mime, content FROM images WHERE id = $1 AND EXISTS (
+    const result = await database.pool.query<{
+      mime: string;
+      content: Buffer | null;
+      storage_key: string | null;
+    }>(
+      `SELECT mime, content, storage_key FROM images WHERE id = $1 AND EXISTS (
       SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
     )`,
       [id],
     );
-    const image = result.rows[0];
-    if (!image) return c.notFound();
-    c.header('Content-Type', image.mime);
-    c.header('X-Content-Type-Options', 'nosniff');
-    return c.body(Buffer.from(image.content));
+    if (!result.rows[0]) return c.notFound();
+    const image = await database.images.read(result.rows[0]);
+    return imageResponse(c, image);
   });
   api.use('/v1/admin/offers/*', async (c, next) => {
     if (!authorized(c.req.header('Authorization')))
       return c.json({ error: 'Accès refusé.' }, 401);
     await next();
   });
-  api.use('/v1/admin/offers/*', bodyLimit({ maxSize: 6 * 1024 * 1024 }));
+  api.use('/v1/admin/offers/*', bodyLimit({ maxSize: uploadBodyLimit() }));
   api.post('/v1/admin/offers/:slug', async (c) => {
     const slug = c.req.param('slug');
     const form = await c.req.formData();
@@ -73,13 +76,8 @@ export function createOffersApi(database: Database) {
         { error: parsed.error.issues.map((issue) => issue.message).join(' ') },
         400,
       );
-    await database.transaction(async (connection) => {
-      if (image)
-        await connection.query('INSERT INTO images VALUES ($1, $2, $3)', [
-          id,
-          image.mime,
-          Buffer.from(image.content),
-        ]);
+    await database.images.write(id, image, async (connection) => {
+      await assertImageReference(connection, parsed.data.image);
       await connection.query('UPDATE offers SET content = $2 WHERE slug = $1', [
         slug,
         parsed.data,
@@ -87,7 +85,6 @@ export function createOffersApi(database: Database) {
       await connection.query(
         "INSERT INTO migrations VALUES ('postgres-edited') ON CONFLICT DO NOTHING",
       );
-      await removeUnusedImages(connection);
     });
     return c.json({ ok: true });
   });

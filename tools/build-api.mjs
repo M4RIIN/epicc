@@ -1,8 +1,12 @@
 import { build } from 'esbuild';
 
 await build({
-  entryPoints: ['apps/api/src/main.ts'],
-  outfile: 'dist/apps/api/main.mjs',
+  entryPoints: {
+    main: 'apps/api/src/main.ts',
+    'migrate-images': 'apps/api/src/migrate-images.ts',
+  },
+  outdir: 'dist/apps/api',
+  outExtension: { '.js': '.mjs' },
   bundle: true,
   platform: 'node',
   format: 'esm',

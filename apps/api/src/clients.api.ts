@@ -1,4 +1,5 @@
-import { readImage } from './image-upload';
+import { readImage, uploadBodyLimit } from './image-upload';
+import { imageResponse } from './image-response';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { createHash, timingSafeEqual } from 'node:crypto';
@@ -25,10 +26,7 @@ export function createClientsApi(store: ClientStore) {
   api.get('/v1/client-images/:id', async (c) => {
     const image = await store.image(c.req.param('id'));
     if (!image) return c.notFound();
-    c.header('Content-Type', image.mime);
-    c.header('X-Content-Type-Options', 'nosniff');
-    c.header('Cache-Control', 'no-store');
-    return c.body(Buffer.from(image.content));
+    return imageResponse(c, image);
   });
   api.use('/v1/admin/*', async (c, next) => {
     c.header('Cache-Control', 'no-store');
@@ -37,13 +35,11 @@ export function createClientsApi(store: ClientStore) {
       return c.json({ error: 'Accès refusé.' }, 401);
     await next();
   });
-  api.use('/v1/admin/*', bodyLimit({ maxSize: 6 * 1024 * 1024 }));
+  api.use('/v1/admin/*', bodyLimit({ maxSize: uploadBodyLimit() }));
   api.get('/v1/admin/images/:id', async (c) => {
     const image = await store.image(c.req.param('id'), true);
     if (!image) return c.notFound();
-    c.header('Content-Type', image.mime);
-    c.header('X-Content-Type-Options', 'nosniff');
-    return c.body(Buffer.from(image.content));
+    return imageResponse(c, image, false);
   });
   api.get('/v1/admin/clients', async (c) => c.json(await store.list(true)));
   api.post('/v1/admin/clients/:slug', async (c) => {

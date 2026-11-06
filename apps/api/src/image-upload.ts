@@ -1,29 +1,45 @@
 import sharp from 'sharp';
-import type { UploadedImage } from './clients.store';
+import { imageUploadLimit } from '@epicc/content-contracts';
+import type { UploadedImage } from './images.store';
 
+export function uploadBodyLimit() {
+  return imageUploadLimit(process.env.IMAGE_MAX_BYTES) + 1024 * 1024;
+}
 export async function readImage(file: FormDataEntryValue | null) {
-  let image: UploadedImage | undefined;
-  if (file instanceof File && file.size > 0) {
-    if (file.size > 5 * 1024 * 1024)
-      throw new Error('L’image doit peser au maximum 5 Mo.');
-    const content = new Uint8Array(await file.arrayBuffer());
-    const hex = Buffer.from(content.subarray(0, 12)).toString('hex');
-    const valid =
-      (file.type === 'image/jpeg' && hex.startsWith('ffd8ff')) ||
-      (file.type === 'image/png' && hex.startsWith('89504e470d0a1a0a')) ||
-      (file.type === 'image/webp' &&
-        hex.startsWith('52494646') &&
-        hex.slice(16) === '57454250');
-    if (!valid)
-      throw new Error('Choisissez une image JPEG, PNG ou WebP valide.');
-    try {
-      await sharp(content, { limitInputPixels: 40_000_000 }).stats();
-      image = { mime: file.type, content };
-    } catch {
-      throw new Error(
-        'Image illisible ou trop grande. Choisissez une image JPEG, PNG ou WebP valide (40 millions de pixels maximum).',
-      );
-    }
+  if (!(file instanceof File) || file.size === 0) return undefined;
+  const limit = imageUploadLimit(process.env.IMAGE_MAX_BYTES);
+  if (file.size > limit)
+    throw new Error(`L’image doit peser au maximum ${limit / 1024 / 1024} Mo.`);
+  const content = new Uint8Array(await file.arrayBuffer());
+  try {
+    const decoder = sharp(content, {
+      limitInputPixels: 40_000_000,
+      failOn: 'warning',
+    });
+    const metadata = await decoder.metadata();
+    const mime = {
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+      heif: 'image/avif',
+    }[metadata.format as string];
+    // libvips distingue HEIC d’AVIF par le codec HEIF.
+    if (
+      !mime ||
+      (metadata.format === 'heif' && metadata.compression !== 'av1') ||
+      (metadata.pages ?? 1) > 1
+    )
+      throw new Error('Format refusé.');
+    await decoder.stats(); // Décodage réel, au-delà de l’en-tête et du MIME déclaré.
+    return {
+      mime,
+      content,
+      width: metadata.width,
+      height: metadata.height,
+    } satisfies UploadedImage;
+  } catch {
+    throw new Error(
+      'Image illisible ou trop grande. Choisissez une image JPEG, PNG, WebP ou AVIF fixe valide (40 millions de pixels maximum).',
+    );
   }
-  return image;
 }

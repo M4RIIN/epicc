@@ -23,3 +23,33 @@ it('refuse un fichier corrompu même si sa signature ressemble à une image', as
     readImage(new File([corrupt], 'corrompu.png', { type: 'image/png' })),
   ).rejects.toThrow('Image illisible');
 });
+
+it('détecte les formats réels JPEG, PNG, WebP et AVIF indépendamment du MIME déclaré', async () => {
+  for (const format of ['jpeg', 'png', 'webp', 'avif'] as const) {
+    const bytes = await sharp({
+      create: { width: 20, height: 10, channels: 3, background: '#abc' },
+    })
+      [format]()
+      .toBuffer();
+    const image = await readImage(
+      new File([bytes], 'fichier.dat', { type: 'application/octet-stream' }),
+    );
+    expect(image?.mime).toBe(`image/${format}`);
+    expect(image?.width).toBe(20);
+    expect(image?.height).toBe(10);
+  }
+});
+it('refuse les SVG, les faux MIME et les fichiers dépassant la limite configurable', async () => {
+  await expect(
+    readImage(new File(['<svg></svg>'], 'faux.png', { type: 'image/png' })),
+  ).rejects.toThrow('Image illisible');
+  const { vi } = await import('vitest');
+  vi.stubEnv('IMAGE_MAX_BYTES', '10');
+  try {
+    await expect(
+      readImage(new File([new Uint8Array(11)], 'grand.png')),
+    ).rejects.toThrow('maximum');
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});

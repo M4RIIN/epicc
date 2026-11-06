@@ -31,6 +31,9 @@ try {
   );
 }
 app.route('/api', composeApi(database));
+void database.images.cleanup();
+const mediaCleanup = setInterval(() => void database.images.cleanup(), 60_000);
+mediaCleanup.unref();
 app.all('/api/*', (context) =>
   context.json({ error: 'Ressource introuvable.' }, 404),
 );
@@ -71,6 +74,7 @@ const server = serve({ fetch: app.fetch, port, hostname: '0.0.0.0' }, () => {
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
+    clearInterval(mediaCleanup);
     server.close(async (error) => {
       await database.close();
       if (error) {
