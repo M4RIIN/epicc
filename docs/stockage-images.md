@@ -14,42 +14,36 @@ Les originaux conservent leurs octets, leur résolution et leurs proportions, co
 
 ## Connexion Railway
 
-L’inspection distante du 6 novembre 2026 a confirmé par `projectToken` le projet `ed8fc074-7306-4773-b03c-fd468da68e68` (nom Railway : `EPPIC`) et l’environnement `development`, identifiant `0be15747-de9f-4ba5-8dd8-0653e3e4280b`. Le jeton de projet a été chargé depuis un fichier protégé hors dépôt, uniquement dans l’environnement des processus/API ; aucun secret n’a été affiché, ajouté aux fichiers de configuration ni versionné.
+L’inspection distante a confirmé par `projectToken` le projet `ed8fc074-7306-4773-b03c-fd468da68e68` (nom Railway : `EPPIC`) et l’environnement `development`, identifiant `0be15747-de9f-4ba5-8dd8-0653e3e4280b`. Le jeton de projet est chargé depuis un fichier protégé hors dépôt, uniquement dans l’environnement des processus/API. Les identifiants S3 sont lus via l’API puis conservés en mémoire pour la recette ; aucun secret n’est affiché, intégré au build ou enregistré dans Git.
 
-| Vérification en lecture    | Résultat                                                                                                                                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Services `development`     | `EPICC` (`18ea4b9e-e7eb-41c5-b15e-d83f26cc15f6`) et `Postgres` (`64953ca0-24fe-4021-931b-78c8422c22e2`) présents                                                                                 |
-| Bucket existant            | Aucun : `project.buckets.edges` vide, confirmé par `railway bucket --environment development list --json`                                                                                        |
-| Portée réellement éprouvée | Identification du projet/environnement, lecture des services, des variables et de l’inventaire des buckets ; aucune opération workspace effectuée ; tentative de création refusée (`Bad Access`) |
-| Application                | Dernier déploiement `2527b515-a70e-451b-94c6-245698480e0e`, statut `SUCCESS`                                                                                                                     |
-| PostgreSQL                 | Dernier déploiement `c09c5374-2217-4c82-a79d-f115fbd49b9d`, statut `SUCCESS` ; volume sur `/var/lib/postgresql/data`                                                                             |
-| Stockage applicatif        | `MEDIA_STORAGE` absent : mode historique `database` ; aucune des cinq variables de connexion S3 présente ; `DATABASE_URL` de type PostgreSQL                                                     |
-| Santé publique             | HTTP 200 sur `/api/health` (`status: ok`), `/`, `/clients`, `/connect` et `/sitemap.xml`                                                                                                         |
+| Ressource            | État dans `development`                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Application          | Service `EPICC`, `18ea4b9e-e7eb-41c5-b15e-d83f26cc15f6`, domaine <https://epicc-development.up.railway.app>         |
+| Base                 | Service `Postgres`, `64953ca0-24fe-4021-931b-78c8422c22e2`, volume préservé sur `/var/lib/postgresql/data`          |
+| Bucket               | `epicc-medias`, `3cb5a3e9-84a1-48ce-aa2f-84ac89575a6c`, région Amsterdam (`ams`), instance `development` uniquement |
+| Accès aux objets     | Bucket privé ; lecture anonyme d’un objet existant sur son URL exacte refusée avec HTTP 403                         |
+| Configuration du SDK | URL virtual-host et région de signature `auto`, conformément aux identifiants fournis par Railway                   |
 
-Aucune variable distante, ressource, donnée, connexion administrateur ou valeur `SESSION_SECRET` n’a été modifiée. Aucun redémarrage ni déploiement n’a été déclenché. L’inspection n’a pas établi de connexion SQL à la base distante : une URL PostgreSQL publique n’était pas disponible dans les variables lues. Aucun contenu réel n’a été utilisé comme donnée de test.
+Le propriétaire a approuvé le coût et créé le bucket dans Railway. Il est réutilisé ici, sans création d’un autre bucket. Le jeton de projet a permis de lire l’inventaire et les identifiants S3, configurer le service et déployer dans `development`. Il avait refusé la création de la ressource bucket au niveau du projet (`Bad Access`) ; cela ne bloque plus l’intégration après la création manuelle.
 
-### Création approuvée, bloquée par les droits Railway
+### Variables configurées
 
-Le propriétaire a explicitement approuvé la création facturable d’un bucket privé nommé **`epicc-medias`**, uniquement dans **`development`**, région **`ams` (Amsterdam, UE)**. Cet accord reste acquis ; aucune nouvelle confirmation du coût n’est nécessaire pour cette opération. Cette région est une proposition pour les médias de ce site français ; elle n’est pas déduite de la région des services, que l’API ne renseigne pas ici. Les identifiants et l’endpoint réels ne peuvent être obtenus qu’après création. La tentative autorisée `railway bucket create epicc-medias --region ams --environment 0be15747-de9f-4ba5-8dd8-0653e3e4280b --json` avec la CLI 5.71.0 et le même jeton de projet a échoué : code de sortie 1, message Railway `Bad Access`. Le chemin de création de cette version de la CLI commence par `bucketCreate`, au niveau du projet, avant de configurer l’instance régionale. Le schéma public marque le paramètre de déploiement `BucketCreateInput.environmentId` comme non implémenté : il ne faut pas s’en servir pour présumer une création limitée à un environnement. L’inventaire du projet est resté vide après l’échec ; aucun bucket ni instance partielle n’a été créé.
+Ces huit variables ont été ajoutées uniquement au service `EPICC` dans `development`, par mise à jour partielle (`replace: false`) et sans redéploiement automatique lors de l’écriture (`skipDeploys: true`). Les cinq références de connexion ont été relues et leur résolution a été vérifiée sans afficher leurs valeurs. Toutes les autres variables, dont `DATABASE_URL`, les identifiants administrateur et `SESSION_SECRET`, ont été préservées.
 
-L’opération manquante est la création de la ressource bucket au niveau de ce projet (`bucketCreate`), puis son instance Amsterdam exclusivement dans `development`. L’accès existant permet la lecture de l’inventaire mais a refusé cette création. Pour poursuivre, le propriétaire peut créer lui-même ce bucket dans Railway, ou fournir temporairement un jeton workspace autorisé à cette opération sur ce projet ; un accès au compte entier n’est pas demandé. Après création, renseigner sur `EPICC` les références du tableau ci-dessous. Le tarif publié est 0,015 USD/Go-mois, soit environ 0,15 USD/mois pour 10 Go sur un mois complet, hors abonnement, taxes et trafic sortant du service applicatif. Cette estimation n’est pas un plafond de facturation. Ne pas mettre `MEDIA_STORAGE=s3` avant que le bucket et les cinq références de connexion soient disponibles. Les tests S3 réels et la migration restent à effectuer ; ne pas purger les sources historiques.
+| Variable applicative   | Configuration appliquée               |
+| ---------------------- | ------------------------------------- |
+| `MEDIA_STORAGE`        | `s3`                                  |
+| `S3_ENDPOINT`          | `${{epicc-medias.ENDPOINT}}`          |
+| `S3_BUCKET`            | `${{epicc-medias.BUCKET}}`            |
+| `S3_REGION`            | `${{epicc-medias.REGION}}`            |
+| `S3_ACCESS_KEY_ID`     | `${{epicc-medias.ACCESS_KEY_ID}}`     |
+| `S3_SECRET_ACCESS_KEY` | `${{epicc-medias.SECRET_ACCESS_KEY}}` |
+| `S3_FORCE_PATH_STYLE`  | `false`                               |
+| `IMAGE_MAX_BYTES`      | `5242880`                             |
 
-Avec un accès au projet, vérifier d’abord les buckets existants dans l’environnement cible. Réutiliser le bucket approuvé s’il apparaît entre-temps ; sinon reprendre sa création avec l’accès adéquat, sans redemander l’accord financier déjà donné. Ne pas partager un bucket de production avec les tests. Railway isole les instances de buckets par environnement. Conserver le bucket privé ; aucun réglage CORS n’est nécessaire, les navigateurs ne communiquent pas avec S3.
+Les fichiers `.env` et `.env.*` n’ont pas été modifiés. Aucun réglage CORS n’est nécessaire : le navigateur communique avec l’application et non avec S3. Ne pas préfixer ces variables par `VITE_` et ne pas les passer au build web.
 
-Configuration préparée, non appliquée, uniquement sur le service applicatif `EPICC` dans `development` (adapter `epicc-medias` si Railway attribue un autre nom de ressource) :
-
-| Variable applicative   | Valeur / référence                                                                                                           |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `MEDIA_STORAGE`        | `s3` pour activer les nouveaux uploads S3                                                                                    |
-| `S3_ENDPOINT`          | `${{epicc-medias.ENDPOINT}}`, endpoint exact des Credentials ; HTTPS obligatoire en production                               |
-| `S3_BUCKET`            | `${{epicc-medias.BUCKET}}`, nom technique, pas le nom d’affichage                                                            |
-| `S3_REGION`            | `${{epicc-medias.REGION}}`                                                                                                   |
-| `S3_ACCESS_KEY_ID`     | `${{epicc-medias.ACCESS_KEY_ID}}`, secret serveur                                                                            |
-| `S3_SECRET_ACCESS_KEY` | `${{epicc-medias.SECRET_ACCESS_KEY}}`, secret serveur                                                                        |
-| `S3_FORCE_PATH_STYLE`  | `false` par défaut pour les buckets récents ; `true` seulement si les Credentials indiquent path-style pour un ancien bucket |
-| `IMAGE_MAX_BYTES`      | Optionnel : `5242880` par défaut                                                                                             |
-
-Ne pas modifier les fichiers `.env`, ne pas préfixer ces variables par `VITE_` et ne pas les passer au build web. En développement, les injecter dans le processus depuis un gestionnaire de secrets ; un endpoint HTTP est accepté hors production pour un émulateur S3 local. L’absence de `MEDIA_STORAGE` garde le mode historique `database` pour permettre un déploiement progressif. Une configuration `s3` incomplète échoue explicitement au démarrage ; elle ne revient pas silencieusement à la base. Pour utiliser S3 en production, `MEDIA_STORAGE=s3` doit donc bien être configuré.
+En développement local, injecter les variables dans le processus depuis un gestionnaire de secrets ; un endpoint HTTP est accepté hors production pour un émulateur S3. L’absence de `MEDIA_STORAGE` garde le mode historique `database` pendant une transition. Une configuration `s3` incomplète échoue explicitement au démarrage. Après migration, conserver `MEDIA_STORAGE=s3` et les variables S3 pour lire les objets existants.
 
 Sources officielles : [Railway Buckets, variables et styles d’URL](https://docs.railway.com/storage-buckets), [upload et diffusion](https://docs.railway.com/storage-buckets/uploading-serving).
 
@@ -99,11 +93,29 @@ Une passe traite au maximum 20 tâches. Les objets déjà référencés en base 
 
 ## Recette et limites de validation
 
-Les tests automatisés couvrent PostgreSQL éphémère, S3 simulé injecté pour les scénarios de panne, ainsi que PUT/GET/DELETE du vrai SDK contre un serveur HTTP de test. Ils vérifient les métadonnées, le rollback, la reprise de nettoyage, la migration réexécutable, la purge vérifiée, les brouillons, l’autorisation, les formats, les tailles et les ETag. Les parcours Playwright existants valident l’intégration des formulaires et de la vitrine avec et sans JavaScript en stockage historique local de test ; ils ne constituent pas une recette d’un bucket Railway.
+Les vérifications locales `npm run check` ont réussi : format, lint, TypeScript, tests unitaires et d’intégration, build. Les 13 tests ciblés du stockage et de la validation des images passent. La première recette navigateur complète a terminé avec 24 succès et un test réussi à la reprise après une erreur de flux ZIP de trace Playwright ; une nouvelle exécution des six parcours de gestion a ensuite passé sans échec.
 
-Avant activation finale sur Railway, il reste à vérifier avec les véritables identifiants : upload puis lecture, remplacement/suppression, copie des images existantes, relecture après redéploiement, absence d’accès public direct au bucket et absence de secrets dans le navigateur. Aucun déploiement en production ne doit être déclenché sans accord du propriétaire.
+Après connexion au bucket réel, les vérifications suivantes ont réussi :
 
-Résultats locaux du 6 novembre 2026 : `npm run check` réussi (format, lint, TypeScript, tests et build). Les 13 tests ciblés du stockage, de l’adaptateur S3 et de la validation des images passent. La suite navigateur complète a terminé avec 24 succès et un test réussi à la reprise après une erreur de flux ZIP de trace Playwright. Une nouvelle exécution des six parcours de gestion, incluant le contrôle du nouvel aperçu, passe ensuite sans échec : `npx playwright test --project=gestion --no-deps` (2,6 minutes). Les tests utilisent uniquement les bases éphémères autorisées ; aucun transfert vers un bucket Railway réel n’a été testé. La reprise avec le jeton de projet a validé uniquement l’inventaire et les lectures HTTP décrits plus haut ; la création refusée par Railway empêche encore la recette S3 distante. Après l’accord financier, la tentative de création a été suivie d’une nouvelle lecture : aucun bucket, déploiement applicatif toujours `2527b515-a70e-451b-94c6-245698480e0e` en `SUCCESS`, santé HTTP 200. Aucune variable S3 n’a été appliquée et aucune migration distante n’a été exécutée.
+- PUT, GET, nouvelle connexion et DELETE pour JPEG, PNG, WebP et AVIF avec les vrais identifiants Railway ; les octets relus correspondent aux sources.
+- Refus HTTP 403 de la lecture anonyme d’un objet existant, sur l’URL virtual-host exacte du bucket.
+- API Hono + base PostgreSQL éphémère + S3 Railway : autorisation, métadonnées sans binaire, lecture après réouverture, ETag/304, remplacement et suppression.
+- Migration de données fictives PostgreSQL vers S3 réel : copie vérifiée, deuxième exécution sans doublon et source conservée.
+- Les six parcours Playwright de gestion ont passé avec S3 Railway réellement activé, avec et sans JavaScript (`npx playwright test --project=gestion --no-deps`, 2,7 minutes). Les huit clés d’objets créées par ces parcours ont été suivies et nettoyées.
+- Sur le domaine `development` : upload administrateur, brouillon invisible au public, aperçu administrateur protégé, publication, image publique, ETag/304 et affichage dans la fiche vitrine.
+- Relecture après redéploiement réel : référence et SHA-256 inchangés ; refus des fichiers invalides et dépassant 5 Mo ; remplacement, suppression de l’ancienne référence et retrait de la fiche de test.
+
+Les recettes utilisent exclusivement des contenus fictifs. Les comptes de test locaux restent `test@questboard.test` / `testtest` ; sur le service distant, aucune création ou réinitialisation de compte administrateur n’a été effectuée. Les écritures de recette distantes sont authentifiées côté serveur sans connexion interactive ni exposition du secret de session. Seules les fiches et images créées pour la recette sont supprimées à la fin. Aucun contenu existant, service, volume ou ressource d’un autre environnement n’a été supprimé.
+
+### Déploiement et migration dans development
+
+Le code de la branche a été déployé dans `development` sans push ni fusion de PR. Le premier déploiement `dac3fbeb-576a-48e7-b817-3b407962ddae` a réussi. Un redéploiement `370a2c7d-9338-40cc-ae25-c4f17fdb79fc` a permis de vérifier la persistance réelle des images. La commande préalable `node dist/apps/api/migrate-images.mjs`, avec délai de 300 secondes, a été configurée uniquement sur ce service dans `development` ; elle remplace une valeur initialement vide, sans modifier d’autre commande existante.
+
+Le déploiement final `777e5e17-2c7b-449d-9624-be994a3fbab0` est en statut `SUCCESS` et applique cette commande de migration. Ses journaux confirment « Traitement des images terminé. Les références sont conservées. ». La relecture de l’image et de la fiche de test après ce déploiement a également réussi, avec référence et SHA-256 inchangés. La migration est idempotente et ne purge pas les binaires historiques. Aucune image téléversée n’était référencée dans les contenus existants lors de l’inventaire initial ; les images versionnées du site restent servies par le build. L’import historique vers S3 reste utilisable pour des données reprises ultérieurement.
+
+À la fin de la recette, les fiches fictives ont été retirées, les anciennes et nouvelles URL de leurs images répondent 404, et la liste S3 confirme zéro objet restant. Les bases temporaires de test sont supprimées et le serveur local est arrêté. `/api/health`, `/`, `/clients`, `/connect` et `/sitemap.xml` répondent HTTP 200 sur le domaine `development`.
+
+Aucun déploiement ni configuration de production n’a été effectué. Pour la production, prévoir une instance de bucket isolée et les mêmes références de variables dans l’environnement cible, puis valider les accès avant publication par le propriétaire. Ne pas réutiliser les identifiants de `development` pour la production. La purge historique reste une action séparée, soumise à validation et sauvegarde.
 
 ## Fichiers concernés
 
