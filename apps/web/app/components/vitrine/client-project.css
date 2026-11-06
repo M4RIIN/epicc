@@ -1,0 +1,273 @@
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('/fonts/roboto-mono.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* Les compositions suivent le canevas Figma de 1920 px ; chaque section
+   réserve sa hauteur avant le chargement des images. */
+.client-project {
+  max-width: none;
+  container-type: inline-size;
+  background: #fff;
+  color: #000;
+  overflow: clip;
+}
+.project-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.client-project img {
+  width: 100%;
+  height: 100%;
+}
+.project-hero {
+  position: relative;
+  aspect-ratio: 1920 / 1031;
+  overflow: hidden;
+}
+.project-hero img {
+  position: absolute;
+  left: -0.15625%;
+  top: -27.74%;
+  width: 100.8333%;
+  height: 141.98%;
+}
+.project-logo {
+  position: relative;
+  aspect-ratio: 1920 / 1084;
+}
+.project-logo-grid {
+  position: absolute;
+  left: -0.72917%;
+  top: -1.01476%;
+  width: 101.40625%;
+  height: 101.01476%;
+}
+.project-lettering {
+  position: absolute;
+  overflow: hidden;
+}
+.project-lettering img {
+  position: absolute;
+  max-width: none;
+}
+.project-lettering-first {
+  left: 13.59375%;
+  top: 16.6974%;
+  width: 27.1875%;
+  height: 34.7786%;
+  transform: rotate(-6.14deg);
+}
+.project-lettering-first img {
+  width: 245.13%;
+  left: -0.12%;
+}
+.project-lettering-second {
+  left: 29.3266%;
+  top: 27.1744%;
+  width: 39.61276%;
+  height: 34.7743%;
+  transform: rotate(-4.17deg);
+}
+.project-lettering-second img {
+  width: 168.28%;
+  left: -68.21%;
+}
+.project-margin-note {
+  position: absolute;
+  left: 74.73958%;
+  top: 70.6642%;
+  width: 18.75%;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.833333cqw;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: -0.083333cqw;
+  text-transform: uppercase;
+}
+.project-symbol {
+  aspect-ratio: 1920 / 1079;
+}
+.project-photography {
+  position: relative;
+  aspect-ratio: 1920 / 1126;
+}
+.project-photo,
+.project-application {
+  position: absolute;
+}
+.project-photo-grill {
+  left: 11.66667%;
+  top: 8.08171%;
+  width: 21.97917%;
+  height: 56.03908%;
+}
+.project-photo-table {
+  left: 30.41667%;
+  top: 25.75488%;
+  width: 23.90625%;
+  height: 61.10124%;
+}
+.project-photo-mountain {
+  left: 50%;
+  top: 14.74245%;
+  width: 22.39583%;
+  height: 57.28242%;
+}
+.project-photo-products {
+  left: 68.64583%;
+  top: 25.75488%;
+  width: 20.36458%;
+  height: 52.04263%;
+}
+.project-photo-meeting {
+  left: 49.47917%;
+  top: 14.74245%;
+  width: 22.91667%;
+  height: 57.28242%;
+}
+.project-applications {
+  position: relative;
+  aspect-ratio: 1920 / 1181;
+}
+.project-black-panel {
+  position: absolute;
+  left: 7.65625%;
+  top: 8.4674%;
+  width: 84.89583%;
+  height: 53.59864%;
+  background: #000;
+}
+.project-cards {
+  left: 36.09375%;
+  top: 13.63252%;
+  width: 27.8125%;
+  height: 27.85775%;
+}
+.project-box {
+  left: 64.89583%;
+  top: 14.81795%;
+  width: 21.51042%;
+  height: 21.5072%;
+}
+.project-bag {
+  left: 13.02083%;
+  top: 53.0906%;
+  width: 30.10417%;
+  height: 48.94157%;
+}
+.project-swatches {
+  position: absolute;
+  left: 36.14583%;
+  top: 45.63929%;
+  width: 31.14583%;
+  height: 12.44708%;
+  display: flex;
+  justify-content: space-between;
+}
+.project-swatches span {
+  width: 19.73244%;
+  background: #d9d9d9;
+}
+.project-stamp {
+  left: 63.38542%;
+  top: 64.52159%;
+  width: 18.02083%;
+  height: 30.82134%;
+}
+.project-frieze {
+  position: relative;
+  aspect-ratio: 1920 / 340;
+}
+.project-frieze img {
+  position: absolute;
+  left: -9.16667%;
+  width: 111.14583%;
+}
+.project-footer {
+  padding: 40px max(24px, 8vw) 64px;
+  font-family: 'Roboto Mono', monospace;
+}
+.project-footer nav {
+  font-size: 13px;
+  margin-bottom: 32px;
+}
+.project-footer h2 {
+  font-family: inherit;
+  font-size: clamp(24px, 3vw, 42px);
+  letter-spacing: -1px;
+}
+.project-footer p {
+  max-width: 700px;
+}
+.project-footer > a {
+  display: inline-block;
+  margin: 16px 32px 0 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+@media (max-width: 700px) {
+  .project-logo {
+    aspect-ratio: auto;
+    height: calc(56.45833cqw + 190px);
+    margin-bottom: 24px;
+  }
+  .project-logo-grid {
+    top: -0.57292cqw;
+    height: 57.03125cqw;
+  }
+  .project-lettering-first {
+    top: 9.42708cqw;
+    height: 19.63542cqw;
+  }
+  .project-lettering-second {
+    top: 15.34271cqw;
+    height: 19.63297cqw;
+  }
+  .project-margin-note {
+    left: 0;
+    top: 56.45833cqw;
+    width: 100%;
+    padding: 16px 24px 0;
+    margin: 0;
+    font-size: 11px;
+    letter-spacing: -0.5px;
+  }
+  .project-photography {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 32px 24px;
+    aspect-ratio: auto;
+  }
+  .project-photo {
+    position: relative;
+    inset: auto;
+    width: auto;
+    height: auto;
+    aspect-ratio: 2 / 3;
+  }
+  .project-photo-table,
+  .project-photo-products {
+    transform: translateY(20px);
+  }
+  .project-photo-mountain {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .project-photo-meeting {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .project-frieze {
+    margin-top: 12px;
+  }
+}
