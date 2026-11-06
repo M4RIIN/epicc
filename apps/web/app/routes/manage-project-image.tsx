@@ -1,6 +1,6 @@
 import { ImageInput } from '../components/image-input';
 import { data, Form, Link, redirect, useNavigation } from 'react-router';
-import { vitrineProjects } from '@epicc/content-contracts';
+import { projectClients, clientPieces } from '@epicc/content-contracts';
 import type { Route } from './+types/manage-project-image';
 import {
   requireAdmin,
@@ -22,21 +22,34 @@ export function meta() {
 }
 export async function loader({ request, params }: Route.LoaderArgs) {
   const session = await requireAdmin(request);
-  const project = vitrineProjects.find((item) =>
-    item.pieces.some((piece) => piece.file === params.file),
+  const images = await loadProjectImages();
+  const creating = params.file === 'nouvelle';
+  const project = projectClients.find((item) =>
+    creating
+      ? item.name === new URL(request.url).searchParams.get('project')
+      : clientPieces(item, images).some((piece) => piece.file === params.file),
   );
-  const piece = project?.pieces.find((item) => item.file === params.file);
+  const piece = creating
+    ? { file: 'nouvelle', role: 'photo' as const, width: 222, height: 333 }
+    : project &&
+      clientPieces(project, images).find((item) => item.file === params.file);
   if (!project || !piece)
     throw new Response('Visuel introuvable.', { status: 404 });
-  const image = (await loadProjectImages()).find(
-    (item) => item.file === params.file,
-  )!;
+  const image = images.find((item) => item.file === params.file) ?? {
+    file: 'nouvelle',
+    image: null,
+    alt: '',
+    size: 'medium' as const,
+  };
   return {
+    creating,
+    original:
+      !creating && project.pieces.some((item) => item.file === params.file),
     maxImageBytes: imageLimit(),
     project: project.name,
     side: project.side,
     imageNumber:
-      project.pieces
+      clientPieces(project, images)
         .filter((item) => item.role === piece.role)
         .findIndex((item) => item.file === piece.file) + 1,
     piece,
@@ -52,6 +65,13 @@ export async function action({ request, params }: Route.ActionArgs) {
   const alt = String(form.get('alt') ?? '');
   outgoing.set('alt', alt);
   if (form.get('restore') === 'yes') outgoing.set('restore', 'yes');
+  if (form.get('intent') === 'delete') {
+    if (form.get('confirmDelete') !== 'yes')
+      return data({ error: 'Confirmez la suppression.', alt }, { status: 400 });
+    outgoing.set('intent', 'delete');
+  }
+  outgoing.set('project', String(form.get('project') ?? ''));
+  if (form.has('size')) outgoing.set('size', String(form.get('size')));
   const file = form.get('imageFile');
   if (file instanceof File && file.size) outgoing.set('image', file);
   const error = await saveProjectImage(params.file, outgoing);
@@ -62,19 +82,21 @@ export default function ManageProjectImage({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { project, piece, image, csrf, side, imageNumber } = loaderData;
+  const { project, piece, image, csrf, side, imageNumber, creating, original } =
+    loaderData;
   const pending = useNavigation().state !== 'idle';
   return (
     <main id="contenu" className="admin-page">
       <Link to="/connect#project-images">← Retour aux projets clients</Link>
       <p className="eyebrow">
         Colonne {side === 'left' ? 'gauche' : 'droite'} /{' '}
-        {piece.role === 'name' ? 'Titre' : 'Photo'} {imageNumber}
+        {piece.role === 'name' ? 'Logo' : 'Photo'} {creating ? '' : imageNumber}
       </p>
       <h1>{project}</h1>
       <p>
-        Remplacez ce visuel dans sa série. Le titre et la première photo restent
-        alignés ; les proportions et l’ordre des photos sont conservés.
+        {creating
+          ? 'Ajoutez une photo à ce client. Vous pouvez en ajouter autant que nécessaire.'
+          : 'Remplacez ce visuel ou choisissez sa taille d’affichage. Les proportions sont conservées.'}
       </p>
       <Form
         method="post"
@@ -82,30 +104,54 @@ export default function ManageProjectImage({
         className="admin-form admin-panel paper"
       >
         <input type="hidden" name="csrf" value={csrf} />
+        <input type="hidden" name="project" value={project} />
         {actionData?.error && (
           <p role="alert">
             {actionData.error} Si vous aviez sélectionné un fichier,
             sélectionnez-le à nouveau.
           </p>
         )}
-        <div
-          className="admin-project-preview"
-          style={{ aspectRatio: piece.width / piece.height }}
-        >
-          <img
-            src={image.image ?? `/images/vitrine/projets-${piece.file}`}
-            alt={image.alt}
-            style={{
-              objectFit: piece.role === 'name' ? 'contain' : 'cover',
-              transform: piece.mirror ? 'scaleX(-1)' : undefined,
-            }}
-          />
-        </div>
-        <ImageInput maxBytes={loaderData.maxImageBytes} />
+        {!creating && (
+          <div
+            className="admin-project-preview"
+            style={{ aspectRatio: piece.width / piece.height }}
+          >
+            <img
+              src={image.image ?? `/images/vitrine/projets-${piece.file}`}
+              alt={image.alt}
+              style={{
+                objectFit: piece.role === 'name' ? 'contain' : 'cover',
+                transform: piece.mirror ? 'scaleX(-1)' : undefined,
+              }}
+            />
+          </div>
+        )}
+        <ImageInput
+          maxBytes={loaderData.maxImageBytes}
+          label={creating ? 'Photo à ajouter' : 'Remplacer par une image'}
+          required={creating}
+        />
         <p>
           Pour un rendu fidèle, privilégiez les proportions de l’aperçu et un
           fond transparent pour les logos.
         </p>
+        {piece.role === 'photo' && (
+          <label>
+            Taille d’affichage
+            <select
+              name="size"
+              defaultValue={image.size ?? ''}
+              required={creating}
+            >
+              {original && (
+                <option value="">Dimensions actuelles de la vitrine</option>
+              )}
+              <option value="small">Petite</option>
+              <option value="medium">Moyenne</option>
+              <option value="large">Grande</option>
+            </select>
+          </label>
+        )}
         <label>
           Texte alternatif de l’image
           <input
@@ -120,22 +166,45 @@ export default function ManageProjectImage({
           référencement. La modification est publiée dès l’enregistrement.
         </p>
         <button className="button" disabled={pending}>
-          {pending ? 'Enregistrement…' : 'Enregistrer l’image'}
+          {pending
+            ? 'Enregistrement…'
+            : creating
+              ? 'Ajouter la photo'
+              : 'Enregistrer l’image'}
         </button>
       </Form>
-      <Form method="post" className="admin-panel paper admin-form">
-        <input type="hidden" name="csrf" value={csrf} />
-        <h2>Revenir au visuel d’origine</h2>
-        <p>Rétablit l’image et son texte alternatif d’origine.</p>
-        <button
-          className="filter-button"
-          name="restore"
-          value="yes"
-          disabled={pending}
-        >
-          Rétablir l’original
-        </button>
-      </Form>
+      {!creating && (
+        <Form method="post" className="admin-panel paper admin-form">
+          <input type="hidden" name="csrf" value={csrf} />
+          <h2>
+            {original ? 'Revenir au visuel d’origine' : 'Supprimer cette photo'}
+          </h2>
+          <p>
+            {original
+              ? 'Rétablit l’image, ses dimensions et son texte alternatif d’origine.'
+              : 'Retire cette photo de la vitrine.'}
+          </p>
+          {!original && (
+            <label className="admin-checkbox">
+              <input
+                type="checkbox"
+                name="confirmDelete"
+                value="yes"
+                required
+              />
+              Je confirme la suppression de cette photo
+            </label>
+          )}
+          <button
+            className="filter-button"
+            name={original ? 'restore' : 'intent'}
+            value={original ? 'yes' : 'delete'}
+            disabled={pending}
+          >
+            {original ? 'Rétablir l’original' : 'Supprimer la photo'}
+          </button>
+        </Form>
+      )}
     </main>
   );
 }

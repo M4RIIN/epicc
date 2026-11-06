@@ -2,6 +2,9 @@ import type { CSSProperties } from 'react';
 import { Artwork } from './artwork';
 import {
   vitrineProjects,
+  layoutPieces,
+  projectClients,
+  clientPieces,
   projectSides,
   type Piece,
   type ProjectImage,
@@ -37,6 +40,23 @@ export function Projects({ images }: { images: ProjectImage[] }) {
       </div>
     );
   }
+  function renderProject(name: string, pieces: Piece[]) {
+    return (
+      <figure className="vitrine-project" key={name} aria-label={name}>
+        <figcaption className="vitrine-project-names">
+          <h3 className="vitrine-sr-only">{name}</h3>
+          {pieces
+            .filter((piece) => piece.role === 'name')
+            .map((piece) => renderPiece(piece, name))}
+        </figcaption>
+        <div className="vitrine-project-photos">
+          {pieces
+            .filter((piece) => piece.role === 'photo')
+            .map((piece) => renderPiece(piece, name))}
+        </div>
+      </figure>
+    );
+  }
   return (
     <section
       className="vitrine-projects"
@@ -53,25 +73,32 @@ export function Projects({ images }: { images: ProjectImage[] }) {
           >
             {vitrineProjects
               .filter((project) => project.side === side)
-              .map(({ name, pieces }) => (
-                <figure
-                  className="vitrine-project"
-                  key={name}
-                  aria-label={name}
-                >
-                  <figcaption className="vitrine-project-names">
-                    <h3 className="vitrine-sr-only">{name}</h3>
-                    {pieces
-                      .filter((piece) => piece.role === 'name')
-                      .map((piece) => renderPiece(piece, name))}
-                  </figcaption>
-                  <div className="vitrine-project-photos">
-                    {pieces
-                      .filter((piece) => piece.role === 'photo')
-                      .map((piece) => renderPiece(piece, name))}
-                  </div>
-                </figure>
-              ))}
+              .map((project) => {
+                const { name } = project;
+                const pieces = layoutPieces(project, images);
+                if (
+                  project.pieces.filter((piece) => piece.role === 'name')
+                    .length > 1 &&
+                  pieces.some((piece) => piece.role === 'photo')
+                ) {
+                  const clients = projectClients.filter((client) =>
+                    client.pieces.some((piece) =>
+                      project.pieces.some((slot) => slot.file === piece.file),
+                    ),
+                  );
+                  return (
+                    <div className="vitrine-project-group" key={name}>
+                      {clients.map((client) =>
+                        renderProject(
+                          client.name,
+                          clientPieces(client, images),
+                        ),
+                      )}
+                    </div>
+                  );
+                }
+                return renderProject(name, pieces);
+              })}
           </div>
         ))}
       </div>

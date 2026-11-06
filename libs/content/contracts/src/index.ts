@@ -60,6 +60,12 @@ export type Offer = z.infer<typeof offerSchema>;
 
 export {
   vitrineProjects,
+  projectClients,
+  clientPieces,
+  layoutPieces,
+  logoAlias,
+  canonicalLogo,
+  photoSizes,
   projectSides,
   type Piece,
   type VitrineProject,
@@ -72,6 +78,10 @@ export const projectImageSchema = z.object({
     .regex(/^\/api\/v1\/project-images\/[a-f0-9-]+$/)
     .nullable(),
   alt: text.max(300),
+  project: z.string().optional(),
+  size: z.enum(['small', 'medium', 'large']).nullable().optional(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
 });
 export type ProjectImage = z.infer<typeof projectImageSchema>;
 

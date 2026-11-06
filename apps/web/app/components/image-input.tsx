@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 
-export function ImageInput({ maxBytes }: { maxBytes: number }) {
+export function ImageInput({
+  maxBytes,
+  label = 'Remplacer par une image',
+  required = false,
+}: {
+  maxBytes: number;
+  label?: string;
+  required?: boolean;
+}) {
   const [file, setFile] = useState<File>();
   const [preview, setPreview] = useState<string>();
   useEffect(() => {
@@ -11,9 +19,10 @@ export function ImageInput({ maxBytes }: { maxBytes: number }) {
   return (
     <>
       <label>
-        Remplacer par une image
+        {label}
         <input
           type="file"
+          required={required}
           name="imageFile"
           accept="image/jpeg,image/png,image/webp,image/avif"
           onChange={(event) => {

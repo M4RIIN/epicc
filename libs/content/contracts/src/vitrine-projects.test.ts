@@ -39,3 +39,31 @@ it('conserve les identifiants des 26 visuels et distingue les deux titres du pro
       .pieces.every((piece) => piece.role === 'name'),
   ).toBe(true);
 });
+
+it('sépare les clients, conserve un seul logo par client et préserve les dimensions existantes', async () => {
+  const { projectClients, clientPieces, layoutPieces } =
+    await import('./vitrine-projects');
+  expect(
+    projectClients.filter((client) => client.name === 'L’Écluse Douze'),
+  ).toHaveLength(1);
+  expect(
+    projectClients.filter((client) => client.name === 'Deux Mnu'),
+  ).toHaveLength(1);
+  expect(
+    projectClients.every(
+      (client) =>
+        client.pieces.filter((piece) => piece.role === 'name').length === 1,
+    ),
+  ).toBe(true);
+  for (const project of vitrineProjects)
+    expect(layoutPieces(project, [])).toEqual(project.pieces);
+  const project = projectClients.find(
+    (client) => client.name === 'Viande des Sorgues',
+  )!;
+  const resized = clientPieces(project, [
+    { file: 'Rectangle5.png', image: null, alt: 'Test', size: 'large' },
+  ]);
+  const photo = resized.find((piece) => piece.file === 'Rectangle5.png')!;
+  expect(photo.width).toBe(297);
+  expect(photo.width / photo.height).toBeCloseTo(222 / 283);
+});

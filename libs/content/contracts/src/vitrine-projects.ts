@@ -269,3 +269,91 @@ export const vitrineProjects: VitrineProject[] = [
     ],
   },
 ];
+
+// Le catalogue distingue les clients ; les emplacements historiques restent la
+// référence de composition, y compris la seconde apparition du même logo.
+export const projectClients: VitrineProject[] = vitrineProjects.flatMap(
+  (project) =>
+    project.name === 'L’Écluse Douze — Deux Mnu'
+      ? [
+          {
+            name: 'L’Écluse Douze',
+            side: project.side,
+            pieces: [project.pieces[0]!],
+          },
+          {
+            name: 'Deux Mnu',
+            side: project.side,
+            pieces: [project.pieces[1]!],
+          },
+        ]
+      : project.name === 'L’Écluse Douze'
+        ? []
+        : [project],
+);
+export const logoAlias = 'CaptureDecran20261029A153342111.png';
+export const canonicalLogo = 'CaptureDecran20261029A153342121.png';
+export const photoSizes = { small: 123, medium: 222, large: 297 } as const;
+export type PhotoSize = keyof typeof photoSizes;
+export type ProjectMedia = {
+  file: string;
+  image: string | null;
+  alt: string;
+  project?: string | undefined;
+  size?: PhotoSize | null | undefined;
+  width?: number | undefined;
+  height?: number | undefined;
+};
+export function clientPieces(
+  project: VitrineProject,
+  images: ProjectMedia[],
+): Piece[] {
+  return [
+    ...project.pieces.map((piece) => sizedPiece(piece, images)),
+    ...images
+      .filter(
+        (image) =>
+          image.project === project.name &&
+          !vitrineProjects.some((item) =>
+            item.pieces.some((piece) => piece.file === image.file),
+          ),
+      )
+      .map((image): Piece =>
+        sizedPiece(
+          {
+            file: image.file,
+            role: 'photo',
+            width: image.width ?? 222,
+            height: image.height ?? 333,
+            alt: image.alt,
+          },
+          images,
+        ),
+      ),
+  ];
+}
+export function sizedPiece(piece: Piece, images: ProjectMedia[]): Piece {
+  const image = images.find((item) => item.file === piece.file);
+  if (piece.role === 'name' || !image?.size) return piece;
+  const width = photoSizes[image.size];
+  return { ...piece, width, height: (width * piece.height) / piece.width };
+}
+export function layoutPieces(
+  project: VitrineProject,
+  images: ProjectMedia[],
+): Piece[] {
+  const owners = projectClients.filter((client) =>
+    client.pieces.some((piece) =>
+      project.pieces.some((slot) => slot.file === piece.file),
+    ),
+  );
+  return [
+    ...project.pieces.map((piece) => sizedPiece(piece, images)),
+    ...owners.flatMap((client) =>
+      clientPieces(client, images).filter(
+        (piece) =>
+          !client.pieces.some((original) => original.file === piece.file),
+      ),
+    ),
+  ];
+}

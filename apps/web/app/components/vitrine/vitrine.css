@@ -649,6 +649,11 @@ html[data-home-loading] .vitrine-loading {
   gap: 4.166667cqw;
   min-width: 0;
 }
+.vitrine-project-group {
+  display: grid;
+  gap: 0.833333cqw;
+  min-width: 0;
+}
 .vitrine-project {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 15.46875cqw);
@@ -851,6 +856,7 @@ html[data-home-loading] .vitrine-loading {
   .vitrine-project-column-right .vitrine-project {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
   }
+  .vitrine-project-group,
   .vitrine-project-names {
     gap: 10px;
   }

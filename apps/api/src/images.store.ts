@@ -32,7 +32,7 @@ export async function assertImageReference(
   )
     throw new ImageReferenceChanged();
 }
-export const unusedImages = `NOT EXISTS (
+export const unusedImages = `NOT EXISTS (SELECT 1 FROM project_originals WHERE image_id = images.id) AND NOT EXISTS (
   SELECT 1 FROM clients WHERE content->>'image' = '/api/v1/client-images/' || images.id
 ) AND NOT EXISTS (
   SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id

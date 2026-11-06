@@ -310,7 +310,7 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(
         page.getByRole('heading', { name: 'Les projets clients', exact: true }),
       ).toBeVisible();
-      await expect(page.locator('.admin-project-images img')).toHaveCount(26);
+      await expect(page.locator('.admin-project-images img')).toHaveCount(25);
       await expect(
         page.getByRole('heading', { name: 'Colonne gauche' }),
       ).toBeVisible();
@@ -413,9 +413,104 @@ for (const javaScriptEnabled of [false, true]) {
           name: 'Gros plan sur une tomate rouge.',
           exact: true,
         }),
-      ).toHaveAttribute('src', '/images/vitrine/projets-Rectangle5.png');
+      ).toHaveAttribute('src', /^\/api\/v1\/project-images\//);
     } finally {
       await context.close();
+    }
+  });
+}
+
+for (const javaScriptEnabled of [false, true]) {
+  test(`photos multiples, tailles et clients séparés, JavaScript ${javaScriptEnabled}`, async ({
+    browser,
+  }) => {
+    test.setTimeout(90000);
+    const context = await browser.newContext({
+      javaScriptEnabled,
+      viewport: { width: 1440, height: 1000 },
+    });
+    const files: string[] = [];
+    try {
+      const page = await context.newPage();
+      await page.goto('/connect');
+      await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
+      await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
+      await page.getByRole('button', { name: 'Se connecter' }).click();
+      const card = page.getByRole('article', { name: 'Deux Mnu', exact: true });
+      await expect(card.locator('.admin-project-titles img')).toHaveCount(1);
+      await expect(
+        page
+          .getByRole('article', { name: 'L’Écluse Douze', exact: true })
+          .locator('.admin-project-titles img'),
+      ).toHaveCount(1);
+      for (const size of ['small', 'medium', 'large']) {
+        await card.getByRole('link', { name: 'Ajouter une photo' }).click();
+        await page.getByLabel('Taille d’affichage').selectOption(size);
+        await page
+          .getByLabel('Texte alternatif de l’image')
+          .fill(`Photo de test ${size}`);
+        await page.getByLabel('Photo à ajouter').setInputFiles({
+          name: 'photo.png',
+          mimeType: 'image/png',
+          buffer: Buffer.from(
+            'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
+            'base64',
+          ),
+        });
+        await page.getByRole('button', { name: 'Ajouter la photo' }).click();
+        await expect(page).toHaveURL(/\/connect#project-images$/);
+      }
+      const links = await card
+        .locator('.admin-project-photos a')
+        .evaluateAll((items) =>
+          items.map((item) => item.getAttribute('href')!),
+        );
+      files.push(...links);
+      expect(files).toHaveLength(3);
+      await page.reload();
+      await expect(card.locator('.admin-project-photos img')).toHaveCount(3);
+      await page.goto('/');
+      await expect(
+        page
+          .getByRole('figure', { name: 'Deux Mnu', exact: true })
+          .locator('.vitrine-project-photo'),
+      ).toHaveCount(3);
+      const widths = [];
+      for (const size of ['small', 'medium', 'large']) {
+        const photo = page.getByRole('img', {
+          name: `Photo de test ${size}`,
+          exact: true,
+        });
+        await expect(photo).toHaveAttribute(
+          'src',
+          /^\/api\/v1\/project-images\//,
+        );
+        widths.push((await photo.boundingBox())!.width);
+      }
+      expect(widths[0]!).toBeLessThan(widths[1]!);
+      expect(widths[1]!).toBeLessThan(widths[2]!);
+      await page.goto(files[0]!);
+      await page.getByLabel('Taille d’affichage').selectOption('large');
+      await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
+      await expect(page).toHaveURL(/\/connect#project-images$/);
+      await page.goto(files[0]!);
+      await expect(page.getByLabel('Taille d’affichage')).toHaveValue('large');
+    } finally {
+      const page = await context.newPage();
+      try {
+        for (const file of files) {
+          await page.goto(file);
+          await page
+            .getByLabel('Je confirme la suppression de cette photo')
+            .check();
+          await page
+            .getByRole('button', { name: 'Supprimer la photo', exact: true })
+            .click();
+          await expect(page).toHaveURL(/\/connect#project-images$/);
+        }
+      } finally {
+        await context.close();
+      }
     }
   });
 }

@@ -7,6 +7,7 @@ import type { ServerBuild } from 'react-router';
 import { fileURLToPath } from 'node:url';
 import { composeApi } from './composition-root';
 import { Database } from './database';
+import { importProjectOriginals } from './project-originals';
 
 const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? (production ? 3100 : 3101));
@@ -24,10 +25,16 @@ app.use('/connect*', async (context, next) => {
 const database = new Database();
 try {
   await database.migrate();
+  await importProjectOriginals(
+    database,
+    production
+      ? fileURLToPath(new URL('../web/client/images/vitrine/', import.meta.url))
+      : 'apps/web/public/images/vitrine',
+  );
 } catch {
   await database.close();
   throw new Error(
-    'Initialisation PostgreSQL impossible. Vérifiez DATABASE_URL et les droits de création des tables.',
+    'Initialisation des données et des visuels impossible. Vérifiez PostgreSQL, les fichiers et les accès au stockage.',
   );
 }
 app.route('/api', composeApi(database));
