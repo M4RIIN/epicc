@@ -174,6 +174,15 @@ body:has(.vitrine) {
   grid-template-columns: 45% 1fr;
   align-items: start;
   min-height: 7.8125cqw;
+  padding-bottom: 2cqw;
+}
+.vitrine-service + .vitrine-service::before {
+  content: '';
+  position: absolute;
+  top: -0.833333cqw;
+  left: -2.7cqw;
+  right: 0;
+  border-top: 1px solid #999;
 }
 .vitrine-service:nth-child(2) {
   min-height: 9.895833cqw;
@@ -1045,6 +1054,9 @@ body:has(.vitrine) {
   }
   .vitrine-service dd {
     padding-top: 36px;
+  }
+  .vitrine-service + .vitrine-service::before {
+    top: 0;
   }
   .vitrine-service-summary {
     margin-top: 12px;
