@@ -36,20 +36,18 @@ export async function purgeLegacy(database: Database) {
 export async function migrateProjectMedia(database: Database, root: string) {
   if (!database.images.storage)
     throw new Error('MEDIA_STORAGE=s3 est obligatoire pour migrer.');
+  // Les migrations applicatives peuvent mettre à jour les offres d’origine.
+  // Le contrôle de préservation porte ensuite uniquement sur l’import des médias.
+  await database.migrate({ provisionAdmin: false });
   const before = await inventoryProjectMedia(database);
   console.info('INVENTAIRE_MEDIAS', JSON.stringify(before));
-  await database.migrate({ provisionAdmin: false });
   const report = await importProjectOriginals(database, root);
   await database.images.migrateLegacy();
   const after = await inventoryProjectMedia(database);
-  // Une base vierge reçoit les données initiales ; seules les données déjà
-  // présentes avant la migration doivent rester strictement identiques.
   const preserved = (
     Object.keys(before.contents) as (keyof typeof before.contents)[]
   ).every(
-    (table) =>
-      before.contents[table].count === 0 ||
-      before.contents[table].sha256 === after.contents[table].sha256,
+    (table) => before.contents[table].sha256 === after.contents[table].sha256,
   );
   if (!preserved)
     throw new Error(

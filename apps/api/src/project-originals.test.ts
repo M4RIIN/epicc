@@ -11,6 +11,7 @@ import {
 } from './project-media-audit';
 import { createProjectsApi } from './projects.api';
 import { ClientStore } from './clients.store';
+import { initialOffers, previousOffers } from './offers.seed';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
   manageTestDatabase,
@@ -95,6 +96,20 @@ it('importe les 26 visuels sans changer leurs octets, conserve leurs métadonné
   await new ClientStore(database).delete('maison-sauge');
   expect(objects.size).toBe(26);
 }, 60000);
+
+it('refuse une modification des contenus pendant la migration des médias', async () => {
+  vi.spyOn(database.images, 'migrateLegacy').mockImplementationOnce(
+    async () => {
+      await database.pool.query('INSERT INTO project_images VALUES ($1,$2)', [
+        'Rectangle5.png',
+        { file: 'Rectangle5.png', image: null, alt: 'Modification inattendue' },
+      ]);
+    },
+  );
+  await expect(migrateProjectMedia(database, root)).rejects.toThrow(
+    'Les contenus ont changé pendant l’import',
+  );
+}, 60000);
 it('conserve la source et ne publie pas une copie S3 non conforme', async () => {
   storage.get.mockResolvedValueOnce(new Uint8Array([0]));
   await expect(importProjectOriginals(database, root)).rejects.toThrow(
@@ -169,4 +184,46 @@ it('initialise une base vierge et reprend la migration complète sans doublon', 
     verified: 26,
   });
   expect(objects.size).toBe(26);
+}, 60000);
+
+it('migre les anciennes offres avant de contrôler la préservation des contenus pendant l’import', async () => {
+  await database.pool.query('DELETE FROM offers');
+  for (const offer of previousOffers) {
+    await database.pool.query('INSERT INTO offers VALUES ($1,$2)', [
+      offer.slug,
+      offer,
+    ]);
+  }
+  const editedOffer = {
+    ...previousOffers[0],
+    description: 'Description personnalisée de test à conserver',
+  };
+  await database.pool.query('UPDATE offers SET content=$2 WHERE slug=$1', [
+    editedOffer.slug,
+    editedOffer,
+  ]);
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id='vitrine-offers-2026-11'",
+  );
+
+  expect(await migrateProjectMedia(database, root)).toMatchObject({
+    imported: 26,
+    editedContentsPreserved: true,
+    verified: 26,
+  });
+  const offers = await database.pool.query('SELECT content FROM offers');
+  expect(offers.rows.map((row) => row.content)).toEqual(
+    expect.arrayContaining([
+      editedOffer,
+      initialOffers.find((offer) => offer.slug === 'reseaux-sociaux'),
+      initialOffers.find((offer) => offer.slug === 'graphisme'),
+    ]),
+  );
+  const migrated = await inventoryProjectMedia(database);
+  expect(await migrateProjectMedia(database, root)).toMatchObject({
+    imported: 0,
+    skipped: 26,
+    editedContentsPreserved: true,
+  });
+  expect(await inventoryProjectMedia(database)).toEqual(migrated);
 }, 60000);
