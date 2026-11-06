@@ -15,6 +15,7 @@ import './styles.css';
 export function Layout({ children }: { children: ReactNode }) {
   const pathname = useLocation().pathname;
   const isHome = pathname === '/';
+  const isClientProject = pathname === '/clients/viandes-des-sommets';
   const isAdmin = pathname.startsWith('/connect');
   return (
     <html lang="fr" suppressHydrationWarning>
@@ -28,7 +29,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#contenu">
           Aller au contenu
         </a>
-        {!isHome && (
+        {!isHome && !isClientProject && (
           <header className="site-header">
             <Link className="brand" to="/" aria-label="EPICC, accueil">
               EPICC<span aria-hidden="true">✳</span>
@@ -43,7 +44,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </header>
         )}
         {children}
-        {!isHome && (
+        {!isHome && !isClientProject && (
           <footer className="site-footer">
             <Link className="brand" to="/">
               EPICC<span aria-hidden="true">✳</span>

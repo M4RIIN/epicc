@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router';
 import { Artwork } from './artwork';
 import {
   vitrineProjects,
@@ -103,6 +104,11 @@ export function Projects({ images }: { images: ProjectImage[] }) {
         ))}
       </div>
       <ul className="vitrine-project-notes" aria-label="Autres projets">
+        <li>
+          <Link to="/clients/viandes-des-sommets">
+            Viandes des Sommets — découvrir l’identité visuelle ↗
+          </Link>
+        </li>
         <li>L’Écluse Douze · La Grinta</li>
         <li>Fitness by Leslie</li>
         <li>Allegria</li>
