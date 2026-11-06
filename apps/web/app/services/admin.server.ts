@@ -1,6 +1,11 @@
 import { createCookieSessionStorage, redirect } from 'react-router';
 import { clientsRequest } from './clients.server';
 import { randomBytes } from 'node:crypto';
+import { imageUploadLimit } from '@epicc/content-contracts';
+
+export function imageLimit() {
+  return imageUploadLimit(process.env.IMAGE_MAX_BYTES);
+}
 
 export function adminConfigured() {
   return Boolean((process.env.SESSION_SECRET?.length ?? 0) >= 32);
@@ -85,9 +90,9 @@ export async function login(email: string, password: string) {
 }
 
 export async function readAdminForm(request: Request) {
-  const limit = 6 * 1024 * 1024;
+  const limit = imageLimit() + 1024 * 1024;
   if (Number(request.headers.get('Content-Length')) > limit)
-    throw new Response('Formulaire trop volumineux (6 Mo maximum).', {
+    throw new Response('Formulaire trop volumineux.', {
       status: 413,
     });
   const reader = request.body?.getReader();
@@ -100,7 +105,7 @@ export async function readAdminForm(request: Request) {
     size += value.byteLength;
     if (size > limit) {
       await reader.cancel();
-      throw new Response('Formulaire trop volumineux (6 Mo maximum).', {
+      throw new Response('Formulaire trop volumineux.', {
         status: 413,
       });
     }

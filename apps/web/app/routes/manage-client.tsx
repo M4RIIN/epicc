@@ -1,9 +1,11 @@
+import { ImageInput } from '../components/image-input';
 import { data, Form, Link, redirect, useNavigation } from 'react-router';
 import { clientSchema } from '@epicc/content-contracts';
 import type { Client } from '@epicc/content-contracts';
 import type { Route } from './+types/manage-client';
 import {
   requireAdmin,
+  imageLimit,
   verifyCsrf,
   readAdminForm,
 } from '../services/admin.server';
@@ -61,7 +63,12 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       }
     : clients.find((c) => c.slug === params.slug);
   if (!client) throw new Response('Fiche introuvable.', { status: 404 });
-  return { creating, client, csrf: session.get('csrf') as string };
+  return {
+    maxImageBytes: imageLimit(),
+    creating,
+    client,
+    csrf: session.get('csrf') as string,
+  };
 }
 export async function action({ request, params }: Route.ActionArgs) {
   const session = await requireAdmin(request);
@@ -217,17 +224,10 @@ export default function ManageClient({
               <option value="/images/cafe.jpg">Café</option>
             </select>
           </label>
-          <label>
-            Remplacer par une image
-            <input
-              type="file"
-              name="imageFile"
-              accept="image/jpeg,image/png,image/webp"
-            />
-          </label>
+          <ImageInput maxBytes={loaderData.maxImageBytes} />
           <p>
-            JPEG, PNG ou WebP, 5 Mo maximum. Le fichier sélectionné remplace
-            l’image existante à l’enregistrement.
+            Le fichier sélectionné remplace l’image existante à
+            l’enregistrement.
           </p>
         </fieldset>
         <label className="admin-checkbox">

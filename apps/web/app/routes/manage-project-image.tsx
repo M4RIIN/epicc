@@ -1,8 +1,10 @@
+import { ImageInput } from '../components/image-input';
 import { data, Form, Link, redirect, useNavigation } from 'react-router';
 import { vitrineProjects } from '@epicc/content-contracts';
 import type { Route } from './+types/manage-project-image';
 import {
   requireAdmin,
+  imageLimit,
   readAdminForm,
   verifyCsrf,
 } from '../services/admin.server';
@@ -30,6 +32,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     (item) => item.file === params.file,
   )!;
   return {
+    maxImageBytes: imageLimit(),
     project: project.name,
     side: project.side,
     imageNumber:
@@ -98,17 +101,10 @@ export default function ManageProjectImage({
             }}
           />
         </div>
-        <label>
-          Remplacer par une image
-          <input
-            type="file"
-            name="imageFile"
-            accept="image/jpeg,image/png,image/webp"
-          />
-        </label>
+        <ImageInput maxBytes={loaderData.maxImageBytes} />
         <p>
-          JPEG, PNG ou WebP, 5 Mo maximum. Pour un rendu fidèle, privilégiez les
-          proportions de l’aperçu et un fond transparent pour les logos.
+          Pour un rendu fidèle, privilégiez les proportions de l’aperçu et un
+          fond transparent pour les logos.
         </p>
         <label>
           Texte alternatif de l’image
