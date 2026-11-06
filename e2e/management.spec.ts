@@ -253,7 +253,11 @@ for (const javaScriptEnabled of [false, true]) {
       }
       for (const slug of slugs) {
         await page.goto(`/connect/offres/${slug}`);
-        await expect(page.locator('.admin-preview')).toBeVisible();
+        await expect(
+          page
+            .getByRole('form', { name: 'Image dans la page', exact: true })
+            .locator('.admin-preview'),
+        ).toBeVisible();
         await page.getByLabel('Retirer l’image actuelle').check();
         await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
         await expect(page).toHaveURL(/\/connect$/);

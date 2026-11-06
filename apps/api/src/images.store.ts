@@ -36,6 +36,7 @@ export const unusedImages = `NOT EXISTS (SELECT 1 FROM vitrine_originals WHERE i
   SELECT 1 FROM clients WHERE content->>'image' = '/api/v1/client-images/' || images.id
 ) AND NOT EXISTS (
   SELECT 1 FROM offers WHERE content->>'image' = '/api/v1/offer-images/' || images.id
+  OR content->>'hoverImage' = '/api/v1/offer-images/' || images.id
 ) AND NOT EXISTS (
   SELECT 1 FROM project_images WHERE content->>'image' = '/api/v1/project-images/' || images.id
 )`;

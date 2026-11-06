@@ -1098,3 +1098,59 @@ body:has(.vitrine) {
     display: block;
   }
 }
+
+/* Le visuel de survol passe derrière les titres et leurs annotations. */
+.vitrine-service-notes {
+  z-index: 3;
+  pointer-events: none;
+}
+.vitrine-service dt {
+  position: relative;
+  z-index: 2;
+}
+.vitrine-service:has(.vitrine-offer-hover):is(:hover, :focus-within) {
+  z-index: 1;
+}
+.vitrine-service:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
+}
+.vitrine-service .vitrine-offer-hover {
+  position: absolute;
+  z-index: 1;
+  left: 5%;
+  top: -3.5cqw;
+  width: 26%;
+  padding: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.vitrine-offer-hover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  object-fit: cover;
+}
+.vitrine-service:is(:hover, :focus-within) .vitrine-offer-hover {
+  visibility: visible;
+  opacity: 1;
+}
+@media (hover: none), (pointer: coarse) {
+  .vitrine-service .vitrine-offer-hover {
+    position: relative;
+    grid-column: 1 / -1;
+    left: auto;
+    top: auto;
+    width: 45%;
+    visibility: visible;
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-service .vitrine-offer-hover {
+    transition: none;
+  }
+}

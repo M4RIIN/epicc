@@ -18,10 +18,27 @@ export function Services({ offers }: { offers: Offer[] }) {
       <dl>
         {offers.map(
           (
-            { slug, name, summary, description, image, alt, sources },
+            {
+              slug,
+              name,
+              summary,
+              description,
+              image,
+              alt,
+              sources,
+              hoverImage,
+              hoverAlt,
+              hoverSources,
+            },
             index,
           ) => (
-            <div className="vitrine-service" key={slug} data-offer={slug}>
+            <div
+              className="vitrine-service"
+              key={slug}
+              data-offer={slug}
+              tabIndex={hoverImage ? 0 : undefined}
+              aria-label={hoverImage ? name : undefined}
+            >
               <dt>
                 <span className="vitrine-service-name">
                   {slug === 'creation-de-marque' &&
@@ -55,6 +72,19 @@ export function Services({ offers }: { offers: Offer[] }) {
               >
                 {description}
               </dd>
+              {hoverImage && (
+                <dd className="vitrine-offer-hover">
+                  <Artwork
+                    file=""
+                    src={hoverImage}
+                    sources={hoverSources}
+                    sizes="(max-width: 900px) 38vw, 18vw"
+                    alt={hoverAlt ?? ''}
+                    width={480}
+                    height={300}
+                  />
+                </dd>
+              )}
               {image && (
                 <dd
                   className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
