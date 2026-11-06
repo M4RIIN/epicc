@@ -84,3 +84,9 @@ Après fusion, vérifier le résultat du job **Déployer sur Railway development
 Le build Docker distant et le contrôle de démarrage ont réussi. Le déploiement `278c2309-f039-4d41-a25e-795c6dcdc684` a été validé sur le domaine public : réponses HTTP 200 sur `/`, `/clients`, `/api/health`, `/connect` et `/sitemap.xml`, URLs canoniques HTTPS et connexion administrateur fonctionnelle.
 
 Une fiche fictive non publiée a été créée et modifiée depuis la gestion. La modification a été relue après redémarrage effectif de PostgreSQL et de l’application, puis la fiche a été supprimée. Les parcours de connexion, de création, de modification et de suppression ont été vérifiés avec et sans JavaScript. Le compte administrateur reste utilisable après retrait d’`ADMIN_PASSWORD` des variables Railway et redéploiement. Le secret de session reste stable ; les identifiants ne figurent pas dans le dépôt.
+
+### Inspection du stockage des médias
+
+Le 6 novembre 2026, le jeton de projet fourni a confirmé par lecture sa portée sur `development` (`0be15747-de9f-4ba5-8dd8-0653e3e4280b`). Les services `EPICC` et `Postgres` et le volume PostgreSQL sont présents ; leurs derniers déploiements sont en statut `SUCCESS`. `/api/health`, `/`, `/clients`, `/connect` et `/sitemap.xml` répondent HTTP 200.
+
+L’inventaire des buckets est vide, par API et par CLI. L’application n’a pas encore de variables S3 et utilise le stockage PostgreSQL historique. Aucune variable, donnée, ressource ou valeur d’authentification n’a été modifiée pendant cette inspection. La création proposée d’un bucket privé `epicc-medias` dans `development`, région Amsterdam (`ams`), reste soumise à l’accord du propriétaire sur son coût. La configuration exacte et les limites des tests figurent dans [Stockage des images](stockage-images.md).
