@@ -1,6 +1,8 @@
-import { Artwork, artworkPath } from './artwork';
+import { Artwork } from './artwork';
+import { useVitrineImageUrl } from './media';
 
 export function Manifesto() {
+  const line = useVitrineImageUrl('Line8.svg');
   return (
     <section
       className="vitrine-manifesto"
@@ -51,7 +53,7 @@ export function Manifesto() {
           <span>Marque EPICC</span>
           <svg viewBox="0 0 1 33" aria-hidden="true">
             <image
-              href={`${artworkPath}Line8.svg`}
+              href={line}
               width="33"
               height="1"
               transform="translate(1 0) rotate(90)"
@@ -60,7 +62,7 @@ export function Manifesto() {
           <span>Créer le 20 sep 2025</span>
           <svg viewBox="0 0 1 33" aria-hidden="true">
             <image
-              href={`${artworkPath}Line8.svg`}
+              href={line}
               width="33"
               height="1"
               transform="translate(1 0) rotate(90)"

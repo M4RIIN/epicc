@@ -117,7 +117,7 @@ export default function ManageProjectImage({
             style={{ aspectRatio: piece.width / piece.height }}
           >
             <img
-              src={image.image ?? `/images/vitrine/projets-${piece.file}`}
+              src={image.image ?? undefined}
               alt={image.alt}
               style={{
                 objectFit: piece.role === 'name' ? 'contain' : 'cover',

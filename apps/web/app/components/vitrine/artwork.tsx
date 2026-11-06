@@ -1,7 +1,6 @@
 import type { ResponsiveImageSource } from '@epicc/content-contracts';
-import { imageSourceSet, staticImageSources } from './image-sources';
-
-export const artworkPath = '/images/vitrine/';
+import { imageSourceSet } from './image-sources';
+import { useVitrineImage } from './media';
 
 type ArtworkProps = {
   file: string;
@@ -27,12 +26,13 @@ export function Artwork({
   sources,
   sizes = `(max-width: 700px) 85vw, (max-width: 1920px) ${width / 19.2}vw, ${width}px`,
 }: ArtworkProps) {
+  const media = useVitrineImage(file);
+  const image = src ?? media?.image;
+  if (!image) throw new Error(`Référence de visuel absente : ${file}`);
   return (
     <img
-      src={src ?? `${artworkPath}${file}`}
-      srcSet={imageSourceSet(
-        sources ?? (!src ? staticImageSources(file) : undefined),
-      )}
+      src={image}
+      srcSet={imageSourceSet(sources ?? media?.sources)}
       sizes={sizes}
       decoding="async"
       alt={alt}

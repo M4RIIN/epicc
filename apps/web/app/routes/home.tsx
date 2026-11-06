@@ -1,3 +1,5 @@
+import { VitrineMedia } from '../components/vitrine/media';
+import { loadVitrineImages } from '../services/vitrine-images.server';
 import type { Route } from './+types/home';
 import { loadProjectImages } from '../services/projects.server';
 import { loadOffers } from '../services/offers.server';
@@ -16,11 +18,28 @@ import { Contact } from '../components/vitrine/contact';
 import '../components/vitrine/vitrine.css';
 
 export async function loader() {
-  const [offers, projectImages] = await Promise.all([
+  const [offers, projectImages, fixedImages] = await Promise.all([
     loadOffers(),
     loadProjectImages(),
+    loadVitrineImages(),
   ]);
+  if (projectImages.some((image) => !image.image))
+    throw new Response('Les visuels sont temporairement indisponibles.', {
+      status: 503,
+    });
+  const images = [
+    ...fixedImages,
+    ...projectImages.map((image) => ({
+      file: `projets-${image.file}`,
+      image: image.image!,
+      ...(image.sources ? { sources: image.sources } : {}),
+    })),
+  ];
   return {
+    images,
+    cover: fixedImages.find(
+      (image) => image.file === 'Image29102026A17281.png',
+    )!.image,
     origin: getSiteOrigin(),
     offers,
     projectImages,
@@ -54,7 +73,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
     { property: 'og:url', content: `${loaderData.origin}/` },
     {
       property: 'og:image',
-      content: `${loaderData.origin}/images/vitrine/Image29102026A17281.png`,
+      content: `${loaderData.origin}${loaderData.cover}`,
     },
     { property: 'og:image:width', content: '982' },
     { property: 'og:image:height', content: '742' },
@@ -64,7 +83,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
     { name: 'twitter:description', content: description },
     {
       name: 'twitter:image',
-      content: `${loaderData.origin}/images/vitrine/Image29102026A17281.png`,
+      content: `${loaderData.origin}${loaderData.cover}`,
     },
     { tagName: 'link', rel: 'canonical', href: `${loaderData.origin}/` },
   ];
@@ -72,7 +91,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   return (
-    <>
+    <VitrineMedia images={loaderData.images}>
       <main id="contenu" className="vitrine">
         <h1 className="vitrine-sr-only">
           EPICC — Chloé Catala, communication et identité visuelle à Toulouse
@@ -84,6 +103,6 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         <Projects images={loaderData.projectImages} />
         <Contact email={loaderData.contactEmail} />
       </main>
-    </>
+    </VitrineMedia>
   );
 }

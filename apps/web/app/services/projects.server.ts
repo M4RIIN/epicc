@@ -7,7 +7,12 @@ export async function loadProjectImages() {
     throw new Response('Les projets sont temporairement indisponibles.', {
       status: 503,
     });
-  return projectImageSchema.array().parse(await response.json());
+  const images = projectImageSchema.array().parse(await response.json());
+  if (images.some((image) => !image.image))
+    throw new Response('Les visuels sont temporairement indisponibles.', {
+      status: 503,
+    });
+  return images;
 }
 
 export async function saveProjectImage(file: string, form: FormData) {

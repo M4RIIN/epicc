@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { composeApi } from './composition-root';
 import { Database } from './database';
 import { importProjectOriginals } from './project-originals';
+import { importVitrineOriginals } from './vitrine-originals';
 
 const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? (production ? 3100 : 3101));
@@ -31,6 +32,12 @@ try {
       ? fileURLToPath(new URL('../web/client/images/vitrine/', import.meta.url))
       : 'apps/web/public/images/vitrine',
   );
+  await importVitrineOriginals(
+    database,
+    production
+      ? fileURLToPath(new URL('../web/client/images/', import.meta.url))
+      : 'apps/web/public/images',
+  );
 } catch {
   await database.close();
   throw new Error(
@@ -51,11 +58,6 @@ if (production) {
   const handleRequest = createRequestHandler(build, 'production');
   const clientRoot = fileURLToPath(new URL('../web/client/', import.meta.url));
   app.use('/assets/*', serveStatic({ root: clientRoot }));
-  app.use('/images/optimized/*', async (context, next) => {
-    await next();
-    if (context.res.status === 200 || context.res.status === 304)
-      context.header('Cache-Control', 'public, max-age=31536000, immutable');
-  });
   app.use('/images/*', serveStatic({ root: clientRoot }));
   app.use('/fonts/*', serveStatic({ root: clientRoot }));
   // L’adaptation des formulaires reste dans le bundle web avec les sessions.

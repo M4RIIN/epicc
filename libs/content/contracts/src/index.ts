@@ -45,7 +45,7 @@ const responsiveImageSourcesSchema = z.array(
     src: z
       .string()
       .regex(
-        /^\/api\/v1\/(?:project|offer)-images\/[a-f0-9-]+\?w=(?:320|640|1280|1920)&v=1$/,
+        /^\/api\/v1\/(?:project|offer|vitrine)-images\/[a-f0-9-]+\?w=(?:320|640|1280|1920)&v=1$/,
       ),
     width: z.number().int().positive(),
   }),
@@ -115,3 +115,11 @@ export {
   type ResponsiveImageSource,
   type ImageVariantWidth,
 } from './image-variants';
+
+export { vitrineAssetFiles } from './vitrine-assets';
+export const vitrineImageSchema = z.object({
+  file: z.string().min(1).max(200),
+  image: z.string().regex(/^\/api\/v1\/vitrine-images\/[a-f0-9-]+$/),
+  sources: responsiveImageSourcesSchema.optional(),
+});
+export type VitrineImage = z.infer<typeof vitrineImageSchema>;

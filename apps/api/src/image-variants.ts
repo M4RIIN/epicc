@@ -117,22 +117,25 @@ export async function publicImageSources(
     ...new Set(
       urls.flatMap((url) => {
         const match = url?.match(
-          /^\/api\/v1\/(?:project|offer)-images\/([a-f0-9-]{36})$/,
+          /^\/api\/v1\/(?:project|offer|vitrine)-images\/([a-f0-9-]{36})$/,
         );
         return match?.[1] ? [match[1]] : [];
       }),
     ),
   ];
   const result = ids.length
-    ? await database.pool.query<{ id: string; width: number | null }>(
-        'SELECT id, width FROM images WHERE id = ANY($1::uuid[])',
-        [ids],
-      )
+    ? await database.pool.query<{
+        id: string;
+        width: number | null;
+        mime: string;
+      }>('SELECT id, width, mime FROM images WHERE id = ANY($1::uuid[])', [ids])
     : { rows: [] };
   return (url: string | null) => {
-    const width = result.rows.find(
+    const metadata = result.rows.find(
       (row) => row.id === url?.split('/').at(-1),
-    )?.width;
-    return url && width ? imageVariantSources(url, width) : undefined;
+    );
+    return url && metadata?.width && metadata.mime !== 'image/svg+xml'
+      ? imageVariantSources(url, metadata.width)
+      : undefined;
   };
 }
