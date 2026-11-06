@@ -184,6 +184,13 @@ body:has(.vitrine) {
   right: 0;
   border-top: 1px solid #999;
 }
+@media (hover: hover) and (pointer: fine) {
+  .vitrine-services
+    dl:has(> .vitrine-service:hover)
+    > .vitrine-service:not(:hover) {
+    opacity: 0.22;
+  }
+}
 .vitrine-service:nth-child(2) {
   min-height: 9.895833cqw;
 }
