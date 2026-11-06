@@ -103,88 +103,50 @@ test('la vitrine reste lisible sur mobile', async ({ page }) => {
   ).toBe(true);
 });
 
-test('le répertoire et les fiches fonctionnent sans JavaScript', async ({
-  browser,
-}) => {
-  const context = await browser.newContext({ javaScriptEnabled: false });
-  try {
-    const page = await context.newPage();
-    await page.goto('/clients');
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
-    await page.getByLabel('Nom, ville ou univers').fill('lyon');
-    await page.getByRole('button', { name: 'Rechercher' }).click();
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      1,
-    );
-    await page.getByRole('link', { name: 'Découvrir Maison Sauge' }).click();
-    await expect(page).toHaveURL(/clients\/maison-sauge$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Maison Sauge',
-    );
-    await expect(
-      page.getByText('Une identité qui respire, simple et vivante.', {
-        exact: false,
-      }),
-    ).toBeVisible();
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-      'href',
-      'http://127.0.0.1:3190/clients/maison-sauge',
-    );
-    await page.getByRole('link', { name: 'Atelier Forme →' }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Atelier Forme',
-    );
-    await page.getByRole('link', { name: 'Retour au répertoire' }).click();
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
-  } finally {
-    await context.close();
-  }
-});
-
-test('les filtres se combinent et une recherche vide peut être réinitialisée', async ({
-  page,
-}) => {
-  await page.goto('/clients');
-  await page
-    .getByLabel('Univers', { exact: true })
-    .selectOption('Art de vivre');
-  await page.getByRole('button', { name: 'Rechercher' }).click();
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(2);
-  await page.getByLabel('Nom, ville ou univers').fill('café introuvable');
-  await page.getByRole('button', { name: 'Rechercher' }).click();
-  await expect(page.getByText('Aucune fiche pour le moment.')).toBeVisible();
-  await page
-    .getByRole('link', { name: 'Retrouver toutes les rencontres' })
-    .click();
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(6);
-  await page.goto('/clients?q=creation');
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(2);
-});
-
-test('toutes les fiches existent, les inconnues répondent 404', async ({
+test('les anciennes fiches et leur gestion sont retirées, seule la page Sommets reste publiée', async ({
   request,
 }) => {
-  for (const slug of [
-    'maison-sauge',
-    'atelier-forme',
-    'les-jours-heureux',
-    'studio-sillage',
-    'jardin-commun',
-    'la-pause',
+  for (const path of [
+    '/clients',
+    '/clients?q=lyon',
+    '/connect/clients/nouveau',
+    '/connect/clients/maison-sauge',
+    ...[
+      'maison-sauge',
+      'atelier-forme',
+      'les-jours-heureux',
+      'studio-sillage',
+      'jardin-commun',
+      'la-pause',
+      'inconnu',
+    ].map((slug) => `/clients/${slug}`),
+    '/api/v1/clients',
+    '/api/v1/admin/clients',
+    '/api/v1/client-images/00000000-0000-4000-8000-000000000001',
   ]) {
-    expect((await request.get(`/clients/${slug}`)).status()).toBe(200);
+    expect((await request.get(path)).status(), path).toBe(404);
   }
-  expect((await request.get('/clients/inconnu')).status()).toBe(404);
+  expect(
+    (
+      await request.post('/api/v1/admin/clients/maison-sauge', { data: '' })
+    ).status(),
+  ).toBe(404);
+  expect((await request.get('/clients/viandes-des-sommets')).status()).toBe(
+    200,
+  );
+  const sitemap = await (await request.get('/sitemap.xml')).text();
+  expect(sitemap.match(/<loc>/g)).toHaveLength(2);
+  expect(sitemap).toContain('/clients/viandes-des-sommets</loc>');
+  const html = await (await request.get('/')).text();
+  expect(html).not.toContain('Les rencontres');
 });
 
-test('les fiches restent lisibles sur les petits écrans', async ({ page }) => {
+test('les pages conservées restent lisibles sur les petits écrans', async ({
+  page,
+}) => {
   for (const width of [320, 375, 768]) {
     await page.setViewportSize({ width, height: 812 });
-    for (const path of ['/', '/clients', '/clients/les-jours-heureux']) {
+    for (const path of ['/', '/clients/viandes-des-sommets']) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       expect(
@@ -194,26 +156,6 @@ test('les fiches restent lisibles sur les petits écrans', async ({ page }) => {
       ).toBe(true);
     }
   }
-});
-
-test('les liens et les contrôles sont accessibles au clavier', async ({
-  page,
-}) => {
-  await page.goto('/clients');
-  await page.keyboard.press('Tab');
-  await expect(
-    page.getByRole('link', { name: 'Aller au contenu' }),
-  ).toBeFocused();
-  await page.keyboard.press('Enter');
-  await page.getByLabel('Nom, ville ou univers').focus();
-  await page.keyboard.type('Maison');
-  await page.keyboard.press('Enter');
-  await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(1);
-  await page.getByRole('link', { name: 'Découvrir Maison Sauge' }).focus();
-  await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Maison Sauge',
-  );
 });
 
 test('le menu et les sections de la maquette fonctionnent sans JavaScript', async ({
@@ -233,13 +175,11 @@ test('le menu et les sections de la maquette fonctionnent sans JavaScript', asyn
     ).toBeInViewport();
     await page.goto('/');
     await page.getByText('Menu', { exact: true }).first().click();
-    await page
-      .getByRole('link', { name: 'Les rencontres', exact: true })
-      .click();
-    await expect(page).toHaveURL(/\/clients$/);
-    await expect(page.getByRole('link', { name: /^Découvrir / })).toHaveCount(
-      6,
-    );
+    await expect(
+      page.getByRole('link', { name: 'Les rencontres', exact: true }),
+    ).toHaveCount(0);
+    await page.getByRole('link', { name: /Espace de gestion/ }).click();
+    await expect(page).toHaveURL(/\/connect$/);
   } finally {
     await context.close();
   }
@@ -426,13 +366,6 @@ test('les données structurées décrivent Chloé Catala et les prestations publ
     await expect(page.locator('.vitrine-manifesto-intro')).toContainText(
       'Toulouse et alentour',
     );
-    await page.goto('/clients?q=lyon');
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-      'content',
-      'noindex, follow',
-    );
-    await page.goto('/clients');
-    await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
   } finally {
     await context.close();
   }

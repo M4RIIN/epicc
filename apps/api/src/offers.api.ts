@@ -4,7 +4,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { randomUUID } from 'node:crypto';
 import { offerSchema } from '@epicc/content-contracts';
 import type { Database } from './database';
-import { authorized } from './clients.api';
+import { authorized } from './api-authorization';
 import { readImage, uploadBodyLimit } from './image-upload';
 import { imageResponse } from './image-response';
 import {

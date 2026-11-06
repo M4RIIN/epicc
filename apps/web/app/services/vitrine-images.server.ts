@@ -2,10 +2,10 @@ import {
   vitrineAssetFiles,
   vitrineImageSchema,
 } from '@epicc/content-contracts';
-import { clientsRequest } from './clients.server';
+import { apiRequest } from './api.server';
 
 export async function loadVitrineImages() {
-  const response = await clientsRequest('vitrine-images');
+  const response = await apiRequest('vitrine-images');
   if (!response.ok)
     throw new Response('Les visuels sont temporairement indisponibles.', {
       status: 503,

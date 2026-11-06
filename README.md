@@ -1,6 +1,6 @@
 # EPICC
 
-Socle TypeScript en monorepo Nx : vitrine React rendue côté serveur, gestion des clients sur `/connect` et API Hono sur `/api`. En production, un seul serveur Node sert ces trois espaces sur la même origine.
+Socle TypeScript en monorepo Nx : vitrine React rendue côté serveur, gestion des images sur `/connect` et API Hono sur `/api`. En production, un seul serveur Node sert ces trois espaces sur la même origine.
 
 ## Démarrer
 
@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Le répertoire et les fiches chargent leurs données depuis l’API avant le rendu. Les modifications sont rechargées automatiquement. Fournir `DATABASE_URL` avant le démarrage, comme décrit ci-dessous.
+Ouvrir <http://localhost:3100>. Le serveur React Router utilise le port 3100 et relaie `/api` vers Hono, sur le port 3101. La page d’accueil est rendue en HTML côté serveur. Les visuels des projets et des offres sont chargés depuis l’API avant le rendu. Les modifications sont rechargées automatiquement. Fournir `DATABASE_URL` avant le démarrage, comme décrit ci-dessous.
 
 Le serveur utilise PostgreSQL : créez une base dédiée avec votre hébergeur ou `createdb epicc`, puis fournissez `DATABASE_URL` dans l’environnement du processus (par exemple `postgresql://utilisateur:mot-de-passe@localhost:5432/epicc`). Les tables et les contenus initiaux sont créés au premier lancement. Aucun fichier `.env` n’est nécessaire. La connexion à la gestion exige un compte initial et un secret de session.
 
@@ -51,16 +51,15 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 ## Routes et contenu de démonstration
 
 - `/` : vitrine responsive en français, rendue côté serveur, avec titre, description, Open Graph et URL canonique.
-- `/clients` : répertoire public, recherche et filtre par univers, utilisables sans JavaScript.
-- `/clients/:slug` : fiche client sous forme de formulaire d’archives, avec navigation entre les fiches et retour au répertoire.
-- `/connect` : connexion et liste des clients ; `/connect/clients/nouveau` et `/connect/clients/:slug` : création et modification. Ces routes sont exclues de l’indexation et du cache.
+- `/clients/viandes-des-sommets` : page du projet Viandes des Sommets, accessible depuis la vitrine.
+- `/connect` : connexion et gestion des images des projets et des offres. Les routes de gestion sont exclues de l’indexation et du cache.
 - `/api/health` : état du serveur HTTP ; ce contrôle ne vérifie pas une base de données.
-- `/api/v1/pages/accueil` : contenu éditorial de démonstration, utilisé pour les métadonnées du répertoire.
+- `/api/v1/pages/accueil` : contenu éditorial de démonstration.
 - `/robots.txt` et `/sitemap.xml` : consignes d’exploration et liste des pages publiques.
 
 Le contenu est déterministe et assemblé dans `apps/api/src/composition-root.ts`. Le cas d’usage masque les brouillons et les pages absentes avec le même statut 404. Une panne de l’API produit une page d’erreur 503 ; les erreurs techniques ne sont pas exposées au visiteur.
 
-La gestion des clients comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. Les fiches clients sont des exemples à remplacer ; l’accueil reprend la maquette EPICC.
+La gestion des images comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. L’accueil reprend la maquette EPICC.
 
 ## Exécuter le build
 
@@ -81,7 +80,7 @@ Ce lancement reste local : publier et configurer le domaine est une étape d’h
 
 Configurer `PUBLIC_SITE_URL` avec le vrai domaine avant une publication. Derrière un proxy, ce domaine reste prioritaire pour les actions de gestion. Sans domaine public configuré, les formulaires de gestion peuvent retrouver l’origine du navigateur uniquement après validation de leur jeton CSRF et du cookie signé ; les en-têtes `Forwarded` ne sont pas utilisés comme preuve. Pour changer le port Hono en développement, fournir aussi `INTERNAL_API_ORIGIN`. Ne pas exposer ces paramètres dans le bundle navigateur. Le processus de production doit disposer de `dist/`, du `package.json` et de ses dépendances d’exécution (`npm ci --omit=dev`).
 
-## Gestion des clients
+## Gestion des images
 
 Configurer les variables dans l’environnement du serveur, sans les exposer au navigateur. PostgreSQL est obligatoire, y compris pour la vitrine :
 
@@ -92,17 +91,11 @@ Configurer les variables dans l’environnement du serveur, sans les exposer au 
 | `ADMIN_PASSWORD` | Mot de passe du compte initial. Haché avec scrypt et un sel aléatoire avant stockage ; utilisé uniquement si le compte n’existe pas. Peut être retiré après création. Changer cette variable ne change pas un mot de passe déjà enregistré. |
 | `SESSION_SECRET` | Secret aléatoire d’au moins 32 caractères, obligatoire pour la connexion et l’API privée. Le conserver entre redémarrages ; sa rotation invalide les sessions.                                                                              |
 
-La gestion permet d’ajouter, modifier et supprimer les fiches, de changer tous leurs textes, leur couleur, leur ordre et leur publication. Les adresses des fiches restent stables après création pour préserver les liens. Les images JPEG, PNG, WebP ou AVIF peuvent être téléversées (5 Mo par défaut, limite configurable) ou remplacées par une illustration existante. Les suppressions nécessitent une confirmation explicite.
+La gestion permet d’ajouter, remplacer et supprimer les photos des projets, et de modifier les visuels des offres. Les images JPEG, PNG, WebP ou AVIF peuvent être téléversées (5 Mo par défaut, limite configurable).
 
-L’API crée automatiquement les tables et importe une seule fois les six exemples fictifs et les cinq offres existantes. Les clients et comptes sont conservés dans PostgreSQL après redémarrage. Les nouveaux médias sont stockés dans le bucket privé avec `MEDIA_STORAGE=s3` ; le stockage historique PostgreSQL reste disponible pendant la transition. Voir le [guide des images](docs/stockage-images.md) pour les variables S3 et la migration. Sauvegarder la base avec les outils de l’hébergeur ou `pg_dump` ; aucun volume SQLite local n’est utilisé.
+L’API crée automatiquement les tables et les offres initiales. Une migration unique supprime les anciennes fiches du répertoire ainsi que leurs images devenues inutilisées, en préservant les médias référencés par les projets, les offres et la vitrine. Les anciennes URLs du répertoire, des fiches et de leur gestion répondent 404 ; seule la page projet Viandes des Sommets est conservée. Le sitemap contient l’accueil et cette page.
 
-Pour reprendre une base SQLite existante, arrêter l’ancienne application, sauvegarder sa base et préparer une base PostgreSQL neuve. Puis exécuter, avec `DATABASE_URL` dans l’environnement :
-
-```sh
-npm run db:import-sqlite -- /chemin/vers/clients.sqlite
-```
-
-L’import est transactionnel, conserve les identifiants et les images, préserve une liste vide et ouvre la source en lecture seule. Il refuse une seconde importation ou une destination déjà modifiée dans la gestion. Installer les dépendances de développement pour cette commande, puis démarrer la nouvelle version. Ne pas laisser les deux versions accepter des écritures simultanément.
+Les comptes et les médias sont conservés dans PostgreSQL après redémarrage. Les nouveaux médias sont stockés dans le bucket privé avec `MEDIA_STORAGE=s3` ; le stockage historique PostgreSQL reste disponible pendant la transition. Voir le [guide des images](docs/stockage-images.md) pour les variables S3 et la migration. Sauvegarder la base avec les outils de l’hébergeur ou `pg_dump`.
 
 Configurer `PUBLIC_SITE_URL` avec le domaine HTTPS réel pour les URLs SEO, le contrôle d’origine des formulaires et le cookie sécurisé. `SESSION_SECRET` doit être identique dans les processus web et API en développement.
 
@@ -134,8 +127,6 @@ Depuis `/connect`, ouvrir « Modifier les images » pour l’une des offres. Té
 
 Le formulaire « Image de survol » gère un second visuel indépendant, avec sa propre description, son remplacement et sa suppression. Sur ordinateur, il apparaît au survol de l’offre ou au focus clavier, derrière les mentions manuscrites et sans déplacer les autres offres. Sur écran tactile, il reste visible dans la ligne de l’offre. Cette interaction fonctionne aussi sans JavaScript.
 
-Les visiteurs lisent uniquement les fiches publiées. Le répertoire, les filtres, les fiches et le sitemap chargent ces données à chaque requête côté serveur. Les descriptions SEO et Open Graph suivent le contenu édité. Un brouillon répond 404 sur son URL publique et son image téléversée reste privée. L’administration et la vitrine fonctionnent également sans JavaScript.
-
 Les tests d’intégration et navigateur exigent `TEST_DATABASE_URL` (URL du serveur PostgreSQL de test) et `TEST_DB_PREFIX` (préfixe réservé, par exemple `test_local_`). Ils créent des bases temporaires isolées portant ce préfixe et les suppriment après exécution. Le compte utilisé est `test@questboard.test` / `testtest`, puis les bases sont nettoyées. Ces identifiants ne sont jamais activés automatiquement au démarrage habituel.
 
 ## Prochaines fonctionnalités
@@ -146,19 +137,15 @@ Les tests d’intégration et navigateur exigent `TEST_DATABASE_URL` (URL du ser
 
 Le verrouillage transitoire d’`undici` dans `package.json` impose la version corrigée 7.29.1 à Nx 24, qui dépend de 7.29.0. Le retirer quand Nx embarquera une version corrigée.
 
-## Direction visuelle et répertoire clients
+## Direction visuelle
 
 L’accueil reprend le cadre `411:3` du fichier [EPICC-SITE](https://www.figma.com/design/KSR9sI73Y80NkzBfCmUdP2/EPICC-SITE?node-id=411-3) : ouverture photographique, menu, prestations, parcours de Chloé, manifeste, réalisations et contact. Les sections React sont isolées dans `apps/web/app/components/vitrine`, avec des styles préfixés et des variables typographiques. La composition bureau suit les proportions du cadre de 1920 px ; sur mobile, les colonnes passent en lecture verticale. Les libellés « MENU » sont conservés ; le premier ouvre une navigation native accessible sans JavaScript.
-
-Le répertoire sur `/clients` conserve le carnet de rencontres : papier grainé, encre bleue et notes manuscrites. Le répertoire propose une recherche par nom, ville ou univers (insensible aux accents) et un filtre par univers. Les formulaires GET et les liens vers les fiches restent utilisables sans JavaScript.
-
-Les six clients initiaux de `apps/api/src/clients.seed.ts` sont **entièrement fictifs** : noms, descriptions et propos servent uniquement à présenter l’interface. Ils ne constituent pas des références ni des témoignages réels. Remplacer ces données par des contenus validés avant une publication commerciale. Les images sont des illustrations mutualisées entre les exemples.
 
 Le lien « Connexion ↗ » est visible directement en haut de l’accueil et mène à `/connect`. Pour activer la connexion sur l’hébergement, fournir `DATABASE_URL`, `SESSION_SECRET`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` lors du premier démarrage, comme décrit plus haut. Aucun compte de démonstration n’est activé en production.
 
 L’accueil présente un écran de chargement EPICC avec une progression réelle pendant le téléchargement et le décodage de ses images, y compris les illustrations SVG et les visuels des offres. Toutes les images de la page sont chargées avant de révéler le contenu. Après douze secondes, un bouton permet d’entrer sans attendre ; le lien vers la gestion reste accessible pendant le chargement. Une image en erreur ne bloque pas l’ouverture. Sans JavaScript, le contenu reste directement lisible ; si le JavaScript de l’application ne démarre pas, le masque se retire au bout de quinze secondes.
 
-Les photographies et illustrations sont servies dans leur format et leur résolution d’origine, sans recompression ni rasterisation des SVG. Les nouvelles images téléversées dans la gestion (clients et offres) sont validées, puis enregistrées et servies avec leurs octets d’origine. La limite d’envoi est de 5 Mo par défaut (`IMAGE_MAX_BYTES` configurable) et 40 millions de pixels. Si un fichier avait déjà été compressé par une version précédente, téléverser à nouveau son original : les détails perdus ne peuvent pas être reconstitués depuis le fichier compressé. Les images privées conservent leur protection.
+Les photographies et illustrations sont servies dans leur format et leur résolution d’origine, sans recompression ni rasterisation des SVG. Les nouvelles images téléversées dans la gestion (projets et offres) sont validées, puis enregistrées et servies avec leurs octets d’origine. La limite d’envoi est de 5 Mo par défaut (`IMAGE_MAX_BYTES` configurable) et 40 millions de pixels. Si un fichier avait déjà été compressé par une version précédente, téléverser à nouveau son original : les détails perdus ne peuvent pas être reconstitués depuis le fichier compressé. Les images privées conservent leur protection.
 
 Les ressources sont servies localement, sans appel à une police ou à une image externe depuis le navigateur :
 
@@ -170,10 +157,10 @@ Les ressources sont servies localement, sans appel à une police ou à une image
 
 ### Réalisations et contact de la vitrine
 
-La section `#projets` reprend les photographies et les noms manuscrits du cadre Figma `411:3`. Les images originales sont conservées dans `apps/web/public/images/vitrine/projets-*` avec leur format réel, sans recompression. La composition bureau conserve les emplacements et les recadrages de la maquette ; sur mobile, les images sont regroupées par projet dans l’ordre de lecture. Ces réalisations sont gérées depuis la section « Les projets clients » de `/connect`, distincte des fiches du répertoire `/clients`. Chaque client a un logo et peut recevoir autant de photos que nécessaire, ajoutées une par une. Chaque photo propose les tailles Petite, Moyenne et Grande ; les images existantes gardent leurs dimensions exactes tant qu’aucune taille n’est choisie. L’Écluse Douze et Deux Mnu sont deux clients séparés. Les deux apparitions historiques du logo de L’Écluse Douze partagent le même remplacement, tout en conservant leurs emplacements. Une photo ajoutée peut être supprimée ; un visuel d’origine peut être rétabli.
+La section `#projets` reprend les photographies et les noms manuscrits du cadre Figma `411:3`. Les images originales sont conservées dans `apps/web/public/images/vitrine/projets-*` avec leur format réel, sans recompression. La composition bureau conserve les emplacements et les recadrages de la maquette ; sur mobile, les images sont regroupées par projet dans l’ordre de lecture. Ces réalisations sont gérées depuis la section « Les projets clients » de `/connect`. Chaque client a un logo et peut recevoir autant de photos que nécessaire, ajoutées une par une. Chaque photo propose les tailles Petite, Moyenne et Grande ; les images existantes gardent leurs dimensions exactes tant qu’aucune taille n’est choisie. L’Écluse Douze et Deux Mnu sont deux clients séparés. Les deux apparitions historiques du logo de L’Écluse Douze partagent le même remplacement, tout en conservant leurs emplacements. Une photo ajoutée peut être supprimée ; un visuel d’origine peut être rétabli.
 
 Au démarrage, les 26 visuels d’origine sont importés de façon idempotente dans le stockage configuré, avec références et métadonnées en PostgreSQL. Avec `MEDIA_STORAGE=s3`, les fichiers sont copiés dans le bucket et relus pour vérifier leur SHA-256 avant publication de la référence. Les originaux restent disponibles pour la restauration. `npm run media:migrate` importe aussi ces visuels puis migre les anciens binaires PostgreSQL vers S3. Les fichiers versionnés restent les sources de reprise et ne sont pas modifiés. L’import conserve les éditions existantes et s’arrête si deux remplacements contradictoires du logo de L’Écluse Douze sont présents. Les options `--inventory` et `--verify` de `dist/apps/api/migrate-images.mjs` permettent des contrôles en lecture seule. L’import des 26 originaux dans le bucket de development et leur persistance après redémarrage ont été vérifiés ; voir [le compte rendu du stockage](docs/stockage-images.md).
 
-La navigation donne accès aux offres, à la présentation, aux projets et au contact. Le menu déroulant conserve aussi l’accès au répertoire et à la gestion. Les liens fonctionnent sans JavaScript.
+La navigation donne accès aux offres, à la présentation, aux projets et au contact. Le menu déroulant conserve aussi l’accès à la gestion. Les liens fonctionnent sans JavaScript.
 
 La section `#contact` comprend les champs nom, prénom et demande. Le formulaire est activé avec l’adresse de test `test@test.com` par défaut. Fournir `CONTACT_EMAIL` dans l’environnement du serveur pour la remplacer par l’adresse publique souhaitée. Le formulaire ouvre la messagerie du visiteur avec un message à relire avant envoi. Sans JavaScript, le formulaire utilise le protocole natif `mailto:`. Une messagerie configurée est nécessaire ; aucun mail ne part du serveur et aucune demande n’est enregistrée. Si `CONTACT_EMAIL` est explicitement vide ou invalide, le bouton est désactivé et un message explique son indisponibilité. Cette variable ne contient que l’adresse de contact publique ; aucun secret ni accès de messagerie n’est nécessaire pour ce fonctionnement.

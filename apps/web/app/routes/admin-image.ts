@@ -1,10 +1,10 @@
 import type { Route } from './+types/admin-image';
 import { requireAdmin } from '../services/admin.server';
-import { clientsRequest } from '../services/clients.server';
+import { apiRequest } from '../services/api.server';
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   await requireAdmin(request);
-  const response = await clientsRequest(
+  const response = await apiRequest(
     `admin/images/${encodeURIComponent(params.id)}`,
     {},
     true,

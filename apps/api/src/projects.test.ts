@@ -3,7 +3,6 @@ import { createHash } from 'node:crypto';
 import { projectImageSchema } from '@epicc/content-contracts';
 import { Database } from './database';
 import { createProjectsApi } from './projects.api';
-import { ClientStore } from './clients.store';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
   manageTestDatabase,
@@ -88,7 +87,9 @@ it('persiste les images, les conserve lors des autres éditions et nettoie les r
     first,
   );
   // Le nettoyage des fiches du répertoire doit conserver les images du collage.
-  await new ClientStore(database).delete('maison-sauge');
+  await database.images.write(null, undefined, async (connection) => {
+    await connection.query('DELETE FROM clients');
+  });
   const image = await api.request(first.image.replace('/api', ''));
   expect(image.headers.get('Content-Type')).toBe('image/png');
   expect(Buffer.from(await image.arrayBuffer())).toEqual(png);

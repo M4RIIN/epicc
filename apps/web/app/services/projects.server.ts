@@ -1,8 +1,8 @@
 import { projectImageSchema } from '@epicc/content-contracts';
-import { clientsRequest } from './clients.server';
+import { apiRequest } from './api.server';
 
 export async function loadProjectImages() {
-  const response = await clientsRequest('project-images');
+  const response = await apiRequest('project-images');
   if (!response.ok)
     throw new Response('Les projets sont temporairement indisponibles.', {
       status: 503,
@@ -16,7 +16,7 @@ export async function loadProjectImages() {
 }
 
 export async function saveProjectImage(file: string, form: FormData) {
-  const response = await clientsRequest(
+  const response = await apiRequest(
     `admin/project-images/${encodeURIComponent(file)}`,
     { method: 'POST', body: form },
     true,

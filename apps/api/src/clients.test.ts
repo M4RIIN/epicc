@@ -1,8 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createHash } from 'node:crypto';
-import { ClientStore } from './clients.store';
-import { createClientsApi } from './clients.api';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { randomUUID, createHash } from 'node:crypto';
 import { Database } from './database';
+import { composeApi } from './composition-root';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
   manageTestDatabase,
@@ -10,12 +9,10 @@ import {
   testDatabaseUrl,
 } from '../../../e2e/database';
 
-const secret = 'un-secret-de-test-de-plus-de-trente-deux-caracteres';
-const authorization = `Bearer ${createHash('sha256').update(`clients-api:${secret}`).digest('hex')}`;
 let database: Database;
 let name: string;
 beforeEach(async () => {
-  name = testDatabaseName('clients');
+  name = testDatabaseName('retired_clients');
   await manageTestDatabase(name, true);
   database = new Database(testDatabaseUrl(name));
   await database.migrate();
@@ -26,119 +23,74 @@ afterEach(async () => {
   if (name) await manageTestDatabase(name, false);
 });
 
-describe('gestion persistante des clients', () => {
-  it('conserve les modifications et une liste vide après réouverture', async () => {
-    let store = new ClientStore(database);
-    const client = (await store.list(true))[0]!;
-    await store.write({
-      ...client,
-      name: 'Client modifié',
-      position: 999,
-      published: false,
-    });
-    await database.close();
-    database = new Database(testDatabaseUrl(name));
-    await database.migrate();
-    store = new ClientStore(database);
-    expect((await store.list()).some((c) => c.slug === client.slug)).toBe(
-      false,
+it('retire les anciennes fiches et leurs médias seuls, sans réintroduire les exemples au redémarrage', async () => {
+  const orphan = randomUUID();
+  const shared = randomUUID();
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id = 'remove-client-directory'",
+  );
+  for (const [index, id] of [orphan, shared].entries()) {
+    await database.pool.query(
+      'INSERT INTO images (id, mime, content, storage_key) VALUES ($1, $2, $3, $4)',
+      [id, 'image/png', Buffer.from([1, 2, 3]), `media/${id}`],
     );
-    expect((await store.list(true)).at(-1)?.name).toBe('Client modifié');
-    for (const item of await store.list(true)) await store.delete(item.slug);
-    await database.migrate();
-    expect(await store.list(true)).toEqual([]);
-  });
+    await database.pool.query('INSERT INTO clients VALUES ($1, $2)', [
+      `ancien-client-${index}`,
+      { image: `/api/v1/client-images/${id}`, published: index === 0 },
+    ]);
+  }
+  await database.pool.query(
+    "UPDATE offers SET content = content || $1::jsonb WHERE slug = 'creation-de-marque'",
+    [
+      {
+        image: `/api/v1/offer-images/${shared}`,
+        alt: 'Image partagée de test',
+      },
+    ],
+  );
+  const offers = (
+    await database.pool.query('SELECT * FROM offers ORDER BY slug')
+  ).rows;
+  await database.migrate();
+  expect((await database.pool.query('SELECT * FROM clients')).rows).toEqual([]);
+  expect((await database.pool.query('SELECT id FROM images')).rows).toEqual([
+    { id: shared },
+  ]);
+  expect(
+    (await database.pool.query('SELECT storage_key FROM media_deletions')).rows,
+  ).toEqual([{ storage_key: `media/${orphan}` }]);
+  expect(
+    (await database.pool.query('SELECT * FROM offers ORDER BY slug')).rows,
+  ).toEqual(offers);
+  await database.close();
+  database = new Database(testDatabaseUrl(name));
+  await database.migrate();
+  expect((await database.pool.query('SELECT * FROM clients')).rows).toEqual([]);
+  expect((await database.pool.query('SELECT id FROM images')).rows).toEqual([
+    { id: shared },
+  ]);
+});
 
-  it('protège les lectures et écritures privées et refuse une configuration absente', async () => {
-    const store = new ClientStore(database);
-    {
-      const api = createClientsApi(store);
-      expect((await api.request('/v1/admin/clients')).status).toBe(401);
-      expect(
-        (
-          await api.request('/v1/admin/clients/maison-sauge', {
-            method: 'POST',
-          })
-        ).status,
-      ).toBe(401);
-      vi.stubEnv('SESSION_SECRET', secret);
-      vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-      expect(
-        (await api.request('/v1/admin/clients', { headers: { authorization } }))
-          .status,
-      ).toBe(200);
-      vi.stubEnv('SESSION_SECRET', '');
-      expect(
-        (await api.request('/v1/admin/clients', { headers: { authorization } }))
-          .status,
-      ).toBe(401);
+it('ne publie plus les API des anciennes fiches, même avec une autorisation valide', async () => {
+  const secret = 'secret-de-test-de-plus-de-trente-deux-caracteres';
+  vi.stubEnv('SESSION_SECRET', secret);
+  const authorization = `Bearer ${createHash('sha256').update(`clients-api:${secret}`).digest('hex')}`;
+  const api = composeApi(database);
+  for (const headers of [{}, { authorization }]) {
+    for (const path of [
+      '/v1/clients',
+      '/v1/admin/clients',
+      '/v1/client-images/00000000-0000-4000-8000-000000000001',
+    ]) {
+      expect((await api.request(path, { headers })).status).toBe(404);
     }
-  });
-
-  it('valide les fiches, refuse les doublons et masque les images des brouillons', async () => {
-    vi.stubEnv('SESSION_SECRET', secret);
-    vi.stubEnv('ADMIN_PASSWORD', 'testtest');
-    const store = new ClientStore(database);
-    {
-      const api = createClientsApi(store);
-      const original = (await store.list(true))[0]!;
-      const post = (client: unknown, intent = 'update', file?: File) => {
-        const form = new FormData();
-        form.set('client', JSON.stringify(client));
-        form.set('intent', intent);
-        if (file) form.set('image', file);
-        return api.request(`/v1/admin/clients/${original.slug}`, {
+    expect(
+      (
+        await api.request('/v1/admin/clients/maison-sauge', {
           method: 'POST',
-          headers: { authorization },
-          body: form,
-        });
-      };
-      expect((await post({ ...original, name: '' })).status).toBe(400);
-      expect((await post(original, 'create')).status).toBe(409);
-      expect(
-        (
-          await post(
-            original,
-            'update',
-            new File(['<svg/>'], 'photo.png', { type: 'image/png' }),
-          )
-        ).status,
-      ).toBe(400);
-      const png = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWNYvnvF8t0rGCAUADkiCCmOz4EsAAAAAElFTkSuQmCC',
-        'base64',
-      );
-      expect(
-        (
-          await post(
-            { ...original, published: false },
-            'update',
-            new File([png], 'photo.png', { type: 'image/png' }),
-          )
-        ).status,
-      ).toBe(200);
-      const draft = (await store.list(true)).find(
-        (c) => c.slug === original.slug,
-      )!;
-      expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
-        404,
-      );
-      expect(
-        (
-          await api.request(
-            draft.image.replace('/api/v1/client-images', '/v1/admin/images'),
-            { headers: { authorization } },
-          )
-        ).status,
-      ).toBe(200);
-      expect((await post({ ...draft, published: true })).status).toBe(200);
-      const image = await api.request(draft.image.replace('/api', ''));
-      expect(image.headers.get('content-type')).toBe('image/png');
-      expect(Buffer.from(await image.arrayBuffer())).toEqual(png);
-      await store.delete(original.slug);
-      expect((await api.request(draft.image.replace('/api', ''))).status).toBe(
-        404,
-      );
-    }
-  });
+          headers,
+        })
+      ).status,
+    ).toBe(404);
+  }
 });
