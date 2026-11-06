@@ -468,7 +468,7 @@ for (const javaScriptEnabled of [false, true]) {
       await page.goto('/');
       await expect(
         page
-          .getByRole('figure', { name: 'Deux Mnu', exact: true })
+          .getByRole('figure', { name: 'Deux Main', exact: true })
           .locator('.vitrine-project-photo'),
       ).toHaveCount(3);
       const widths = [];

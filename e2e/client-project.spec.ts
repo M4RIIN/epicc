@@ -73,6 +73,7 @@ for (const javaScriptEnabled of [false, true]) {
         .getByRole('link', {
           name: 'Viandes des Sommets — découvrir l’identité visuelle',
         })
+        .first()
         .click();
       await expect(page).toHaveURL('/clients/viandes-des-sommets');
       const sitemap = await page.request.get('/sitemap.xml');

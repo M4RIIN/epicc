@@ -11,10 +11,10 @@ for (const javaScriptEnabled of [false, true]) {
       await page.goto('/');
       await expect(page.locator('main.vitrine')).toBeVisible();
       const viande = page.getByRole('figure', {
-        name: 'Viande des Sorgues',
+        name: 'Viandes des Sommets',
         exact: true,
       });
-      const anna = page.getByRole('figure', { name: 'Annafurna', exact: true });
+      const anna = page.getByRole('figure', { name: 'Amafolia', exact: true });
       await expect(viande.locator('.vitrine-project-photo')).toHaveCount(4);
       await expect(anna.locator('.vitrine-project-photo')).toHaveCount(2);
       await expect(

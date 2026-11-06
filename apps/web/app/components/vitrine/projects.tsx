@@ -18,9 +18,33 @@ function pieceStyle(piece: Piece): CSSProperties {
   } as CSSProperties;
 }
 
+// Les identifiants de gestion restent stables pour les visuels déjà téléversés.
+const displayNames: Record<string, string> = {
+  'Viande des Sorgues': 'Viandes des Sommets',
+  Annafurna: 'Amafolia',
+  'Deux Mnu': 'Deux Main',
+  'L’Écluse Douze — Deux Mnu': 'L’Écluse Douze — Deux Main',
+};
+
 export function Projects({ images }: { images: ProjectImage[] }) {
   function renderPiece(piece: Piece, name: string) {
     const image = images.find((image) => image.file === piece.file);
+    const artwork = (
+      <Artwork
+        src={image?.image ?? null}
+        file={`projets-${piece.file}`}
+        width={piece.width}
+        height={piece.height}
+        alt={
+          image?.alt && image.alt !== name
+            ? (displayNames[image.alt] ?? image.alt)
+            : piece.role === 'name'
+              ? (displayNames[name] ?? name)
+              : (piece.alt ?? name)
+        }
+        className={piece.mirror ? 'vitrine-project-mirror' : ''}
+      />
+    );
     return (
       <div
         key={piece.file}
@@ -28,24 +52,29 @@ export function Projects({ images }: { images: ProjectImage[] }) {
         className={`vitrine-project-piece ${piece.role === 'name' ? 'vitrine-project-name' : 'vitrine-project-photo'} ${piece.crop ? 'vitrine-project-crop' : ''}`}
         style={pieceStyle(piece)}
       >
-        <Artwork
-          src={image?.image ?? null}
-          file={`projets-${piece.file}`}
-          width={piece.width}
-          height={piece.height}
-          alt={
-            image?.alt ?? (piece.role === 'name' ? name : (piece.alt ?? name))
-          }
-          className={piece.mirror ? 'vitrine-project-mirror' : ''}
-        />
+        {name === 'Viande des Sorgues' ? (
+          <Link
+            to="/clients/viandes-des-sommets"
+            aria-label="Viandes des Sommets — découvrir l’identité visuelle"
+          >
+            {artwork}
+          </Link>
+        ) : (
+          artwork
+        )}
       </div>
     );
   }
   function renderProject(name: string, pieces: Piece[]) {
     return (
-      <figure className="vitrine-project" key={name} aria-label={name}>
+      <figure
+        className="vitrine-project"
+        key={name}
+        data-project={name}
+        aria-label={displayNames[name] ?? name}
+      >
         <figcaption className="vitrine-project-names">
-          <h3 className="vitrine-sr-only">{name}</h3>
+          <h3 className="vitrine-sr-only">{displayNames[name] ?? name}</h3>
           {pieces
             .filter((piece) => piece.role === 'name')
             .map((piece) => renderPiece(piece, name))}
@@ -105,11 +134,10 @@ export function Projects({ images }: { images: ProjectImage[] }) {
       </div>
       <ul className="vitrine-project-notes" aria-label="Autres projets">
         <li>
-          <Link to="/clients/viandes-des-sommets">
-            Viandes des Sommets — découvrir l’identité visuelle ↗
-          </Link>
+          L’Écluse Douze
+          <br />
+          La Grinta
         </li>
-        <li>L’Écluse Douze · La Grinta</li>
         <li>Fitness by Leslie</li>
         <li>Allegria</li>
       </ul>

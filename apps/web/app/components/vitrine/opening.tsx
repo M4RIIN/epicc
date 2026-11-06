@@ -76,9 +76,6 @@ export function Opening() {
           </div>
         </details>
         <div className="vitrine-navigation-actions">
-          <Link to="/connect" className="vitrine-connect">
-            Connexion <span aria-hidden="true">↗</span>
-          </Link>
           <div className="vitrine-navigation-sections">
             <a href="#a-propos">À propos</a>
             <a href="#prestations">Les offres</a>

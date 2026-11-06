@@ -45,6 +45,7 @@ export const offerSchema = z
     slug: text.max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     name: text.max(150),
     description: text.max(3000),
+    summary: z.string().trim().max(1500).optional(),
     image: z
       .string()
       .regex(/^\/api\/v1\/offer-images\/[a-f0-9-]+$/)

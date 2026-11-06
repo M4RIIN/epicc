@@ -52,6 +52,20 @@ export function meta({ loaderData }: Route.MetaArgs) {
     { property: 'og:site_name', content: 'EPICC' },
     { property: 'og:locale', content: 'fr_FR' },
     { property: 'og:url', content: `${loaderData.origin}/` },
+    {
+      property: 'og:image',
+      content: `${loaderData.origin}/images/vitrine/Image29102026A17281.png`,
+    },
+    { property: 'og:image:width', content: '982' },
+    { property: 'og:image:height', content: '742' },
+    { property: 'og:image:alt', content: 'L’univers visuel du studio EPICC' },
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: title },
+    { name: 'twitter:description', content: description },
+    {
+      name: 'twitter:image',
+      content: `${loaderData.origin}/images/vitrine/Image29102026A17281.png`,
+    },
     { tagName: 'link', rel: 'canonical', href: `${loaderData.origin}/` },
   ];
 }
