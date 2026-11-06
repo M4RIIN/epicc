@@ -51,6 +51,11 @@ if (production) {
   const handleRequest = createRequestHandler(build, 'production');
   const clientRoot = fileURLToPath(new URL('../web/client/', import.meta.url));
   app.use('/assets/*', serveStatic({ root: clientRoot }));
+  app.use('/images/optimized/*', async (context, next) => {
+    await next();
+    if (context.res.status === 200 || context.res.status === 304)
+      context.header('Cache-Control', 'public, max-age=31536000, immutable');
+  });
   app.use('/images/*', serveStatic({ root: clientRoot }));
   app.use('/fonts/*', serveStatic({ root: clientRoot }));
   // L’adaptation des formulaires reste dans le bundle web avec les sessions.

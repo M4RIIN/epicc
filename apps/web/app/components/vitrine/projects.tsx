@@ -32,6 +32,8 @@ export function Projects({ images }: { images: ProjectImage[] }) {
     const artwork = (
       <Artwork
         src={image?.image ?? null}
+        sources={image?.sources}
+        sizes={`(max-width: 700px) ${piece.role === 'name' ? 52 : 33}vw, (max-width: 1920px) ${piece.width / 19.2}vw, ${piece.width}px`}
         file={`projets-${piece.file}`}
         width={piece.width}
         height={piece.height}

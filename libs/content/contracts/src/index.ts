@@ -40,6 +40,17 @@ export const clientSchema = z.object({
 });
 export type Client = z.infer<typeof clientSchema>;
 
+const responsiveImageSourcesSchema = z.array(
+  z.object({
+    src: z
+      .string()
+      .regex(
+        /^\/api\/v1\/(?:project|offer)-images\/[a-f0-9-]+\?w=(?:320|640|1280|1920)&v=1$/,
+      ),
+    width: z.number().int().positive(),
+  }),
+);
+
 export const offerSchema = z
   .object({
     slug: text.max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
@@ -52,6 +63,7 @@ export const offerSchema = z
       .nullable(),
     alt: z.string().trim().max(300),
     position: z.number().int().min(0).max(99999),
+    sources: responsiveImageSourcesSchema.optional(),
   })
   .refine((offer) => !offer.image || offer.alt.length > 0, {
     message: 'Décrivez l’image pour les lecteurs d’écran.',
@@ -80,6 +92,7 @@ export const projectImageSchema = z.object({
     .nullable(),
   alt: text.max(300),
   project: z.string().optional(),
+  sources: responsiveImageSourcesSchema.optional(),
   size: z.enum(['small', 'medium', 'large']).nullable().optional(),
   width: z.number().positive().optional(),
   height: z.number().positive().optional(),
@@ -93,3 +106,12 @@ export function imageUploadLimit(value?: string) {
     throw new Error('IMAGE_MAX_BYTES doit être un entier entre 1 et 52428800.');
   return bytes;
 }
+
+export {
+  imageVariantWidths,
+  imageVariantVersion,
+  imageVariantUrl,
+  imageVariantSources,
+  type ResponsiveImageSource,
+  type ImageVariantWidth,
+} from './image-variants';

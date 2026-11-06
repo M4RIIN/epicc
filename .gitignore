@@ -9,3 +9,7 @@ test-results/
 .env.*
 .questboard/
 data/
+
+# Variantes reproductibles, préparées avant le développement et la compilation.
+apps/web/public/images/optimized/
+apps/web/app/components/vitrine/image-manifest.generated.json

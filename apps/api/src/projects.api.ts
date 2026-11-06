@@ -12,6 +12,11 @@ import type { Database } from './database';
 import { authorized } from './clients.api';
 import { readImage, uploadBodyLimit } from './image-upload';
 import { imageResponse } from './image-response';
+import {
+  requestedImageWidth,
+  optimizedImageResponse,
+  publicImageSources,
+} from './image-variants';
 
 const pieces = projectClients.flatMap((project) =>
   project.pieces.map((piece) => ({
@@ -62,7 +67,7 @@ export function createProjectsApi(database: Database) {
       (aliasOriginal
         ? `/api/v1/project-images/${aliasOriginal.image_id}`
         : null);
-    return c.json([
+    const allImages = [
       ...images,
       ...overrides.filter(
         (item) =>
@@ -70,23 +75,33 @@ export function createProjectsApi(database: Database) {
           item.file !== logoAlias,
       ),
       { ...logo, file: logoAlias, image: aliasImage },
-    ]);
+    ];
+    const sourcesFor = await publicImageSources(
+      database,
+      allImages.map((item) => item.image),
+    );
+    return c.json(
+      allImages.map((item) => ({ ...item, sources: sourcesFor(item.image) })),
+    );
   });
   api.get('/v1/project-images/:id', async (c) => {
     const id = c.req.param('id');
     if (!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(id))
       return c.notFound();
+    const width = requestedImageWidth(c);
+    if (width instanceof Response) return width;
     const result = await database.pool.query<{
       mime: string;
       content: Buffer | null;
       storage_key: string | null;
     }>(
-      `SELECT mime, content, storage_key FROM images WHERE id = $1 AND (
+      `SELECT ${width === null ? 'mime, content, storage_key' : 'id'} FROM images WHERE id = $1 AND (
       EXISTS (SELECT 1 FROM project_images WHERE content->>'image' = '/api/v1/project-images/' || images.id)
       OR EXISTS (SELECT 1 FROM project_originals WHERE image_id = images.id))`,
       [id],
     );
     if (!result.rows[0]) return c.notFound();
+    if (width !== null) return optimizedImageResponse(c, database, id, width);
     return imageResponse(c, await database.images.read(result.rows[0]));
   });
   api.use('/v1/admin/project-images/*', async (c, next) => {

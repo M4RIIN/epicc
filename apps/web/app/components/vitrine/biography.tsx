@@ -23,6 +23,7 @@ export function Biography() {
           width={1701}
           height={398}
           alt="Chloé Catala"
+          sizes="(max-width: 540px) 90vw, (max-width: 1920px) 46.15vw, 886px"
         />
       </header>
       <div className="vitrine-biography-intro">
@@ -40,6 +41,7 @@ export function Biography() {
             width={537}
             height={954}
             alt="Chloé enfant, à table, une cuillère à la main."
+            sizes="(max-width: 540px) 48vw, (max-width: 1920px) 28vw, 537px"
           />
           <div className="vitrine-childhood-strip" aria-hidden="true">
             {[0, 1, 2, 3].map((index) => (
