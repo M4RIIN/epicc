@@ -4,6 +4,10 @@ import { createHash } from 'node:crypto';
 import { vitrineProjects } from '@epicc/content-contracts';
 import { Database } from './database';
 import { importProjectOriginals } from './project-originals';
+import {
+  inventoryProjectMedia,
+  verifyProjectMedia,
+} from './project-media-audit';
 import { createProjectsApi } from './projects.api';
 import { ClientStore } from './clients.store';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
@@ -43,10 +47,22 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 it('importe les 26 visuels sans changer leurs octets, conserve leurs métadonnées et reprend sans doublon', async () => {
-  await importProjectOriginals(database, root);
+  expect(await importProjectOriginals(database, root)).toEqual({
+    imported: 26,
+    skipped: 0,
+    conflicts: 0,
+  });
   expect(objects.size).toBe(26);
-  await importProjectOriginals(database, root);
+  expect(await importProjectOriginals(database, root)).toEqual({
+    imported: 0,
+    skipped: 26,
+    conflicts: 0,
+  });
   expect(objects.size).toBe(26);
+  expect(await verifyProjectMedia(database, root)).toMatchObject({
+    verified: 26,
+    metadataValid: true,
+  });
   const rows = await database.pool.query('SELECT * FROM images');
   expect(rows.rowCount).toBe(26);
   expect(
@@ -87,7 +103,47 @@ it('conserve la source et ne publie pas une copie S3 non conforme', async () => 
     (await database.pool.query('SELECT * FROM project_originals')).rowCount,
   ).toBe(0);
   expect((await database.pool.query('SELECT * FROM images')).rowCount).toBe(0);
+  // Seul l’objet de cette tentative est réservé pour un nettoyage différé.
+  expect(objects.size).toBe(1);
+  await database.images.cleanup();
   expect(objects.size).toBe(0);
   await importProjectOriginals(database, root);
   expect(objects.size).toBe(26);
 }, 60000);
+
+it('préserve les éditions et les images historiques non référencées pendant l’import', async () => {
+  await database.pool.query(
+    "INSERT INTO images(id,mime,content) VALUES ('00000000-0000-0000-0000-000000000001','image/png',$1)",
+    [Buffer.from('source historique de test')],
+  );
+  await database.pool.query('INSERT INTO project_images VALUES ($1,$2)', [
+    'Rectangle5.png',
+    { file: 'Rectangle5.png', image: null, alt: 'Texte édité conservé' },
+  ]);
+  const before = await inventoryProjectMedia(database);
+  await importProjectOriginals(database, root);
+  const after = await inventoryProjectMedia(database);
+  expect(after.contents).toEqual(before.contents);
+  expect(after.images).toEqual({ total: 27, in_bucket: 26, with_source: 1 });
+}, 60000);
+it('arrête l’import avant toute écriture en cas de logos édités contradictoires', async () => {
+  for (const [index, file] of [
+    'CaptureDecran20261029A153342121.png',
+    'CaptureDecran20261029A153342111.png',
+  ].entries()) {
+    await database.pool.query('INSERT INTO project_images VALUES ($1,$2)', [
+      file,
+      {
+        file,
+        image: `/api/v1/project-images/00000000-0000-0000-0000-00000000000${index + 1}`,
+        alt: 'Logo édité de test',
+      },
+    ]);
+  }
+  const before = await inventoryProjectMedia(database);
+  await expect(importProjectOriginals(database, root)).rejects.toThrow(
+    'Deux versions éditées',
+  );
+  expect(await inventoryProjectMedia(database)).toEqual(before);
+  expect(objects.size).toBe(0);
+});
