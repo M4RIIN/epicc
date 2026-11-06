@@ -196,10 +196,7 @@ export default function Connect({
                                             aria-label={`Modifier ${role === 'name' ? `le logo${index ? ` ${index + 1}` : ''}` : `l’image ${index + 1}`} de ${project.name} ↗`}
                                           >
                                             <img
-                                              src={
-                                                image.image ??
-                                                `/images/vitrine/projets-${piece.file}`
-                                              }
+                                              src={image.image ?? undefined}
                                               alt=""
                                               width={piece.width}
                                               height={piece.height}

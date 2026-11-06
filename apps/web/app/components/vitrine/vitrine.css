@@ -799,7 +799,7 @@ body:has(.vitrine) {
   font: inherit;
   text-transform: none;
   letter-spacing: -0.04em;
-  background-image: url('/images/vitrine/projets-Line18.svg');
+  background-image: url('/api/v1/vitrine-assets/projets-Line18.svg');
   background-position: bottom;
   background-repeat: no-repeat;
   background-size: 100% 1px;

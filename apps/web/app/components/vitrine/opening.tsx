@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
-import { Artwork, artworkPath } from './artwork';
-import { staticImageSources } from './image-sources';
+import { Artwork } from './artwork';
+import { useVitrineImage, useVitrineImageUrl } from './media';
 
 // Coordonnées du collage dans le repère Figma ; le viewBox conserve les proportions.
 const illustrations = [
@@ -23,7 +23,34 @@ const illustrations = [
   [779.72, 642.43, 105.781, 80.3356],
 ];
 
+function Stamp({
+  index,
+  x,
+  y,
+  width,
+  height,
+}: {
+  index: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}) {
+  const source = useVitrineImageUrl(`Group${index || ''}.svg`);
+  return (
+    <image
+      href={source}
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+      transform={`translate(${x} ${y}) rotate(4.56) skewX(3.64)`}
+    />
+  );
+}
+
 export function Opening() {
+  const rectangle = useVitrineImage('Rectangle.png');
   return (
     <section className="vitrine-opening" aria-label="Bienvenue chez EPICC">
       <div className="vitrine-cover">
@@ -44,21 +71,17 @@ export function Opening() {
       >
         <g opacity="0.5">
           {illustrations.map(([x, y, width, height], index) => (
-            <image
+            <Stamp
               key={index}
-              href={`${artworkPath}Group${index || ''}.svg`}
-              x={0}
-              y={0}
-              width={width}
-              height={height}
-              transform={`translate(${x} ${y}) rotate(4.56) skewX(3.64)`}
+              index={index}
+              x={x!}
+              y={y!}
+              width={width!}
+              height={height!}
             />
           ))}
           <image
-            href={
-              staticImageSources('Rectangle.png')?.[0]?.src ??
-              `${artworkPath}Rectangle.png`
-            }
+            href={rectangle?.sources?.[0]?.src ?? rectangle?.image}
             x="0"
             y="0"
             width="96.33"

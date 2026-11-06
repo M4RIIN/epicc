@@ -245,7 +245,7 @@ test('le menu et les sections de la maquette fonctionnent sans JavaScript', asyn
   }
 });
 
-test('les visuels et la typographie de la vitrine sont servis localement', async ({
+test('les visuels de la vitrine sont servis par le backend et la typographie reste disponible', async ({
   page,
   request,
 }) => {
@@ -272,9 +272,7 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
   );
   expect(images.length).toBeGreaterThan(0);
   for (const image of images) {
-    expect(image.src).toMatch(
-      /^\/(?:images\/vitrine\/|api\/v1\/project-images\/)/,
-    );
+    expect(image.src).toMatch(/^\/api\/v1\/(?:vitrine|project|offer)-images\//);
     expect(image.loaded).toBe(true);
     expect(image.visible).toBe(true);
   }
@@ -283,6 +281,7 @@ test('les visuels et la typographie de la vitrine sont servis localement', async
     .evaluateAll((images) =>
       images.map((image) => image.getAttribute('href')!),
     );
+  expect(vectors.every((src) => src.startsWith('/api/v1/'))).toBe(true);
   for (const src of new Set([
     ...vectors,
     '/fonts/roboto-mono.ttf',
@@ -324,7 +323,7 @@ test('la connexion reste accessible depuis le menu sans JavaScript et les visuel
     }
     await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
       'src',
-      '/images/vitrine/Image29102026A17281.png',
+      /^\/api\/v1\/vitrine-images\/[a-f0-9-]+$/,
     );
     expect(
       (await request.get('/images/vitrine/Image29102026A17281.png')).headers()[
@@ -349,7 +348,11 @@ test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigat
   const pending = new Promise<void>((resolve) => {
     release = resolve;
   });
-  await page.route('**/images/vitrine/Group16.svg', async (route) => {
+  const media = await (await page.request.get('/api/v1/vitrine-images')).json();
+  const stampUrl = media.find(
+    (item: { file: string }) => item.file === 'Group16.svg',
+  ).image;
+  await page.route(`**${stampUrl}`, async (route) => {
     await pending;
     await route.continue();
   });
@@ -378,7 +381,11 @@ test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigat
 });
 
 test('une image en erreur ne bloque pas le contenu', async ({ page }) => {
-  await page.route('**/images/vitrine/Group16.svg', (route) => route.abort());
+  const media = await (await page.request.get('/api/v1/vitrine-images')).json();
+  const stampUrl = media.find(
+    (item: { file: string }) => item.file === 'Group16.svg',
+  ).image;
+  await page.route(`**${stampUrl}`, (route) => route.abort());
   await page.goto('/');
   await expect(page.locator('main.vitrine')).toBeVisible();
 });

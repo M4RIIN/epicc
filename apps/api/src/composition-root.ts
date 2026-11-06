@@ -6,6 +6,7 @@ import { createClientsApi } from './clients.api';
 import { Database } from './database';
 import { createOffersApi } from './offers.api';
 import { createProjectsApi } from './projects.api';
+import { createVitrineApi } from './vitrine.api';
 import { createAuthApi } from './auth.api';
 
 export function composeApi(database: Database) {
@@ -23,5 +24,6 @@ export function composeApi(database: Database) {
     .route('/', createClientsApi(new ClientStore(database)))
     .route('/', createOffersApi(database))
     .route('/', createAuthApi(database))
-    .route('/', createProjectsApi(database));
+    .route('/', createProjectsApi(database))
+    .route('/', createVitrineApi(database));
 }

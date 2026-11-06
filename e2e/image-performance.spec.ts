@@ -14,14 +14,13 @@ for (const javaScriptEnabled of [false, true]) {
     try {
       const page = await context.newPage();
       const originalRequests: string[] = [];
-      page.on('request', (request) => {
-        const url = new URL(request.url());
+      page.on('response', (response) => {
+        const url = new URL(response.url());
         if (
-          request.resourceType() === 'image' &&
-          (/^\/images\/vitrine\/.*\.(png|jpe?g)$/.test(url.pathname) ||
-            (/^\/api\/v1\/(?:project|offer)-images\/[a-f0-9-]+$/.test(
-              url.pathname,
-            ) &&
+          response.request().resourceType() === 'image' &&
+          (url.pathname.startsWith('/images/') ||
+            (response.headers()['content-type']?.startsWith('image/') &&
+              !response.headers()['content-type']?.includes('svg') &&
               !url.search))
         )
           originalRequests.push(url.pathname);
@@ -42,7 +41,9 @@ for (const javaScriptEnabled of [false, true]) {
       const heroUrl = await hero.evaluate(
         (element: HTMLImageElement) => element.currentSrc,
       );
-      expect(heroUrl).toContain('/images/optimized/v1/');
+      expect(heroUrl).toMatch(
+        /\/api\/v1\/vitrine-images\/[a-f0-9-]+\?w=(320|640|1280|1920)&v=1$/,
+      );
       const heroResponse = await page.request.get(heroUrl);
       expect(heroResponse.headers()['cache-control']).toContain('immutable');
       expect((await heroResponse.body()).length).toBeLessThan(400_000);
@@ -67,6 +68,27 @@ for (const javaScriptEnabled of [false, true]) {
       expect(bytes.length).toBeLessThan(250_000);
       expect((await sharp(bytes).metadata()).format).toBe('webp');
       expect(originalRequests).toEqual([]);
+      const sources = await page
+        .locator('.vitrine img')
+        .evaluateAll((elements) =>
+          elements.map((element) => element.getAttribute('src')),
+        );
+      expect(sources.every((source) => source?.startsWith('/api/v1/'))).toBe(
+        true,
+      );
+      await page.goto('/clients/viandes-des-sommets');
+      expect(
+        await page
+          .locator('.client-project img')
+          .evaluateAll((elements) =>
+            elements.every((element) =>
+              element
+                .getAttribute('src')
+                ?.startsWith('/api/v1/vitrine-images/'),
+            ),
+          ),
+      ).toBe(true);
+      await page.goto('/');
       const html = await (await page.request.get('/')).text();
       expect(html).toContain('srcSet=');
       expect(html).toContain('rel="canonical"');

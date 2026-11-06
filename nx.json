@@ -10,12 +10,7 @@
       "{workspaceRoot}/package.json",
       "{workspaceRoot}/e2e/database.ts"
     ],
-    "default": [
-      "{projectRoot}/**/*",
-      "sharedGlobals",
-      "!{projectRoot}/public/images/optimized/**",
-      "!{projectRoot}/app/components/vitrine/image-manifest.generated.json"
-    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": [
       "default",
       "!{projectRoot}/**/*.test.ts",
