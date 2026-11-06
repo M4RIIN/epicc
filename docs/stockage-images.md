@@ -10,6 +10,8 @@ Dans `/connect`, chaque client possède un seul logo. L’Écluse Douze et Deux 
 
 L’import utilise un verrou pour éviter les copies concurrentes et ne déclenche pas le nettoyage des images historiques non référencées. Deux remplacements différents des emplacements du logo de L’Écluse Douze arrêtent l’import avant toute copie : les sources restent intactes et le conflit doit être résolu explicitement. Les contenus déjà présents sont comparés par empreinte avant et après migration. Une base vierge peut être initialisée avec les données de démarrage.
 
+La commande applique d’abord les migrations applicatives, puis prend l’inventaire de référence pour contrôler l’import des médias. Cet ordre permet notamment la mise à jour prévue des offres d’origine sans déclencher à tort l’erreur « Les contenus ont changé pendant l’import ». Les contenus doivent rester strictement identiques entre cet inventaire et la fin de l’import, y compris pour une table initialement vide. Les offres personnalisées restent protégées par la migration applicative.
+
 Les commandes suivantes effectuent uniquement des lectures, depuis un processus disposant des accès PostgreSQL et S3 :
 
 ```sh
