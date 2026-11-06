@@ -8,7 +8,34 @@ Dans `/connect`, chaque client possède un seul logo. L’Écluse Douze et Deux 
 
 « Ajouter une photo » permet des ajouts successifs sans limite de nombre par client. Le fichier est validé selon les limites habituelles, sans recompression, puis rattaché au client en base. Les ajouts sont affichés après les photos existantes, dans l’ordre d’ajout. Le sélecteur propose Petite (123), Moyenne (222) et Grande (297), largeurs de référence sur une composition de 1920 pixels. Les proportions sont conservées et l’affichage reste adaptatif. Les dimensions historiques, recadrages et miroirs sont préservés jusqu’à un choix explicite de taille. Une photo ajoutée peut être supprimée ; les visuels initiaux peuvent être rétablis avec leurs dimensions et leur texte alternatif d’origine.
 
-La configuration locale ne fournit pas les accès S3. L’import a été vérifié sur PostgreSQL de test avec un stockage simulé, y compris la comparaison des 26 fichiers, les reprises et le rejet d’une copie non conforme. Aucun transfert vers le bucket hébergé n’est attesté par cette vérification.
+L’import utilise un verrou pour éviter les copies concurrentes et ne déclenche pas le nettoyage des images historiques non référencées. Deux remplacements différents des emplacements du logo de L’Écluse Douze arrêtent l’import avant toute copie : les sources restent intactes et le conflit doit être résolu explicitement. Les contenus déjà présents sont comparés par empreinte avant et après migration. Une base vierge peut être initialisée avec les données de démarrage.
+
+Les commandes suivantes effectuent uniquement des lectures, depuis un processus disposant des accès PostgreSQL et S3 :
+
+```sh
+node dist/apps/api/migrate-images.mjs --inventory
+node dist/apps/api/migrate-images.mjs --verify
+```
+
+### Import et vérification réels dans development
+
+Le 6 novembre 2026, le déploiement `827fc479-43fc-4794-912a-91e4c0edbc94` a importé **26 visuels**, ignoré **0 visuel** et détecté **0 conflit** dans le bucket existant. Les copies représentent **94 073 195 octets**, sans recompression. L’inventaire PostgreSQL préalable comptait 6 fiches clients, 5 offres, 1 réglage de visuel, aucune image enregistrée et aucun original importé. Les empreintes des contenus existants sont restées identiques après cette importation.
+
+Le déploiement final `796df1ee-75de-43ab-ac4e-099196e735c5`, exécutant le code `6b1ccab`, a confirmé la reprise : **0 nouvel import, 26 visuels ignorés, 0 conflit**. Sa commande préalable a relu les 26 objets privés et vérifié leurs SHA-256, MIME, tailles et dimensions contre les originaux et les métadonnées PostgreSQL. Les 26 références sont conservées dans `project_originals`, avec leurs métadonnées dans `images` ; aucun binaire historique n’a été purgé.
+
+Un remplacement de `D8DV39.png` pour Annafurna est apparu entre les deux contrôles. Il a été conservé, sans restauration ni remplacement par l’import. L’inventaire final compte donc **27 images en base et 27 objets dans le bucket** : les 26 originaux et cette image éditée. Les empreintes des 6 fiches, des 5 offres et des 2 réglages alors présents sont restées identiques pendant la reprise.
+
+Le service applicatif a ensuite été redémarré explicitement dans development, avec reprise du serveur confirmée dans les journaux le 6 novembre à 11:18:06 UTC. Après ce redémarrage :
+
+- les 26 originaux relus directement depuis S3 privé et via le proxy sont identiques aux fichiers versionnés ;
+- les références des originaux et des éditions sont stables ; le remplacement d’Annafurna est également identique entre S3 et le proxy ;
+- la lecture anonyme d’un objet existant renvoie HTTP 403 ;
+- les dimensions, positions, ajustements et miroirs des 26 emplacements correspondent exactement à l’état avant import aux largeurs 1440, 375 et 320 pixels, sans débordement ;
+- sans JavaScript, les 26 emplacements chargent également leurs images depuis les références PostgreSQL.
+
+L’accès SSH Railway a renvoyé « The agent path is temporarily unavailable ». L’inventaire et les vérifications PostgreSQL ont donc été exécutés par la commande préalable au déploiement, à l’intérieur du réseau privé Railway. Aucun proxy public PostgreSQL n’a été créé. Les identifiants ont été utilisés uniquement par les processus autorisés, sans modification des fichiers `.env` ni des variables du service.
+
+Les contrôles locaux `npm run check` passent, dont les tests de reprise sur base vierge, de préservation des éditions et des images historiques et de rejet des conflits. Les 10 parcours Playwright de gestion et de composition ont également passé avec et sans JavaScript avant l’import réel.
 
 ## Architecture et compatibilité
 
@@ -102,6 +129,8 @@ node dist/apps/api/migrate-images.mjs --cleanup
 Une passe traite au maximum 20 tâches. Les objets déjà référencés en base ne sont pas supprimés. Les objets ajoutés manuellement hors application ne sont pas concernés. Les lectures/écritures S3 indisponibles renvoient HTTP 503 avec un message générique, sans journaliser les identifiants ni les erreurs brutes du SDK.
 
 ## Recette et limites de validation
+
+Les paragraphes suivants décrivent l’intégration initiale du stockage. La validation des 26 visuels de réalisations est détaillée plus haut.
 
 Les vérifications locales `npm run check` ont réussi : format, lint, TypeScript, tests unitaires et d’intégration, build. Les 13 tests ciblés du stockage et de la validation des images passent. La première recette navigateur complète a terminé avec 24 succès et un test réussi à la reprise après une erreur de flux ZIP de trace Playwright ; une nouvelle exécution des six parcours de gestion a ensuite passé sans échec.
 
