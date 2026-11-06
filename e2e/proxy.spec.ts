@@ -11,7 +11,7 @@ import {
 test('connexion et modification derrière un proxy qui réécrit l’hôte, avec et sans JavaScript', async ({
   browser,
 }) => {
-  test.setTimeout(90000);
+  test.setTimeout(120000);
   const database = testDatabaseName('proxy');
   await manageTestDatabase(database, true);
   const server = spawn(process.execPath, ['dist/apps/api/main.mjs'], {
@@ -27,7 +27,11 @@ test('connexion et modification derrière un proxy qui réécrit l’hôte, avec
       ADMIN_EMAIL: 'test@questboard.test',
       ADMIN_PASSWORD: 'testtest',
     },
-    stdio: 'ignore',
+    stdio: ['ignore', 'ignore', 'inherit'],
+  });
+  let startupError: Error | undefined;
+  server.once('error', (error) => {
+    startupError = error;
   });
   const proxy = createServer((incoming, outgoing) => {
     const upstream = forward(
@@ -49,13 +53,26 @@ test('connexion et modification derrière un proxy qui réécrit l’hôte, avec
   });
   try {
     await expect
-      .poll(async () => {
-        try {
-          return (await fetch('http://127.0.0.1:3188/api/health')).status;
-        } catch {
-          return 0;
-        }
-      })
+      .poll(
+        async () => {
+          if (startupError) throw startupError;
+          if (server.exitCode !== null || server.signalCode !== null)
+            throw new Error(
+              `Le serveur du proxy s’est arrêté avant de démarrer (code : ${server.exitCode}, signal : ${server.signalCode}).`,
+            );
+          try {
+            return (
+              await fetch('http://127.0.0.1:3188/api/health', {
+                signal: AbortSignal.timeout(2000),
+              })
+            ).status;
+          } catch {
+            return 0;
+          }
+        },
+        // Une base vierge importe les originaux avant l’ouverture du port.
+        { timeout: 60000, message: 'Démarrage du serveur du proxy' },
+      )
       .toBe(200);
     proxy.listen(3189, '127.0.0.1');
     await once(proxy, 'listening');
@@ -102,12 +119,26 @@ test('connexion et modification derrière un proxy qui réécrit l’hôte, avec
       }
     }
   } finally {
-    proxy.closeAllConnections();
-    if (proxy.listening)
-      await new Promise<void>((resolve) => proxy.close(() => resolve()));
-    const stopped = once(server, 'exit');
-    server.kill('SIGTERM');
-    await stopped;
-    await manageTestDatabase(database, false);
+    try {
+      proxy.closeAllConnections();
+      if (proxy.listening)
+        await new Promise<void>((resolve) => proxy.close(() => resolve()));
+      if (
+        server.pid !== undefined &&
+        server.exitCode === null &&
+        server.signalCode === null
+      ) {
+        const stopped = once(server, 'exit');
+        const forceStop = setTimeout(() => server.kill('SIGKILL'), 10000);
+        try {
+          server.kill('SIGTERM');
+          await stopped;
+        } finally {
+          clearTimeout(forceStop);
+        }
+      }
+    } finally {
+      await manageTestDatabase(database, false);
+    }
   }
 });
