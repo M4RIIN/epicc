@@ -382,6 +382,27 @@ body:has(.vitrine) {
   left: 15.677083cqw;
   top: -1px;
 }
+@media (min-width: 901px) {
+  .vitrine-opening {
+    height: 100vh;
+    aspect-ratio: auto;
+  }
+  .vitrine-cover > img {
+    height: 100%;
+    object-fit: cover;
+  }
+  /* La maquette superpose « Lancement de » à « ce soir » et place
+     la mention manuscrite à côté du résumé, sans déplacer les lignes suivantes. */
+  .vitrine-service-name:has(.vitrine-service-annotation) {
+    position: relative;
+    top: -5.5cqw;
+    left: 10cqw;
+  }
+  .vitrine-service-name > .vitrine-service-annotation {
+    top: 8.05cqw;
+    left: 6.4cqw;
+  }
+}
 @media (max-width: 900px) {
   .vitrine {
     min-height: 100vh;
