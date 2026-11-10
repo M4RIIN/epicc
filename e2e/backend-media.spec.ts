@@ -1,19 +1,21 @@
 import { expect, test } from '@playwright/test';
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`le visuel du backoffice est partagé par le projet et le contact, JavaScript ${javaScriptEnabled}`, async ({
+  test(`le remplacement du visuel du backoffice est publié dans le projet, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
     test.setTimeout(60000);
     const context = await browser.newContext({ javaScriptEnabled });
     const page = await context.newPage();
+    const image = page.locator('[data-file="Dsc067761.jpg"] img');
     let edited = false;
     try {
       await page.goto('/');
-      const initial = await page
-        .locator('.vitrine-contact-dish')
-        .getAttribute('src');
-      expect(initial).toMatch(/^\/api\/v1\/project-images\//);
+      await expect(image).toHaveAttribute(
+        'src',
+        /^\/api\/v1\/project-images\//,
+      );
+      const initial = await image.getAttribute('src');
       await page.goto('/connect');
       await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
       await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
@@ -24,7 +26,7 @@ for (const javaScriptEnabled of [false, true]) {
       await page.goto('/connect/projets/Dsc067761.jpg');
       await page
         .getByLabel('Texte alternatif de l’image')
-        .fill('Visuel partagé de test');
+        .fill('Visuel de projet de test');
       await page.getByLabel('Remplacer par une image').setInputFiles({
         name: 'test.png',
         mimeType: 'image/png',
@@ -37,17 +39,10 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page).toHaveURL('/connect#project-images');
       edited = true;
       await page.goto('/');
-      const current = await page
-        .locator('.vitrine-contact-dish')
-        .getAttribute('src');
+      await expect(image).toHaveAttribute('alt', 'Visuel de projet de test');
+      const current = await image.getAttribute('src');
       expect(current).not.toBe(initial);
-      await expect(
-        page.locator('[data-file="Dsc067761.jpg"] img'),
-      ).toHaveAttribute('src', current!);
-      await expect(page.locator('.vitrine-contact-dish')).toHaveAttribute(
-        'srcset',
-        /\?w=320&v=1 2w/,
-      );
+      await expect(image).toHaveAttribute('srcset', /\?w=320&v=1 2w/);
       expect((await page.request.get(current!)).headers()['content-type']).toBe(
         'image/png',
       );
