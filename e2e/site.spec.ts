@@ -9,9 +9,7 @@ test('la vitrine et ses métadonnées sont présentes sans JavaScript', async ({
   const html = await response.text();
   expect(html).toContain('<h1');
   expect(html).toContain('Salut, moi c’est');
-  expect(html).toContain(
-    'Chloé Catala accompagne les acteurs de la restauration',
-  );
+  expect(html).toContain('Né pour accompagner les acteurs de la restauration');
   expect(html).not.toContain('data-home-loading');
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
@@ -307,10 +305,9 @@ test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigat
       'fetchpriority',
       'high',
     );
-    await expect(page.locator('.vitrine-childhood > img')).toHaveAttribute(
-      'loading',
-      'lazy',
-    );
+    await expect(
+      page.locator('.vitrine-childhood > img:not(.vitrine-childhood-caption)'),
+    ).toHaveAttribute('loading', 'lazy');
     await page.getByText('Menu', { exact: true }).click();
     await expect(
       page.getByRole('link', { name: 'À propos de Chloé', exact: true }),
@@ -364,7 +361,7 @@ test('les données structurées décrivent Chloé Catala et les prestations publ
       })),
     );
     await expect(page.locator('.vitrine-manifesto-intro')).toContainText(
-      'Toulouse et alentour',
+      'faire exister, développer et faire connaître leur marque.',
     );
   } finally {
     await context.close();
@@ -388,7 +385,7 @@ test('les projets et le contact complètent la vitrine sur bureau et mobile', as
       await expect(
         page.getByRole('heading', { name: 'Les projets clients' }),
       ).toBeInViewport();
-      await expect(page.locator('.vitrine-project')).toHaveCount(13);
+      await expect(page.locator('.vitrine-project')).toHaveCount(14);
       await page.getByText('Menu', { exact: true }).click();
       await page.getByRole('link', { name: 'Contact', exact: true }).click();
       await expect(page).toHaveURL(/#contact$/);

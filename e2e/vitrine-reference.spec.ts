@@ -17,9 +17,9 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page.locator('.vitrine-service')).toHaveCount(6);
       for (const name of [
         'Lancement de marque',
-        'Restructuration',
-        'Création de contenus',
-        'Réseaux',
+        'Restructuration d’identité',
+        'Création de contenus visuels',
+        'Réseaux sociaux',
         'Graphisme',
         'Événementiel & scénographie',
       ]) {

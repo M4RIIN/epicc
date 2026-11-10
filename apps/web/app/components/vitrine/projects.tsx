@@ -134,15 +134,15 @@ export function Projects({ images }: { images: ProjectImage[] }) {
           </div>
         ))}
       </div>
-      <ul className="vitrine-project-notes" aria-label="Autres projets">
-        <li>
-          L’Écluse Douze
-          <br />
-          La Grinta
-        </li>
-        <li>Fitness by Leslie</li>
-        <li>Allegria</li>
-      </ul>
+      <div className="vitrine-project-craft">
+        <Artwork
+          file="Craft41.png"
+          width={312}
+          height={467}
+          alt="Création de contenu pour La Craft."
+        />
+      </div>
+      <p className="vitrine-project-fitness">Fitness by Leslie</p>
     </section>
   );
 }

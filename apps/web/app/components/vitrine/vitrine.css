@@ -19,7 +19,7 @@ body:has(.vitrine) {
   --vitrine-ink: #000;
   --vitrine-paper: #fff;
   --vitrine-heading: clamp(18px, 1.40625cqw, 27px);
-  --vitrine-copy: clamp(12px, 1.041667cqw, 20px);
+  --vitrine-copy: clamp(12px, 0.833333cqw, 16px);
   --vitrine-small: clamp(11px, 0.833333cqw, 16px);
   container-type: inline-size;
   overflow-x: clip;
@@ -59,65 +59,52 @@ body:has(.vitrine) {
   white-space: nowrap;
   border: 0;
 }
+
 .vitrine-opening {
   position: relative;
-  aspect-ratio: 1920 / 1395;
-  overflow: visible;
+  aspect-ratio: 3 / 2;
 }
 .vitrine-cover {
   position: absolute;
-  top: 0;
-  left: -4.635417%;
-  width: 106.822917%;
-  height: 100%;
+  inset: 0;
   overflow: hidden;
 }
 .vitrine-cover > img {
-  width: 100%;
-  height: 111.15%;
-  object-fit: fill;
-}
-.vitrine-opening-art {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
-  pointer-events: none;
+  object-fit: cover;
 }
-.vitrine-opening-art > g {
-  transform: translate(-95px, 340px) scale(1.1, 1.35);
+.vitrine-opening-caption {
+  position: absolute;
+  left: 22.45%;
+  top: 75.47%;
+  width: 23.33%;
 }
 .vitrine-navigation {
   position: absolute;
-  inset: 5.95% 7.6% auto 7.65625%;
+  top: 10.625%;
+  right: 5.57%;
+  left: 55%;
   display: flex;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 2.8cqw;
   font-size: var(--vitrine-heading);
-  line-height: 1.333333;
   letter-spacing: -0.06em;
-  z-index: 1;
+  line-height: 1.333;
+  z-index: 4;
 }
 .vitrine-navigation-actions {
-  display: flex;
-  align-items: start;
-  justify-content: flex-end;
-  gap: clamp(20px, 4cqw, 76px);
   flex: 1;
-}
-.vitrine-connect {
-  white-space: nowrap;
 }
 .vitrine-navigation-sections {
   display: flex;
   justify-content: space-between;
-  width: auto;
-  gap: 24px;
+  gap: 3.2cqw;
+  white-space: nowrap;
 }
 .vitrine-menu summary {
-  cursor: pointer;
   list-style: none;
+  cursor: pointer;
 }
 .vitrine-menu summary::-webkit-details-marker {
   display: none;
@@ -129,124 +116,174 @@ body:has(.vitrine) {
 }
 .vitrine-menu-panel {
   position: absolute;
-  left: 0;
+  right: 0;
   top: calc(100% + 18px);
   display: grid;
   gap: 16px;
   padding: 24px;
   width: max-content;
-  max-width: 100%;
-  border: 1px solid var(--vitrine-ink);
+  max-width: 90vw;
+  border: 1px solid;
   background: var(--vitrine-paper);
   font-size: max(13px, 0.9375cqw);
 }
 .vitrine-services {
-  position: relative;
-  width: 68.489583%;
-  margin: 0 0 0 7.65625%;
+  margin: 18.5cqw 9% 0;
   scroll-margin-top: 32px;
 }
-.vitrine-service-notes {
-  position: relative;
-  height: 8.854167cqw;
-}
-.vitrine-evening {
-  position: absolute;
-  top: -0.5cqw;
-  left: -0.25cqw;
-  font-size: 5.208333cqw;
-  line-height: 1;
-  letter-spacing: -0.08em;
-  text-transform: none;
-}
-.vitrine-benchmark {
-  position: absolute;
-  top: 3.333333cqw;
-  left: 50.625cqw;
-  font-size: var(--vitrine-small);
-}
 .vitrine-services dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 15%;
+  row-gap: 5.2cqw;
   margin: 0;
 }
 .vitrine-service {
   position: relative;
-  display: grid;
-  grid-template-columns: 45% 1fr;
-  align-items: start;
-  min-height: 7.8125cqw;
-  padding-bottom: 2cqw;
+  min-width: 0;
+  font-size: var(--vitrine-small);
+  line-height: 1.1;
 }
-.vitrine-service + .vitrine-service::before {
-  content: '';
-  position: absolute;
-  top: -0.833333cqw;
-  left: -2.7cqw;
-  right: 0;
-  border-top: 1px solid #999;
+.vitrine-service[data-offer='creation-de-marque'] {
+  grid-column: 1;
+  grid-row: 1;
+  margin-left: 10cqw;
 }
-@media (hover: hover) and (pointer: fine) {
-  .vitrine-services
-    dl:has(> .vitrine-service:hover)
-    > .vitrine-service:not(:hover) {
-    opacity: 0.22;
-  }
+.vitrine-service[data-offer='video-photographe'] {
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 3cqw;
+  margin-left: 9cqw;
 }
-.vitrine-service:nth-child(2) {
-  min-height: 9.895833cqw;
+.vitrine-service[data-offer='reseaux-sociaux'] {
+  grid-column: 1;
+  grid-row: 2;
 }
-.vitrine-service:nth-child(3) {
-  min-height: 7.708333cqw;
+.vitrine-service[data-offer='graphisme'] {
+  grid-column: 2;
+  grid-row: 2;
+  margin-left: -7cqw;
+  margin-right: 12cqw;
 }
-.vitrine-service:nth-child(4) {
-  min-height: 6.979167cqw;
+.vitrine-service[data-offer='restructuration-de-restaurants'] {
+  grid-column: 1;
+  grid-row: 3;
+  margin-left: 14.5cqw;
+  margin-right: -8cqw;
 }
-.vitrine-service:nth-child(5) {
-  min-height: 5.677083cqw;
-}
-.vitrine-service:nth-child(6) {
-  min-height: 6.875cqw;
+.vitrine-service[data-offer='evenementiel'] {
+  grid-column: 2;
+  grid-row: 3;
+  margin-left: 5.5cqw;
 }
 .vitrine-service dt {
-  padding-right: 16px;
+  position: relative;
+  z-index: 2;
 }
 .vitrine-service-name {
   display: block;
-  font-size: var(--vitrine-heading);
-  line-height: 1.333333;
-  letter-spacing: -0.06em;
+}
+.vitrine-service-lettering {
+  display: flex;
+  align-items: center;
+  height: 5.5cqw;
+  margin-left: -1cqw;
+}
+.vitrine-service-lettering img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+}
+.vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
+  width: 19cqw;
+}
+.vitrine-service[data-offer='creation-de-marque']
+  .vitrine-service-lettering
+  img {
+  width: 50%;
+}
+.vitrine-service[data-offer='video-photographe'] .vitrine-service-lettering {
+  width: 22cqw;
+}
+.vitrine-service[data-offer='reseaux-sociaux'] .vitrine-service-lettering {
+  width: 13.5cqw;
+  height: 4.2cqw;
+}
+.vitrine-service[data-offer='graphisme'] .vitrine-service-lettering {
+  width: 10.4cqw;
+  height: 4.4cqw;
+}
+.vitrine-service[data-offer='restructuration-de-restaurants']
+  .vitrine-service-lettering {
+  width: 23.2cqw;
+  height: 6.2cqw;
+}
+.vitrine-service[data-offer='evenementiel'] .vitrine-service-lettering {
+  width: 24cqw;
+  height: 6.8cqw;
+}
+.vitrine-service[data-offer='evenementiel']
+  .vitrine-service-lettering
+  img:first-child {
+  width: 56%;
+  height: 5.63cqw;
+  object-fit: cover;
+  object-position: left;
+}
+.vitrine-service[data-offer='evenementiel']
+  .vitrine-service-lettering
+  img:last-child {
+  width: 44%;
 }
 .vitrine-service-summary {
   display: block;
-  margin-top: 0.625cqw;
-  white-space: pre-line;
-  line-height: 1.55;
-}
-.vitrine-service-annotation {
-  position: absolute;
-  left: -2.7cqw;
-  top: 0.25cqw;
-  font:
-    400 2.083333cqw / 1 Caveat,
-    cursive;
-  letter-spacing: -0.05em;
   text-transform: uppercase;
-  transform: rotate(-8deg);
-}
-.vitrine-service[data-offer='restructuration-de-restaurants']
-  .vitrine-service-annotation {
-  top: 1.2cqw;
+  white-space: pre-line;
 }
 .vitrine-service dd {
   margin: 0;
-  padding-top: 2.5cqw;
-  text-align: right;
   white-space: pre-line;
 }
-.vitrine-service .vitrine-offer-visual {
-  padding-top: 1.5cqw;
+.vitrine-service-details {
+  margin-top: 1.1cqw !important;
+  text-align: right;
+  font-weight: 400;
+}
+.vitrine-offer-visual {
+  margin-top: 16px !important;
+}
+.vitrine-offer-visual img {
+  width: 100%;
+  display: block;
+}
+.vitrine-service .vitrine-offer-hover {
+  z-index: 1;
+  position: absolute;
+  left: -2cqw;
+  top: -2cqw;
+  width: 24cqw;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+.vitrine-offer-hover img {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  object-fit: cover;
+}
+.vitrine-service:is(:hover, :focus-within) .vitrine-offer-hover {
+  visibility: visible;
+  opacity: 1;
+}
+.vitrine-service:focus-visible {
+  outline: 2px solid;
+  outline-offset: 6px;
 }
 .vitrine-biography {
-  margin: 2.135417cqw 7.65625% 0;
+  margin: 8.5cqw 7.65625% 0;
   scroll-margin-top: 32px;
 }
 .vitrine-biography-heading {
@@ -286,7 +323,7 @@ body:has(.vitrine) {
   width: 49.678073cqw;
   overflow: hidden;
 }
-.vitrine-childhood > img {
+.vitrine-childhood > img:not(.vitrine-childhood-caption) {
   position: absolute;
   width: 56.299999%;
   height: 177.619867%;
@@ -316,13 +353,14 @@ body:has(.vitrine) {
   text-align: center;
 }
 .vitrine-manifesto-intro {
+  position: relative;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 3.125cqw;
 }
 .vitrine-manifesto-intro p {
   min-height: 5.208333cqw;
-  width: 18.75cqw;
+  width: 23.75cqw;
   font-size: var(--vitrine-small);
   letter-spacing: -0.1em;
 }
@@ -398,26 +436,18 @@ body:has(.vitrine) {
   left: 15.677083cqw;
   top: -1px;
 }
-@media (min-width: 901px) {
-  .vitrine-opening {
-    height: 100vh;
-    aspect-ratio: auto;
-  }
-  .vitrine-cover > img {
-    height: 100%;
-    object-fit: cover;
-  }
-  /* La maquette superpose « Lancement de » à « ce soir » et place
-     la mention manuscrite à côté du résumé, sans déplacer les lignes suivantes. */
-  .vitrine-service-name:has(.vitrine-service-annotation) {
-    position: relative;
-    top: -5.5cqw;
-    left: 10cqw;
-  }
-  .vitrine-service-name > .vitrine-service-annotation {
-    top: 8.05cqw;
-    left: 6.4cqw;
-  }
+
+.vitrine-childhood-caption {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  top: 7%;
+  width: 47%;
+}
+.vitrine-manifesto-definition {
+  position: absolute;
+  left: 0;
+  top: 20cqw;
 }
 @media (max-width: 900px) {
   .vitrine {
@@ -488,11 +518,6 @@ body:has(.vitrine) {
   .vitrine-cover {
     left: -23%;
     width: 147%;
-  }
-  .vitrine-opening-art {
-    width: 147%;
-    max-width: none;
-    left: -23%;
   }
   .vitrine-biography {
     margin-top: 60px;
@@ -581,25 +606,6 @@ body:has(.vitrine) {
     top: 0;
   }
 }
-
-.vitrine-offer-visual {
-  grid-column: 1 / -1;
-  padding-block: 1.5cqw;
-}
-.vitrine-offer-visual img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-}
-.vitrine-offer-large {
-  width: 100%;
-}
-.vitrine-offer-small {
-  width: 58%;
-  justify-self: end;
-}
-
 /* Deux colonnes indépendantes : titre et première photo partagent la même ligne. */
 .vitrine-projects {
   position: relative;
@@ -614,7 +620,7 @@ body:has(.vitrine) {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 1.666667cqw;
-  margin: 6.875cqw 3.75% 0 5.416667%;
+  margin: 3.6cqw 3.75% 0 5.416667%;
 }
 .vitrine-project-column {
   display: grid;
@@ -751,147 +757,6 @@ body:has(.vitrine) {
   outline: 2px solid currentColor;
   outline-offset: 5px;
 }
-.vitrine-project-notes {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  font-size: var(--vitrine-small);
-}
-.vitrine-project-notes li {
-  position: absolute;
-}
-.vitrine-project-notes li:nth-child(1) {
-  top: 187.135417cqw;
-  left: 29.166667%;
-}
-.vitrine-project-notes li:nth-child(2) {
-  top: 199.21875cqw;
-  left: 38.645833%;
-}
-.vitrine-project-notes li:nth-child(3) {
-  top: 205.885417cqw;
-  left: 20.3125%;
-}
-.vitrine-contact {
-  position: relative;
-  margin-top: 4.635417cqw;
-  padding-top: 9.739583cqw;
-  padding-bottom: 10cqw;
-  scroll-margin-top: 32px;
-}
-.vitrine-contact h2 {
-  margin-left: 8.072917%;
-  width: 54.114583%;
-}
-.vitrine-contact-collage img {
-  position: absolute;
-  max-width: none;
-}
-.vitrine-contact-dish {
-  top: 0;
-  left: 65.208333%;
-  width: 12.864583%;
-  transform: scaleX(-1) rotate(0.86deg);
-}
-.vitrine-contact-portrait {
-  top: 9.114583cqw;
-  left: 78.645833%;
-  width: 4.675417%;
-  transform: rotate(-108.05deg);
-}
-.vitrine-contact-invitation {
-  position: relative;
-  width: 30.15625%;
-  margin: -3.645833cqw 0 0 62.1875%;
-}
-.vitrine-contact-invitation p {
-  font-size: clamp(18px, 1.875cqw, 36px);
-}
-.vitrine-contact-invitation img {
-  position: absolute;
-  width: 56.5442%;
-  right: 6%;
-  top: 1.5cqw;
-  transform: rotate(6.3deg);
-}
-.vitrine-contact-form {
-  display: grid;
-  grid-template-columns: 1fr;
-  margin: 3.125cqw 21.927083% 0 19.84375%;
-}
-.vitrine-contact-form label {
-  cursor: pointer;
-}
-.vitrine-contact-form input,
-.vitrine-contact-form textarea {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  border-radius: 0;
-  padding: 8px 0;
-  margin-bottom: 12px;
-  color: var(--vitrine-ink);
-  background: transparent;
-  font: inherit;
-  text-transform: none;
-  letter-spacing: -0.04em;
-  background-image: url('/api/v1/vitrine-assets/projets-Line18.svg');
-  background-position: bottom;
-  background-repeat: no-repeat;
-  background-size: 100% 1px;
-}
-.vitrine-contact-form textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-.vitrine-contact-form :focus-visible {
-  outline: 2px solid var(--vitrine-ink);
-  outline-offset: 4px;
-}
-.vitrine-contact-send {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: 16px;
-}
-.vitrine-contact-send p {
-  max-width: 55%;
-  font-size: var(--vitrine-small);
-  text-transform: none;
-  letter-spacing: -0.04em;
-}
-.vitrine-contact-send button {
-  border: 1px solid var(--vitrine-ink);
-  background: var(--vitrine-paper);
-  padding: 12px 16px;
-  font: inherit;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.vitrine-contact-send button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.vitrine-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  margin: 8cqw 8%;
-}
-.vitrine-footer a:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-.vitrine-navigation-sections {
-  width: auto;
-  gap: 2.6cqw;
-  white-space: nowrap;
-}
-.vitrine-navigation-actions {
-  gap: 3cqw;
-}
 @media (max-width: 700px) {
   .vitrine-projects {
     margin: 70px 7.65625% 0;
@@ -941,69 +806,6 @@ body:has(.vitrine) {
   .vitrine-project-photo {
     width: min(100%, calc(var(--piece-width) * 3));
   }
-  .vitrine-project-notes {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 24px;
-    margin: 40px 0 0;
-  }
-  .vitrine-project-notes li {
-    position: static;
-  }
-  .vitrine-contact {
-    margin-top: 60px;
-    padding-top: 35cqw;
-    padding-bottom: 20px;
-  }
-  .vitrine-contact h2 {
-    width: 84%;
-    margin-left: 4%;
-  }
-  .vitrine-contact-dish {
-    width: 20%;
-    left: 61%;
-  }
-  .vitrine-contact-portrait {
-    width: 8%;
-    left: 80%;
-    top: 17cqw;
-  }
-  .vitrine-contact-invitation {
-    width: 70%;
-    margin: 8cqw 8% 16cqw auto;
-  }
-  .vitrine-contact-invitation img {
-    top: 7cqw;
-    width: 66%;
-    right: 0;
-  }
-  .vitrine-contact-form {
-    margin: 0 8%;
-  }
-  .vitrine-contact-send {
-    flex-direction: column;
-  }
-  .vitrine-contact-send p {
-    max-width: 100%;
-  }
-  .vitrine-footer {
-    flex-direction: column;
-    margin-top: 60px;
-  }
-  .vitrine-navigation {
-    font-size: 12px;
-  }
-  .vitrine-navigation-actions {
-    flex-direction: column;
-    align-items: end;
-    gap: 16px;
-  }
-  .vitrine-navigation-sections {
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: end;
-  }
 }
 .vitrine-childhood-strip {
   position: absolute;
@@ -1037,120 +839,262 @@ body:has(.vitrine) {
   transform: rotate(-90deg);
 }
 
-@media (max-width: 900px) {
-  .vitrine-services {
-    width: 84.6875%;
-    margin-top: 32px;
-  }
-  .vitrine-service-notes {
-    height: 70px;
-  }
-  .vitrine-evening {
-    font-size: clamp(32px, 5.2cqw, 50px);
-  }
-  .vitrine-benchmark {
-    top: 24px;
-    left: auto;
-    right: 0;
-  }
-  .vitrine-service,
-  .vitrine-service:nth-child(n) {
-    min-height: 0;
-    padding-block: 20px;
-    gap: 20px;
-  }
-  .vitrine-service dd {
-    padding-top: 36px;
-  }
-  .vitrine-service + .vitrine-service::before {
-    top: 0;
-  }
-  .vitrine-service-summary {
-    margin-top: 12px;
-  }
-  .vitrine-service-annotation {
-    position: static;
-    display: inline;
-    font-size: 24px;
-  }
-}
-@media (max-width: 540px) {
-  .vitrine-opening-art > g {
-    transform: translate(-95px, 340px) scale(1.1, 1.35);
-  }
-  .vitrine-services {
-    margin-top: 32px;
-  }
-  .vitrine-service,
-  .vitrine-service:nth-child(n) {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding-block: 24px;
-  }
-  .vitrine-service dd {
-    padding-top: 0;
-    text-align: left;
-  }
-  .vitrine-service-summary {
-    font-size: 13px;
-  }
-  .vitrine-biography-intro {
-    display: block;
-  }
-}
-
-/* Le visuel de survol passe derrière les titres et leurs annotations. */
-.vitrine-service-notes {
-  z-index: 3;
-  pointer-events: none;
-}
-.vitrine-service dt {
+.vitrine-contact {
   position: relative;
-  z-index: 2;
+  margin-top: 7.5cqw;
+  padding-bottom: 5cqw;
+  scroll-margin-top: 32px;
 }
-.vitrine-service:has(.vitrine-offer-hover):is(:hover, :focus-within) {
-  z-index: 1;
+.vitrine-contact h2 {
+  margin-left: 9.95%;
+  width: 38.85%;
 }
-.vitrine-service:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 6px;
-}
-.vitrine-service .vitrine-offer-hover {
-  position: absolute;
-  z-index: 1;
-  left: 5%;
-  top: -3.5cqw;
-  width: 26%;
-  padding: 0;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 160ms ease;
-}
-.vitrine-offer-hover img {
+.vitrine-contact h2 img {
   display: block;
   width: 100%;
-  height: auto;
-  aspect-ratio: 8 / 5;
-  object-fit: cover;
 }
-.vitrine-service:is(:hover, :focus-within) .vitrine-offer-hover {
-  visibility: visible;
-  opacity: 1;
+.vitrine-contact-invitation {
+  position: absolute;
+  top: 9.375cqw;
+  left: 39.1667%;
+  width: 21.6667%;
+}
+.vitrine-contact-invitation img {
+  width: 100%;
+  display: block;
+}
+.vitrine-contact-form {
+  display: grid;
+  margin: 1.8cqw 39.375% 0 11.4%;
+  font-size: clamp(14px, 1.25cqw, 24px);
+}
+.vitrine-contact-form input,
+.vitrine-contact-form textarea {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid var(--vitrine-ink);
+  border-radius: 0;
+  padding: 4px 0;
+  margin-bottom: 10px;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  text-transform: none;
+  letter-spacing: -0.04em;
+}
+.vitrine-contact-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+.vitrine-contact-send {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 16px;
+}
+.vitrine-contact-send p {
+  max-width: 55%;
+  font-size: var(--vitrine-small);
+  text-transform: none;
+  letter-spacing: -0.04em;
+}
+.vitrine-contact-send button {
+  border: 1px solid;
+  background: var(--vitrine-paper);
+  padding: 12px 16px;
+  font: inherit;
+  font-size: var(--vitrine-small);
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.vitrine-contact-send button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.vitrine-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 8cqw 8%;
+}
+.vitrine-footer a:hover {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .vitrine-navigation {
+    left: 7%;
+    right: 7%;
+    top: 6%;
+    font-size: 12px;
+    justify-content: space-between;
+  }
+  .vitrine-navigation-sections {
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: end;
+  }
+  .vitrine-opening {
+    aspect-ratio: 4 / 5;
+  }
+  .vitrine-cover > img {
+    object-position: 50% 35%;
+  }
+  .vitrine-opening-caption {
+    top: 76%;
+    left: 8%;
+    width: 45%;
+  }
+  .vitrine-services {
+    margin: 60px 8% 0;
+  }
+  .vitrine-services dl {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+  .vitrine-service[data-offer] {
+    grid-column: auto;
+    grid-row: auto;
+    margin: 0;
+  }
+  .vitrine-service[data-offer] .vitrine-service-lettering {
+    width: min(100%, 320px);
+    height: 90px;
+    margin-left: -8px;
+  }
+  .vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
+    width: 270px;
+  }
+  .vitrine-service[data-offer='reseaux-sociaux'] .vitrine-service-lettering {
+    width: 210px;
+    height: 65px;
+  }
+  .vitrine-service[data-offer='graphisme'] .vitrine-service-lettering {
+    width: 160px;
+    height: 70px;
+  }
+  .vitrine-service[data-offer='evenementiel']
+    .vitrine-service-lettering
+    img:first-child {
+    height: 70px;
+  }
+  .vitrine-service-details {
+    margin-top: 16px !important;
+    max-width: 85%;
+    margin-left: auto !important;
+  }
+  .vitrine-manifesto-definition {
+    position: static;
+  }
+  .vitrine-contact {
+    margin-top: 60px;
+  }
+  .vitrine-contact h2 {
+    width: 78%;
+    margin-left: 4%;
+  }
+  .vitrine-contact-invitation {
+    top: 22cqw;
+    left: 45%;
+    width: 48%;
+  }
+  .vitrine-contact-form {
+    margin: 30px 8% 0;
+  }
+  .vitrine-contact-send {
+    flex-direction: column;
+  }
+  .vitrine-contact-send p {
+    max-width: 100%;
+  }
+  .vitrine-footer {
+    flex-direction: column;
+    margin-top: 60px;
+  }
 }
 @media (hover: none), (pointer: coarse) {
   .vitrine-service .vitrine-offer-hover {
-    position: relative;
-    grid-column: 1 / -1;
-    left: auto;
-    top: auto;
-    width: 45%;
+    position: static;
+    width: 70%;
     visibility: visible;
     opacity: 1;
+    margin-top: 16px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .vitrine-service .vitrine-offer-hover {
     transition: none;
+  }
+}
+
+.vitrine-project-craft {
+  position: absolute;
+  top: 60.57cqw;
+  right: 4.74%;
+  width: 16.25%;
+}
+.vitrine-project-craft img {
+  display: block;
+  width: 100%;
+}
+.vitrine-project-fitness {
+  position: absolute;
+  left: 6.5%;
+  top: 184cqw;
+}
+@media (max-width: 700px) {
+  .vitrine-project-craft {
+    position: static;
+    width: 45%;
+    margin: 40px auto;
+  }
+  .vitrine-project-fitness {
+    position: static;
+    text-align: center;
+    margin-top: 40px !important;
+  }
+}
+
+@media (min-width: 701px) {
+  .vitrine-biography {
+    margin-top: 5.43cqw;
+  }
+  .vitrine-project-column-left {
+    padding-top: 6.979167cqw;
+  }
+  .vitrine-project-column-right .vitrine-project {
+    grid-template-columns: minmax(0, 16.25cqw) minmax(0, 1fr);
+  }
+  .vitrine-project[data-project='Annafurna'] {
+    min-height: 36.25cqw;
+  }
+  .vitrine-project[data-project='Origin'] {
+    min-height: 46.77cqw;
+  }
+  .vitrine-project[data-project='Le Conseil'] {
+    min-height: 17.34375cqw;
+  }
+  .vitrine-project[data-project='Les Trois Sœurs'] {
+    min-height: 21.6cqw;
+  }
+  .vitrine-project[data-project='Allegria'] {
+    margin-top: -5cqw;
+  }
+  .vitrine-contact {
+    margin-top: 10.47cqw;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 900px) {
+  .vitrine-navigation {
+    left: 7%;
+    right: 7%;
+    top: 6%;
+    font-size: 12px;
+    justify-content: space-between;
+  }
+  .vitrine-navigation-sections {
+    gap: 24px;
   }
 }

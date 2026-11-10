@@ -2,7 +2,7 @@ import { Artwork } from './artwork';
 
 const chapters = [
   'D’abord, j’ai commencé mon parcours en cabinet de conseil en stratégie : développer des méthodologies projet, d’analyse, se confronter à des contextes clients divers…',
-  'Puis, j’ai continué mes armes chez Metro (on se rapproche de la restauration tout doucement…) en stratégie, puis sur la force de vente au contact direct des restaurateurs.\n\nJ’ai rencontré des chefs, commencé à développer mon réseau.',
+  'J’ai continué mes armes chez Metro (on se rapproche de la restauration tout doucement…) en stratégie, puis en commerce au contact direct des restaurateurs.\n\nJ’ai rencontré des chefs, commencé à développer mon réseau.',
   'La volonté d’entreprendre et de mettre les pieds dans la restauration s’est fait ressentir à mes 27 ans, après un tour du monde à la recherche des concepts et des tendances culinaires.',
   'Enfin, je me suis lancée dans la restauration : ouverture et direction de restaurants en tant que directrice, responsable de la communication et de l’événementiel.',
 ];
@@ -36,6 +36,12 @@ export function Biography() {
           Alors voilà l’histoire…
         </p>
         <figure className="vitrine-childhood">
+          <Artwork
+            file="Rectangle6.png"
+            width={448}
+            height={181}
+            className="vitrine-childhood-caption"
+          />
           <Artwork
             file="WhatsAppImage20261029At0929261.jpg"
             width={537}
