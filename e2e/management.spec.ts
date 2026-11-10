@@ -51,7 +51,7 @@ for (const javaScriptEnabled of [false, true]) {
 }
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`images des offres et alternance des formats avec JavaScript ${javaScriptEnabled}`, async ({
+  test(`images des offres dans la grille adaptative avec JavaScript ${javaScriptEnabled}`, async ({
     browser,
     request,
   }) => {
@@ -120,9 +120,17 @@ for (const javaScriptEnabled of [false, true]) {
       }
       for (const width of [1440, 375, 320]) {
         await page.setViewportSize({ width, height: 900 });
-        const large = (await visuals.nth(0).boundingBox())!;
-        const small = (await visuals.nth(1).boundingBox())!;
-        expect(large.width).toBeGreaterThan(small.width * 1.5);
+        for (const slug of slugs) {
+          const offer = page.locator(`[data-offer="${slug}"]`);
+          const image = offer.locator('.vitrine-offer-visual img');
+          await expect(image).toBeVisible();
+          const bounds = (await image.boundingBox())!;
+          const column = (await offer.boundingBox())!;
+          expect(bounds.width).toBeGreaterThan(0);
+          expect(bounds.width).toBeCloseTo(column.width, 1);
+          expect(bounds.x).toBeGreaterThanOrEqual(0);
+          expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+        }
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -190,7 +198,7 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(
         page.getByRole('heading', { name: 'Les projets clients', exact: true }),
       ).toBeVisible();
-      await expect(page.locator('.admin-project-images img')).toHaveCount(25);
+      await expect(page.locator('.admin-project-images img')).toHaveCount(32);
       await expect(
         page.getByRole('heading', { name: 'Colonne gauche' }),
       ).toBeVisible();
@@ -321,6 +329,11 @@ for (const javaScriptEnabled of [false, true]) {
           .getByRole('article', { name: 'L’Écluse Douze', exact: true })
           .locator('.admin-project-titles img'),
       ).toHaveCount(1);
+      const originalLinks = await card
+        .locator('.admin-project-photos a')
+        .evaluateAll((items) =>
+          items.map((item) => item.getAttribute('href')!),
+        );
       for (const size of ['small', 'medium', 'large']) {
         await card.getByRole('link', { name: 'Ajouter une photo' }).click();
         await page.getByLabel('Taille d’affichage').selectOption(size);
@@ -337,22 +350,28 @@ for (const javaScriptEnabled of [false, true]) {
         });
         await page.getByRole('button', { name: 'Ajouter la photo' }).click();
         await expect(page).toHaveURL(/\/connect#project-images$/);
-      }
-      const links = await card
-        .locator('.admin-project-photos a')
-        .evaluateAll((items) =>
-          items.map((item) => item.getAttribute('href')!),
+        const links = await card
+          .locator('.admin-project-photos a')
+          .evaluateAll((items) =>
+            items.map((item) => item.getAttribute('href')!),
+          );
+        files.push(
+          ...links.filter(
+            (link) => !originalLinks.includes(link) && !files.includes(link),
+          ),
         );
-      files.push(...links);
+      }
       expect(files).toHaveLength(3);
       await page.reload();
-      await expect(card.locator('.admin-project-photos img')).toHaveCount(3);
+      await expect(card.locator('.admin-project-photos img')).toHaveCount(
+        originalLinks.length + 3,
+      );
       await page.goto('/');
       await expect(
         page
           .getByRole('figure', { name: 'Deux Main', exact: true })
           .locator('.vitrine-project-photo'),
-      ).toHaveCount(3);
+      ).toHaveCount(originalLinks.length + 3);
       const widths = [];
       for (const size of ['small', 'medium', 'large']) {
         const photo = page.getByRole('img', {
