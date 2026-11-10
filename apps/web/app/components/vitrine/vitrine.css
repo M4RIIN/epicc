@@ -60,9 +60,18 @@ body:has(.vitrine) {
   border: 0;
 }
 
+body:has(.vitrine-opening) {
+  overflow-x: clip;
+}
+.vitrine:has(.vitrine-opening) {
+  overflow-x: visible;
+}
 .vitrine-opening {
   position: relative;
-  aspect-ratio: 3 / 2;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  height: 100vh;
+  height: 100dvh;
 }
 .vitrine-cover {
   position: absolute;
@@ -512,13 +521,6 @@ body:has(.vitrine) {
   .vitrine-navigation-sections a {
     font-size: 12px;
   }
-  .vitrine-opening {
-    aspect-ratio: 1 / 1.05;
-  }
-  .vitrine-cover {
-    left: -23%;
-    width: 147%;
-  }
   .vitrine-biography {
     margin-top: 60px;
   }
@@ -934,9 +936,6 @@ body:has(.vitrine) {
     gap: 12px;
     flex-wrap: wrap;
     justify-content: end;
-  }
-  .vitrine-opening {
-    aspect-ratio: 4 / 5;
   }
   .vitrine-cover > img {
     object-position: 50% 35%;
