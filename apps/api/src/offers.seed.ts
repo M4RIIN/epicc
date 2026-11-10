@@ -49,7 +49,7 @@ export const previousOffers: Offer[] = [
 
 // Le catalogue visible dans la maquette, avec les identifiants historiques
 // pour conserver les images déjà administrées.
-export const initialOffers: Offer[] = [
+export const previousDesignOffers: Offer[] = [
   {
     slug: 'creation-de-marque',
     name: 'Lancement de marque',
@@ -111,3 +111,62 @@ export const initialOffers: Offer[] = [
     position: 5,
   },
 ];
+
+const offerCopy: Record<
+  string,
+  { name: string; summary: string; description: string; details: string }
+> = {
+  'creation-de-marque': {
+    name: 'Lancement de marque',
+    summary: 'Créer une marque de A à Z',
+    description:
+      'Élaboration d’une stratégie et création d’une identité visuelle pour un lancement réussi.',
+    details:
+      'Logo · Charte graphique · Icônes · Positionnement · Plateforme de marque',
+  },
+  'restructuration-de-restaurants': {
+    name: 'Restructuration d’identité',
+    summary: 'Faire évoluer une marque existante',
+    description:
+      'Permettre de donner un nouvel élan, tout en préservant son essence.',
+    details:
+      'Audit · Benchmark · Positionnement · Stratégie · Ateliers · Évolution de marque',
+  },
+  'video-photographe': {
+    name: 'Création de contenus visuels',
+    summary: 'Photo & vidéo',
+    description:
+      'Production de contenus visuels pour valoriser les marques et les événements',
+    details:
+      'Shooting · Reportage · Réels · Aftermovie · Interviews · Podcasts',
+  },
+  'reseaux-sociaux': {
+    name: 'Réseaux sociaux',
+    summary: 'Community management',
+    description: 'Développement et gestion de la présence digitale des marques',
+    details:
+      'Stratégie · Animation · Google Ads · Référencement · Réseaux Meta',
+  },
+  graphisme: {
+    name: 'Graphisme',
+    summary: 'Digital & print',
+    description: 'Conception de supports graphiques & communication',
+    details: 'Affiches · Menus · Flyers · Cartes de visite · Supports digitaux',
+  },
+  evenementiel: {
+    name: 'Événementiel & scénographie',
+    summary: 'Conception & coordination',
+    description: 'Imagination et organisation d’événements sur mesure',
+    details:
+      'Scénographie de tables · Décoration · Soirées · Team building · Networking · Prestataires',
+  },
+};
+
+export const initialOffers: Offer[] = previousDesignOffers.map((offer) => {
+  const { details, ...copy } = offerCopy[offer.slug]!;
+  return {
+    ...offer,
+    ...copy,
+    description: `${copy.description}\n\n${details}`,
+  };
+});

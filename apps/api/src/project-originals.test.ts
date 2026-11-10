@@ -47,25 +47,25 @@ afterEach(async () => {
   objects.clear();
   vi.restoreAllMocks();
 });
-it('importe les 26 visuels sans changer leurs octets, conserve leurs métadonnées et reprend sans doublon', async () => {
+it('importe les visuels du catalogue sans changer leurs octets, conserve leurs métadonnées et reprend sans doublon', async () => {
   expect(await importProjectOriginals(database, root)).toEqual({
-    imported: 26,
+    imported: 33,
     skipped: 0,
     conflicts: 0,
   });
-  expect(objects.size).toBe(26);
+  expect(objects.size).toBe(33);
   expect(await importProjectOriginals(database, root)).toEqual({
     imported: 0,
-    skipped: 26,
+    skipped: 33,
     conflicts: 0,
   });
-  expect(objects.size).toBe(26);
+  expect(objects.size).toBe(33);
   expect(await verifyProjectMedia(database, root)).toMatchObject({
-    verified: 26,
+    verified: 33,
     metadataValid: true,
   });
   const rows = await database.pool.query('SELECT * FROM images');
-  expect(rows.rowCount).toBe(26);
+  expect(rows.rowCount).toBe(33);
   expect(
     rows.rows.every(
       (row) =>
@@ -95,7 +95,7 @@ it('importe les 26 visuels sans changer leurs octets, conserve leurs métadonné
   await database.images.write(null, undefined, async (connection) => {
     await connection.query('DELETE FROM clients');
   });
-  expect(objects.size).toBe(26);
+  expect(objects.size).toBe(33);
 }, 60000);
 
 it('refuse une modification des contenus pendant la migration des médias', async () => {
@@ -125,7 +125,7 @@ it('conserve la source et ne publie pas une copie S3 non conforme', async () => 
   await database.images.cleanup();
   expect(objects.size).toBe(0);
   await importProjectOriginals(database, root);
-  expect(objects.size).toBe(26);
+  expect(objects.size).toBe(33);
 }, 60000);
 
 it('préserve les éditions et les images historiques non référencées pendant l’import', async () => {
@@ -141,7 +141,7 @@ it('préserve les éditions et les images historiques non référencées pendant
   await importProjectOriginals(database, root);
   const after = await inventoryProjectMedia(database);
   expect(after.contents).toEqual(before.contents);
-  expect(after.images).toEqual({ total: 27, in_bucket: 26, with_source: 1 });
+  expect(after.images).toEqual({ total: 34, in_bucket: 33, with_source: 1 });
 }, 60000);
 it('arrête l’import avant toute écriture en cas de logos édités contradictoires', async () => {
   for (const [index, file] of [
@@ -171,20 +171,20 @@ it('initialise une base vierge et reprend la migration complète sans doublon', 
   await manageTestDatabase(name, true);
   database = new Database(testDatabaseUrl(name), storage);
   expect(await migrateProjectMedia(database, root)).toMatchObject({
-    imported: 26,
+    imported: 33,
     skipped: 0,
     conflicts: 0,
-    verified: 26,
+    verified: 33,
     metadataValid: true,
     editedContentsPreserved: true,
   });
   expect(await migrateProjectMedia(database, root)).toMatchObject({
     imported: 0,
-    skipped: 26,
+    skipped: 33,
     conflicts: 0,
-    verified: 26,
+    verified: 33,
   });
-  expect(objects.size).toBe(26);
+  expect(objects.size).toBe(33);
 }, 60000);
 
 it('migre les anciennes offres avant de contrôler la préservation des contenus pendant l’import', async () => {
@@ -208,9 +208,9 @@ it('migre les anciennes offres avant de contrôler la préservation des contenus
   );
 
   expect(await migrateProjectMedia(database, root)).toMatchObject({
-    imported: 26,
+    imported: 33,
     editedContentsPreserved: true,
-    verified: 26,
+    verified: 33,
   });
   const offers = await database.pool.query('SELECT content FROM offers');
   expect(offers.rows.map((row) => row.content)).toEqual(
@@ -223,8 +223,58 @@ it('migre les anciennes offres avant de contrôler la préservation des contenus
   const migrated = await inventoryProjectMedia(database);
   expect(await migrateProjectMedia(database, root)).toMatchObject({
     imported: 0,
-    skipped: 26,
+    skipped: 33,
     editedContentsPreserved: true,
   });
   expect(await inventoryProjectMedia(database)).toEqual(migrated);
+}, 60000);
+
+it('renouvelle le visuel Amafolia par défaut sans perdre une image administrée', async () => {
+  await importProjectOriginals(database, root);
+  const previous = (
+    await database.pool.query(
+      "SELECT image_id FROM project_originals WHERE file='Rectangle5.png'",
+    )
+  ).rows[0].image_id;
+  const custom = {
+    file: 'D8DV39.png',
+    image: `/api/v1/project-images/${previous}`,
+    alt: 'Image personnalisée conservée',
+  };
+  await database.pool.query(
+    "UPDATE project_originals SET image_id=$1 WHERE file='D8DV39.png'",
+    [previous],
+  );
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id='figma-411-3-amafolia'",
+  );
+  await database.pool.query('INSERT INTO project_images VALUES ($1,$2)', [
+    'D8DV39.png',
+    custom,
+  ]);
+  expect(await importProjectOriginals(database, root)).toMatchObject({
+    imported: 1,
+    skipped: 32,
+  });
+  const original = (
+    await database.pool.query(
+      "SELECT image_id FROM project_originals WHERE file='D8DV39.png'",
+    )
+  ).rows[0].image_id;
+  expect(original).not.toBe(previous);
+  expect(
+    (
+      await database.pool.query(
+        "SELECT content FROM project_images WHERE file='D8DV39.png'",
+      )
+    ).rows[0].content,
+  ).toEqual(custom);
+  expect(await verifyProjectMedia(database, root)).toMatchObject({
+    verified: 33,
+    metadataValid: true,
+  });
+  expect(await importProjectOriginals(database, root)).toMatchObject({
+    imported: 0,
+    skipped: 33,
+  });
 }, 60000);

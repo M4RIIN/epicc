@@ -27,16 +27,16 @@ it('rattache les séries de photos aux projets et aux colonnes des références'
   ).toBe('right');
 });
 
-it('conserve les identifiants des 26 visuels et distingue les deux titres du projet associé', () => {
+it('conserve les identifiants historiques et ajoute les photos de la maquette', () => {
   const files = vitrineProjects.flatMap((project) =>
     project.pieces.map((piece) => piece.file),
   );
-  expect(files).toHaveLength(26);
-  expect(new Set(files).size).toBe(26);
+  expect(files).toHaveLength(33);
+  expect(new Set(files).size).toBe(33);
   expect(
     vitrineProjects
       .find((project) => project.name === 'L’Écluse Douze — Deux Mnu')!
-      .pieces.every((piece) => piece.role === 'name'),
+      .pieces.filter((piece) => piece.role === 'name').length === 2,
   ).toBe(true);
 });
 

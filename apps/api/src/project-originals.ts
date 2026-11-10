@@ -36,7 +36,16 @@ export async function importProjectOriginals(database: Database, root: string) {
         'SELECT 1 FROM project_originals WHERE file=$1',
         [piece.file],
       );
-      if (existing.rowCount) {
+      const revision =
+        piece.file === 'D8DV39.png' ? 'figma-411-3-amafolia' : null;
+      const revised = revision
+        ? (
+            await database.pool.query('SELECT 1 FROM migrations WHERE id=$1', [
+              revision,
+            ])
+          ).rowCount
+        : true;
+      if (existing.rowCount && revised) {
         report.skipped++;
         continue;
       }
@@ -56,9 +65,14 @@ export async function importProjectOriginals(database: Database, root: string) {
               throw new Error('Copie du visuel non conforme.');
           }
           await connection.query(
-            'INSERT INTO project_originals VALUES ($1,$2) ON CONFLICT DO NOTHING',
+            'INSERT INTO project_originals VALUES ($1,$2) ON CONFLICT (file) DO UPDATE SET image_id=EXCLUDED.image_id',
             [piece.file, id],
           );
+          if (revision)
+            await connection.query(
+              'INSERT INTO migrations VALUES ($1) ON CONFLICT DO NOTHING',
+              [revision],
+            );
         },
         { pruneUnused: false },
       );
