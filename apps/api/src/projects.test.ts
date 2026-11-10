@@ -187,7 +187,14 @@ it('gère un seul logo pour les deux apparitions de L’Écluse Douze', async ()
   const images = projectImageSchema
     .array()
     .parse(await (await api.request('/v1/project-images')).json());
-  const logos = images.filter((item) => item.project === 'L’Écluse Douze');
+  const logos = images.filter(
+    (item) =>
+      item.project === 'L’Écluse Douze' &&
+      [
+        'CaptureDecran20261029A153342121.png',
+        'CaptureDecran20261029A153342111.png',
+      ].includes(item.file),
+  );
   expect(logos).toHaveLength(2);
   expect(logos[0]!.image).toBe(logos[1]!.image);
   expect(logos[0]!.alt).toBe(logos[1]!.alt);

@@ -295,3 +295,44 @@ it('met à jour les offres d’origine sans perdre les images ni écraser les te
       .rowCount,
   ).toBe(0);
 });
+
+it('actualise les textes Figma sans écraser une personnalisation, puis reste idempotent', async () => {
+  const { previousDesignOffers, initialOffers } = await import('./offers.seed');
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id='vitrine-figma-411-3'",
+  );
+  for (const offer of previousDesignOffers) {
+    await database.pool.query('UPDATE offers SET content=$2 WHERE slug=$1', [
+      offer.slug,
+      {
+        ...offer,
+        alt: 'Visuel conservé',
+        hoverAlt: 'Survol conservé',
+        ...(offer.slug === 'graphisme'
+          ? { summary: 'Résumé personnalisé' }
+          : {}),
+      },
+    ]);
+  }
+  await database.migrate();
+  const read = async () =>
+    (
+      await database.pool.query('SELECT content FROM offers ORDER BY slug')
+    ).rows.map((row) => row.content);
+  const migrated = await read();
+  expect(migrated.find((offer) => offer.slug === 'creation-de-marque')).toEqual(
+    {
+      ...initialOffers[0],
+      alt: 'Visuel conservé',
+      hoverAlt: 'Survol conservé',
+    },
+  );
+  expect(migrated.find((offer) => offer.slug === 'graphisme')).toMatchObject({
+    summary: 'Résumé personnalisé',
+    description: previousDesignOffers.find(
+      (offer) => offer.slug === 'graphisme',
+    )!.description,
+  });
+  await database.migrate();
+  expect(await read()).toEqual(migrated);
+});

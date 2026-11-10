@@ -3,7 +3,11 @@ import { ImageStore, removeUnusedImages } from './images.store';
 import { storageFromEnvironment, type ObjectStorage } from './object-storage';
 import { randomBytes, scrypt as deriveKey, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
-import { initialOffers, previousOffers } from './offers.seed';
+import {
+  initialOffers,
+  previousOffers,
+  previousDesignOffers,
+} from './offers.seed';
 
 const scrypt = promisify(deriveKey);
 export async function hashPassword(password: string) {
@@ -145,6 +149,36 @@ export class Database {
         }
         await client.query(
           "INSERT INTO migrations VALUES ('vitrine-offers-2026-11')",
+        );
+      }
+      // Ne réécrire que les textes du catalogue précédent, jamais les contenus personnalisés.
+      if (
+        !(
+          await client.query(
+            "SELECT id FROM migrations WHERE id = 'vitrine-figma-411-3'",
+          )
+        ).rowCount
+      ) {
+        for (const offer of initialOffers) {
+          const previous = previousDesignOffers.find(
+            (item) => item.slug === offer.slug,
+          )!;
+          const { name, summary, description } = offer;
+          await client.query(
+            `UPDATE offers SET content = content || $2::jsonb
+             WHERE slug = $1 AND content->>'name' = $3
+             AND content->>'description' = $4 AND content->>'summary' = $5`,
+            [
+              offer.slug,
+              { name, summary, description },
+              previous.name,
+              previous.description,
+              previous.summary,
+            ],
+          );
+        }
+        await client.query(
+          "INSERT INTO migrations VALUES ('vitrine-figma-411-3')",
         );
       }
       // Les variables servent uniquement à créer le compte initial ; aucun mot de passe en clair en base.

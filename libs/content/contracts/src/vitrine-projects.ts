@@ -73,9 +73,9 @@ export const vitrineProjects: VitrineProject[] = [
       },
       {
         file: 'D8DV39.png',
-        width: 116,
-        height: 173,
-        alt: 'Table et assiettes photographiées en plongée.',
+        width: 160,
+        height: 240,
+        alt: 'Création culinaire photographiée pour Amafolia.',
         role: 'photo',
       },
       {
@@ -188,6 +188,13 @@ export const vitrineProjects: VitrineProject[] = [
         height: 124,
         role: 'name',
       },
+      {
+        file: '171.png',
+        role: 'photo',
+        width: 231,
+        height: 289,
+        alt: 'Identité visuelle du Conseil.',
+      },
     ],
   },
   {
@@ -206,6 +213,27 @@ export const vitrineProjects: VitrineProject[] = [
         height: 107,
         role: 'name',
       },
+      {
+        file: 'CopieDeLeConseil31.png',
+        role: 'photo',
+        width: 314,
+        height: 393,
+        alt: 'Création graphique et illustration.',
+      },
+      {
+        file: 'Dsc08681.png',
+        role: 'photo',
+        width: 262,
+        height: 393,
+        alt: 'Reportage photographique en restauration.',
+      },
+      {
+        file: 'Dsc23481.png',
+        role: 'photo',
+        width: 315,
+        height: 472,
+        alt: 'Portrait réalisé pour un projet client.',
+      },
     ],
   },
   {
@@ -217,6 +245,27 @@ export const vitrineProjects: VitrineProject[] = [
         width: 489,
         height: 178,
         role: 'name',
+      },
+      {
+        file: 'Dsc08481.png',
+        role: 'photo',
+        width: 280,
+        height: 420,
+        alt: 'Portrait réalisé au Carré Vert.',
+      },
+      {
+        file: 'Dsc22501.png',
+        role: 'photo',
+        width: 158,
+        height: 237,
+        alt: 'Photographie réalisée au Carré Vert.',
+      },
+      {
+        file: 'Dsc23871.png',
+        role: 'photo',
+        width: 312,
+        height: 574,
+        alt: 'Reportage photographique du Carré Vert.',
       },
     ],
   },
@@ -279,12 +328,23 @@ export const projectClients: VitrineProject[] = vitrineProjects.flatMap(
           {
             name: 'L’Écluse Douze',
             side: project.side,
-            pieces: [project.pieces[0]!],
+            pieces: project.pieces.filter((piece) =>
+              [
+                'CaptureDecran20261029A153342121.png',
+                'CopieDeLeConseil31.png',
+              ].includes(piece.file),
+            ),
           },
           {
             name: 'Deux Mnu',
             side: project.side,
-            pieces: [project.pieces[1]!],
+            pieces: project.pieces.filter((piece) =>
+              [
+                'CaptureDecran20261029A15334261.png',
+                'Dsc08681.png',
+                'Dsc23481.png',
+              ].includes(piece.file),
+            ),
           },
         ]
       : project.name === 'L’Écluse Douze'

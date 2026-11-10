@@ -1,6 +1,20 @@
 // Catalogue de reprise uniquement : la diffusion utilise les références du backend.
 export const vitrineAssetFiles = [
   '12.png',
+  'AccueilChloe.png',
+  'Rectangle6.png',
+  'Rectangle7.png',
+  'Rectangle8.png',
+  'IllustrationSansTitre663.png',
+  'IllustrationSansTitre676.png',
+  'IllustrationSansTitre681.png',
+  'IllustrationSansTitre691.png',
+  'IllustrationSansTitre665.png',
+  'IllustrationSansTitre6721.png',
+  'IllustrationSansTitre562.png',
+  'IllustrationSansTitre611.png',
+  'Craft41.png',
+
   'Group.svg',
   'Group1.svg',
   'Group10.svg',
