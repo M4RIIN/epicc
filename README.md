@@ -59,7 +59,7 @@ Les décisions d’architecture, les règles de dépendance et la méthode d’a
 
 Le contenu est déterministe et assemblé dans `apps/api/src/composition-root.ts`. Le cas d’usage masque les brouillons et les pages absentes avec le même statut 404. Une panne de l’API produit une page d’erreur 503 ; les erreurs techniques ne sont pas exposées au visiteur.
 
-La gestion des images comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. L’accueil reprend la maquette EPICC.
+La gestion des images comprend une authentification administrateur, des sessions signées de huit heures, une protection CSRF et une API privée protégée par un jeton serveur. Les pages éditoriales de démonstration restent en mémoire. L’accueil reprend la maquette EPICC : portrait en ouverture, six offres illustrées, présentation de Chloé, collage des projets clients et contact. Sur mobile, les offres et les projets passent en une colonne. Les textes par défaut sont actualisés à la migration sans écraser les offres personnalisées ; les images administrées et leurs survols sont conservés.
 
 ## Exécuter le build
 

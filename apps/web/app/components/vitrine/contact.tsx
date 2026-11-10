@@ -17,35 +17,20 @@ export function Contact({ email }: { email: string | null }) {
       id="contact"
       aria-labelledby="contact-title"
     >
-      <div className="vitrine-contact-collage" aria-hidden="true">
-        <Artwork
-          file="projets-Dsc067761.jpg"
-          width={247}
-          height={371}
-          className="vitrine-contact-dish"
-        />
-        <Artwork
-          file="projets-WhatsAppImage20261029At09292611.jpg"
-          width={89.768}
-          height={159.446}
-          className="vitrine-contact-portrait"
-        />
-      </div>
       <h2 id="contact-title">
         <Artwork
-          file="projets-IllustrationSansTitre561.png"
-          width={1039}
-          height={474}
+          file="IllustrationSansTitre562.png"
+          width={746}
+          height={340}
           alt="Contact"
         />
       </h2>
       <div className="vitrine-contact-invitation">
-        <p>Maintenant qu’on se connaît mieux… une collab ?</p>
         <Artwork
-          file="projets-IllustrationSansTitre572.png"
-          width={327.391}
-          height={104.86}
-          alt="Collaboration"
+          file="IllustrationSansTitre611.png"
+          width={416}
+          height={109}
+          alt="On en discute ?"
         />
       </div>
       <form

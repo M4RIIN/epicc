@@ -1,6 +1,30 @@
 import { Artwork } from './artwork';
 import type { Offer } from '@epicc/content-contracts';
 
+const titles: Record<string, { name: string; files: string[] }> = {
+  'creation-de-marque': {
+    name: 'Lancement de marque',
+    files: ['Rectangle7.png', 'Rectangle8.png'],
+  },
+  'restructuration-de-restaurants': {
+    name: 'Restructuration d’identité',
+    files: ['IllustrationSansTitre663.png'],
+  },
+  'video-photographe': {
+    name: 'Création de contenus visuels',
+    files: ['IllustrationSansTitre676.png'],
+  },
+  'reseaux-sociaux': {
+    name: 'Réseaux sociaux',
+    files: ['IllustrationSansTitre681.png'],
+  },
+  graphisme: { name: 'Graphisme', files: ['IllustrationSansTitre691.png'] },
+  evenementiel: {
+    name: 'Événementiel & scénographie',
+    files: ['IllustrationSansTitre665.png', 'IllustrationSansTitre6721.png'],
+  },
+};
+
 export function Services({ offers }: { offers: Offer[] }) {
   return (
     <section
@@ -11,101 +35,90 @@ export function Services({ offers }: { offers: Offer[] }) {
       <h2 className="vitrine-sr-only" id="services-title">
         Les prestations
       </h2>
-      <div className="vitrine-service-notes" aria-hidden="true">
-        <span className="vitrine-evening">ce soir</span>
-        <span className="vitrine-benchmark">Benchmark</span>
-      </div>
       <dl>
         {offers.map(
-          (
-            {
-              slug,
-              name,
-              summary,
-              description,
-              image,
-              alt,
-              sources,
-              hoverImage,
-              hoverAlt,
-              hoverSources,
-            },
-            index,
-          ) => (
-            <div
-              className="vitrine-service"
-              key={slug}
-              data-offer={slug}
-              tabIndex={hoverImage ? 0 : undefined}
-              aria-label={hoverImage ? name : undefined}
-            >
-              <dt>
-                <span className="vitrine-service-name">
-                  {slug === 'creation-de-marque' &&
-                  name === 'Lancement de marque' ? (
-                    <>
-                      Lancement de{' '}
-                      <span className="vitrine-service-annotation">marque</span>
-                    </>
-                  ) : (
-                    name
-                  )}
-                </span>
-                {slug === 'restructuration-de-restaurants' && (
-                  <span
-                    className="vitrine-service-annotation"
-                    aria-hidden="true"
-                  >
-                    Identité
-                  </span>
-                )}
-                {summary && (
-                  <span className="vitrine-service-summary">{summary}</span>
-                )}
-              </dt>
-              <dd
-                className={
-                  slug === 'creation-de-marque' && summary
-                    ? 'vitrine-sr-only'
-                    : undefined
-                }
+          ({
+            slug,
+            name,
+            summary,
+            description,
+            image,
+            alt,
+            sources,
+            hoverImage,
+            hoverAlt,
+            hoverSources,
+          }) => {
+            const title = titles[slug];
+            const illustrated = title?.name === name;
+            const [intro, ...paragraphs] = description.split('\n\n');
+            const details = paragraphs.join('\n\n');
+            return (
+              <div
+                className="vitrine-service"
+                key={slug}
+                data-offer={slug}
+                tabIndex={hoverImage ? 0 : undefined}
+                aria-label={hoverImage ? name : undefined}
               >
-                {description}
-              </dd>
-              {hoverImage && (
-                <dd className="vitrine-offer-hover">
-                  <Artwork
-                    file=""
-                    src={hoverImage}
-                    sources={hoverSources}
-                    sizes="(max-width: 900px) 38vw, 18vw"
-                    alt={hoverAlt ?? ''}
-                    width={480}
-                    height={300}
-                  />
-                </dd>
-              )}
-              {image && (
-                <dd
-                  className={`vitrine-offer-visual ${index % 2 === 0 ? 'vitrine-offer-large' : 'vitrine-offer-small'}`}
-                >
-                  <Artwork
-                    file=""
-                    src={image}
-                    sources={sources}
-                    sizes={
-                      index % 2 === 0
-                        ? '(max-width: 900px) 85vw, (max-width: 1920px) 68.5vw, 1315px'
-                        : '(max-width: 900px) 49vw, (max-width: 1920px) 39.7vw, 763px'
-                    }
-                    alt={alt}
-                    width={960}
-                    height={640}
-                  />
-                </dd>
-              )}
-            </div>
-          ),
+                <dt>
+                  <span
+                    className={`vitrine-service-name ${illustrated ? 'vitrine-sr-only' : ''}`}
+                  >
+                    {name}
+                  </span>
+                  {illustrated && (
+                    <span
+                      className="vitrine-service-lettering"
+                      aria-hidden="true"
+                    >
+                      {title.files.map((file) => (
+                        <Artwork
+                          key={file}
+                          file={file}
+                          width={500}
+                          height={140}
+                        />
+                      ))}
+                    </span>
+                  )}
+                  {summary && (
+                    <span className="vitrine-service-summary">{summary}</span>
+                  )}
+                </dt>
+                <dd className="vitrine-service-description">{intro}</dd>
+                {details && (
+                  <dd className="vitrine-service-details">{details}</dd>
+                )}
+                {hoverImage && (
+                  <dd className="vitrine-offer-hover">
+                    <Artwork
+                      file=""
+                      src={hoverImage}
+                      sources={hoverSources}
+                      sizes="(max-width: 700px) 70vw, 24vw"
+                      alt={hoverAlt ?? ''}
+                      width={480}
+                      height={300}
+                    />
+                  </dd>
+                )}
+                {image && (
+                  <dd className="vitrine-offer-visual">
+                    <Artwork
+                      file=""
+                      src={image}
+                      sources={sources}
+                      sizes="(max-width: 700px) 85vw, 30vw"
+                      alt={alt}
+                      width={960}
+                      height={640}
+                    />
+                  </dd>
+                )}
+              </div>
+            );
+          },
         )}
       </dl>
     </section>

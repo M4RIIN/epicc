@@ -37,9 +37,8 @@ export async function loader() {
   ];
   return {
     images,
-    cover: fixedImages.find(
-      (image) => image.file === 'Image29102026A17281.png',
-    )!.image,
+    cover: fixedImages.find((image) => image.file === 'AccueilChloe.png')!
+      .image,
     origin: getSiteOrigin(),
     offers,
     projectImages,
@@ -75,9 +74,9 @@ export function meta({ loaderData }: Route.MetaArgs) {
       property: 'og:image',
       content: `${loaderData.origin}${loaderData.cover}`,
     },
-    { property: 'og:image:width', content: '982' },
-    { property: 'og:image:height', content: '742' },
-    { property: 'og:image:alt', content: 'L’univers visuel du studio EPICC' },
+    { property: 'og:image:width', content: '1536' },
+    { property: 'og:image:height', content: '1024' },
+    { property: 'og:image:alt', content: 'Chloé Catala, fondatrice d’EPICC' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },
     { name: 'twitter:description', content: description },

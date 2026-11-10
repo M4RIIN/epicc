@@ -11,16 +11,24 @@ export function Manifesto() {
     >
       <h2 id="manifesto-title">EPICC, c’est quoi</h2>
       <div className="vitrine-manifesto-intro">
-        <p>Pour moi EPICC c’est…</p>
+        <p className="vitrine-manifesto-definition">
+          Épicc, pour épicurien.
+          <br />
+          Épicc, pour épique.
+          <br />
+          CC, pour Chloé Catala.
+          <br />
+          CC, pour conseil et communication.
+        </p>
         <p>
-          Chloé Catala accompagne les acteurs de la restauration et de
-          l’agroalimentaire à Toulouse et alentour pour faire exister et
-          développer leur marque, même lorsque leur activité fonctionne déjà.
+          Né pour accompagner les acteurs de la restauration et de
+          l’agroalimentaire pour faire exister, développer et faire connaître
+          leur marque.
         </p>
       </div>
       <figure
         className="vitrine-manifesto-collage"
-        aria-label="Du beau, du bon, du bien. Marque EPICC, créée le 20 septembre 2025 par Chloé Catala."
+        aria-label="Du beau, du bon, du bien. Marque EPICC, créée le 7 décembre 2025 par Chloé Catala."
       >
         <Artwork
           file="Rectangle2.png"
@@ -59,7 +67,7 @@ export function Manifesto() {
               transform="translate(1 0) rotate(90)"
             />
           </svg>
-          <span>Créer le 20 sep 2025</span>
+          <span>Créée le 7 déc. 2025</span>
           <svg viewBox="0 0 1 33" aria-hidden="true">
             <image
               href={line}
