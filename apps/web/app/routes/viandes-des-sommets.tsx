@@ -27,7 +27,7 @@ function ProjectImage({
   );
 }
 
-export default function ViandesDesSommets() {
+export default function ViandesDesSommets({ homePath }: { homePath: string }) {
   return (
     <main id="contenu" className="client-project">
       <article aria-labelledby="project-title">
@@ -199,7 +199,7 @@ export default function ViandesDesSommets() {
         </div>
         <footer className="project-footer">
           <nav aria-label="Fil d’Ariane">
-            <a href="/">EPICC</a>
+            <a href={homePath}>EPICC</a>
             <span aria-hidden="true"> / </span>
             <span aria-current="page">Viandes des Sommets</span>
           </nav>
@@ -209,8 +209,10 @@ export default function ViandesDesSommets() {
             un projet à découvrir à travers son univers photographique et ses
             supports imprimés.
           </p>
-          <a href="/#projets">← Tous les projets</a>
-          <a href="/#contact">Parlons de votre identité visuelle ↗</a>
+          <a href={`${homePath}#projets`}>← Tous les projets</a>
+          <a href={`${homePath}#contact`}>
+            Parlons de votre identité visuelle ↗
+          </a>
         </footer>
       </article>
     </main>

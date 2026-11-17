@@ -19,7 +19,7 @@ import {
 } from '../apps/web/app/services/seo';
 import {
   getContactEmail,
-  getPublicOrigin,
+  getPublicSiteUrl,
   projectStructuredData,
   viandesDesSommets,
 } from '../apps/web/app/site';
@@ -28,7 +28,10 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const publicFiles = join(root, 'apps/web/public');
 const dist = join(root, 'dist');
 const output = join(dist, 'site');
-const origin = getPublicOrigin();
+const { origin, pathname } = getPublicSiteUrl() ?? { origin: '', pathname: '' };
+const basePath = pathname.replace(/\/+$/, '');
+const baseUrl = origin + basePath;
+const homePath = `${basePath}/`;
 const email = getContactEmail();
 
 await rm(dist, { recursive: true, force: true });
@@ -43,9 +46,9 @@ async function writeAsset(
   content: Uint8Array,
 ) {
   const hash = createHash('sha256').update(content).digest('hex').slice(0, 12);
-  const url = `/assets/${name}-${hash}.${extension}`;
-  await writeFile(join(output, url), content);
-  return url;
+  const path = `/assets/${name}-${hash}.${extension}`;
+  await writeFile(join(output, path), content);
+  return basePath + path;
 }
 
 async function stylesheet(name: string, specific: string) {
@@ -58,13 +61,16 @@ async function stylesheet(name: string, specific: string) {
     bundle: true,
     minify: true,
     write: false,
-    external: ['/fonts/*'],
+    external: ['../fonts/*'],
   });
   return writeAsset(name, 'css', result.outputFiles[0]!.contents);
 }
 
 const clientProjects = [
-  { metadata: viandesDesSommets, content: <ViandesDesSommets /> },
+  {
+    metadata: viandesDesSommets,
+    content: <ViandesDesSommets homePath={homePath} />,
+  },
 ];
 
 const [homeCss, projectCss, script] = await Promise.all([
@@ -81,7 +87,7 @@ const [homeCss, projectCss, script] = await Promise.all([
   ),
 ]);
 
-const home = <Home email={email} />;
+const home = <Home email={email} basePath={basePath} />;
 const requestedImages = new Map<string, number>();
 const homeCover = {
   file: 'OpeningSignature.png',
@@ -180,7 +186,7 @@ function renderPage({
   script,
   content,
 }: Page) {
-  const url = origin && path !== '/404.html' ? origin + path : null;
+  const url = baseUrl && path !== '/404.html' ? baseUrl + path : null;
   const image = origin && cover && origin + imageFor(cover.file).image;
   return (
     '<!doctype html>\n' +
@@ -247,7 +253,7 @@ await writeFile(
     script,
     content: home,
     cover: homeCover,
-    ...(origin && { structuredData: homeStructuredData(origin) }),
+    ...(baseUrl && { structuredData: homeStructuredData(baseUrl) }),
   }),
 );
 for (const { metadata, content } of clientProjects) {
@@ -259,9 +265,9 @@ for (const { metadata, content } of clientProjects) {
       ...metadata,
       css: projectCss,
       content,
-      ...(origin && {
+      ...(baseUrl && {
         structuredData: projectStructuredData(
-          origin,
+          baseUrl,
           origin + imageFor(metadata.cover.file).image,
           metadata,
         ),
@@ -279,7 +285,7 @@ await writeFile(
     content: (
       <main id="contenu" className="error-page">
         <h1>Page introuvable</h1>
-        <a href="/">Revenir à l’accueil</a>
+        <a href={homePath}>Revenir à l’accueil</a>
       </main>
     ),
   }),
@@ -287,12 +293,12 @@ await writeFile(
 
 await writeFile(
   join(output, 'robots.txt'),
-  `User-agent: *\nAllow: /\n${origin ? `Sitemap: ${origin}/sitemap.xml\n` : ''}`,
+  `User-agent: *\nAllow: /\n${baseUrl ? `Sitemap: ${baseUrl}/sitemap.xml\n` : ''}`,
 );
-if (origin) {
+if (baseUrl) {
   const paths = ['/', ...clientProjects.map(({ metadata }) => metadata.path)];
   const urls = paths
-    .map((path) => `<url><loc>${origin}${path}</loc></url>`)
+    .map((path) => `<url><loc>${baseUrl}${path}</loc></url>`)
     .join('');
   await writeFile(
     join(output, 'sitemap.xml'),
