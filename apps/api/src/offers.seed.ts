@@ -162,11 +162,40 @@ const offerCopy: Record<
   },
 };
 
-export const initialOffers: Offer[] = previousDesignOffers.map((offer) => {
-  const { details, ...copy } = offerCopy[offer.slug]!;
-  return {
-    ...offer,
-    ...copy,
-    description: `${copy.description}\n\n${details}`,
-  };
-});
+export const previousVitrineOffers: Offer[] = previousDesignOffers.map(
+  (offer) => {
+    const { details, ...copy } = offerCopy[offer.slug]!;
+    return {
+      ...offer,
+      ...copy,
+      description: `${copy.description}\n\n${details}`,
+    };
+  },
+);
+
+const currentDescriptions: Record<string, string> = {
+  'creation-de-marque':
+    'Élaboration d’une stratégie, création d’une identité visuelle et d’un plan de communication pour un lancement réussi.',
+  'restructuration-de-restaurants':
+    'Permettre de donner un nouvel élan, tout en préservant son essence.',
+  'reseaux-sociaux':
+    'Développement et animation de la présence digitale des marques avec des photos et vidéos attractives, des stories engageantes, et une réponse aux avis clients.',
+  'video-photographe':
+    'Shooting photos culinaires, mini-teasers vidéo, portraits d’équipe : votre établissement ou votre événement mis en lumière.',
+  graphisme:
+    'Conception d’identités / branding / logo et supports graphiques pour une image cohérente et mémorable, du web à la devanture.',
+  evenementiel: 'Imagination et organisation d’événements sur mesure.',
+};
+export const initialOffers: Offer[] = previousVitrineOffers.map((offer) => ({
+  ...offer,
+  position: [
+    'creation-de-marque',
+    'restructuration-de-restaurants',
+    'reseaux-sociaux',
+    'video-photographe',
+    'graphisme',
+    'evenementiel',
+  ].indexOf(offer.slug),
+  description: currentDescriptions[offer.slug]!,
+  summary: '',
+}));

@@ -1,8 +1,8 @@
 import { Artwork } from './artwork';
 
 const chapters = [
-  'D’abord, j’ai commencé mon parcours en cabinet de conseil en stratégie : développer des méthodologies projet, d’analyse, se confronter à des contextes clients divers…',
-  'J’ai continué mes armes chez Metro (on se rapproche de la restauration tout doucement…) en stratégie, puis en commerce au contact direct des restaurateurs.\n\nJ’ai rencontré des chefs, commencé à développer mon réseau.',
+  'D’abord, j’ai commencé mon parcours en cabinet de conseil en stratégie.\n\nDévelopper des méthodologies projet et d’analyse, se confronter à des contextes clients divers…',
+  'Pendant le Covid, j’ai été approchée par Metro. On se rapproche de la restauration tout doucement… J’ai continué quelques années en stratégie, puis en commerce, au contact direct des restaurateurs.\n\nJ’ai rencontré des chefs et j’ai commencé à développer mon réseau.',
   'La volonté d’entreprendre et de mettre les pieds dans la restauration s’est fait ressentir à mes 27 ans, après un tour du monde à la recherche des concepts et des tendances culinaires.',
   'Enfin, je me suis lancée dans la restauration : ouverture et direction de restaurants en tant que directrice, responsable de la communication et de l’événementiel.',
 ];
@@ -16,7 +16,7 @@ export function Biography() {
     >
       <header className="vitrine-biography-heading">
         <h2 id="biography-title">
-          Salut, moi c’est <span className="vitrine-sr-only">Chloé Catala</span>
+          Hello, moi c’est <span className="vitrine-sr-only">Chloé Catala</span>
         </h2>
         <Artwork
           file="IllustrationSansTitre81.png"
@@ -27,14 +27,20 @@ export function Biography() {
         />
       </header>
       <div className="vitrine-biography-intro">
-        <p className="vitrine-sr-only">
-          Quand j’étais toute petite,
-          <br />
-          je voulais <em>“être un restaurant”</em>
-          <br />
-          <br />
-          Alors voilà l’histoire…
-        </p>
+        <div className="vitrine-biography-story">
+          <p className="vitrine-biography-question">
+            Petit, on vous demande souvent le métier que vous voudriez exercer
+            plus tard,
+            <br />
+            <br />
+            <span>ma réponse : “restaurant !”</span>
+          </p>
+          <div className="vitrine-chapters">
+            {chapters.map((chapter) => (
+              <p key={chapter}>{chapter}</p>
+            ))}
+          </div>
+        </div>
         <figure className="vitrine-childhood">
           <Artwork
             file="Rectangle6.png"
@@ -72,11 +78,6 @@ export function Biography() {
             ))}
           </div>
         </figure>
-      </div>
-      <div className="vitrine-chapters">
-        {chapters.map((chapter) => (
-          <p key={chapter}>{chapter}</p>
-        ))}
       </div>
     </section>
   );

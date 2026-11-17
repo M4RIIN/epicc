@@ -129,10 +129,8 @@ export default function Connect({
             <p className="eyebrow">01 / La vitrine</p>
             <h2 id="project-images-title">Les projets clients</h2>
             <p>
-              Les mêmes colonnes et les mêmes séries de photos que sur la
-              vitrine. Chaque titre est aligné avec la première photo de son
-              projet ; les photos suivantes sont affichées dans leur ordre
-              vertical.
+              Chaque client présente son nom manuscrit et deux photos maximum,
+              alignés sur une même ligne dans la vitrine.
             </p>
             <div className="admin-project-columns">
               {projectSides.map((side) => (
@@ -223,12 +221,16 @@ export default function Connect({
                                 </ul>
                               ))}
                             </div>
-                            <Link
-                              className="filter-button"
-                              to={`/connect/projets/nouvelle?project=${encodeURIComponent(project.name)}`}
-                            >
-                              Ajouter une photo
-                            </Link>
+                            {project.pieces.filter(
+                              (piece) => piece.role === 'photo',
+                            ).length < 2 && (
+                              <Link
+                                className="filter-button"
+                                to={`/connect/projets/nouvelle?project=${encodeURIComponent(project.name)}`}
+                              >
+                                Ajouter une photo
+                              </Link>
+                            )}
                             {!project.pieces.some(
                               (piece) => piece.role === 'photo',
                             ) && (

@@ -60,56 +60,58 @@ body:has(.vitrine) {
   border: 0;
 }
 
-body:has(.vitrine-opening) {
-  overflow-x: clip;
-}
-.vitrine:has(.vitrine-opening) {
-  overflow-x: visible;
+.vitrine a:focus-visible,
+.vitrine summary:focus-visible {
+  outline: 2px solid;
+  outline-offset: 6px;
 }
 .vitrine-opening {
   position: relative;
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
-  height: 100vh;
-  height: 100dvh;
+  padding-top: 8.75cqw;
 }
 .vitrine-cover {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  margin: 0 2.3%;
+  aspect-ratio: 1819 / 1019;
   overflow: hidden;
 }
-.vitrine-cover > img {
+.vitrine-cover > img:first-child {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.vitrine-opening-caption {
+.vitrine-cover > .vitrine-opening-logo {
   position: absolute;
-  left: 22.45%;
-  top: 75.47%;
-  width: 23.33%;
+  left: 1.6%;
+  top: 0;
+  width: 16.5%;
+}
+.vitrine-opening-number {
+  position: absolute;
+  right: 2.1%;
+  top: 0;
+  font-size: 5cqw;
+  font-weight: 400;
+  color: #9c9c9c;
 }
 .vitrine-navigation {
   position: absolute;
-  top: 10.625%;
-  right: 5.57%;
-  left: 55%;
+  inset: 2.5cqw 16% auto 7.1%;
   display: flex;
-  gap: 2.8cqw;
-  font-size: var(--vitrine-heading);
-  letter-spacing: -0.06em;
-  line-height: 1.333;
+  align-items: center;
+  justify-content: space-between;
   z-index: 4;
-}
-.vitrine-navigation-actions {
-  flex: 1;
+  font-size: var(--vitrine-heading);
 }
 .vitrine-navigation-sections {
   display: flex;
-  justify-content: space-between;
-  gap: 3.2cqw;
-  white-space: nowrap;
+  gap: 3.3cqw;
+}
+.vitrine-navigation a:hover,
+.vitrine-menu summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .vitrine-menu summary {
   list-style: none;
@@ -118,15 +120,10 @@ body:has(.vitrine-opening) {
 .vitrine-menu summary::-webkit-details-marker {
   display: none;
 }
-.vitrine-navigation a:hover,
-.vitrine-menu summary:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
 .vitrine-menu-panel {
   position: absolute;
-  right: 0;
   top: calc(100% + 18px);
+  left: 0;
   display: grid;
   gap: 16px;
   padding: 24px;
@@ -134,151 +131,154 @@ body:has(.vitrine-opening) {
   max-width: 90vw;
   border: 1px solid;
   background: var(--vitrine-paper);
-  font-size: max(13px, 0.9375cqw);
+  font-size: 14px;
+}
+.vitrine-introduction {
+  width: 71.77%;
+  margin: 8.4cqw auto 0;
+}
+.vitrine-introduction img {
+  display: block;
+  width: 100%;
 }
 .vitrine-services {
-  margin: 18.5cqw 9% 0;
+  margin: 10.8cqw 8% 0;
   scroll-margin-top: 32px;
 }
 .vitrine-services dl {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 15%;
-  row-gap: 5.2cqw;
+  gap: 2.3cqw;
   margin: 0;
 }
 .vitrine-service {
   position: relative;
-  min-width: 0;
-  font-size: var(--vitrine-small);
-  line-height: 1.1;
-}
-.vitrine-service[data-offer='creation-de-marque'] {
-  grid-column: 1;
-  grid-row: 1;
-  margin-left: 10cqw;
-}
-.vitrine-service[data-offer='video-photographe'] {
-  grid-column: 2;
-  grid-row: 1;
-  margin-top: 3cqw;
-  margin-left: 9cqw;
-}
-.vitrine-service[data-offer='reseaux-sociaux'] {
-  grid-column: 1;
-  grid-row: 2;
-}
-.vitrine-service[data-offer='graphisme'] {
-  grid-column: 2;
-  grid-row: 2;
-  margin-left: -7cqw;
-  margin-right: 12cqw;
-}
-.vitrine-service[data-offer='restructuration-de-restaurants'] {
-  grid-column: 1;
-  grid-row: 3;
-  margin-left: 14.5cqw;
-  margin-right: -8cqw;
-}
-.vitrine-service[data-offer='evenementiel'] {
-  grid-column: 2;
-  grid-row: 3;
-  margin-left: 5.5cqw;
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  align-items: center;
+  gap: 2cqw;
+  min-height: 10cqw;
 }
 .vitrine-service dt {
-  position: relative;
-  z-index: 2;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.vitrine-service dd {
+  margin: 0;
+  white-space: pre-line;
+}
+.vitrine-service-description {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+  font-size: clamp(16px, 1.875cqw, 36px);
+  font-weight: 200;
+  font-style: italic;
+  line-height: 1.25;
+}
+.vitrine-service:nth-child(even) dt {
+  grid-column: 2;
+}
+.vitrine-service:nth-child(even) .vitrine-service-description {
+  grid-column: 1;
 }
 .vitrine-service-name {
   display: block;
 }
 .vitrine-service-lettering {
   display: flex;
+  justify-content: center;
   align-items: center;
-  height: 5.5cqw;
-  margin-left: -1cqw;
+  width: 100%;
+  height: 10cqw;
 }
 .vitrine-service-lettering img {
   display: block;
-  width: 100%;
-  height: auto;
+  max-width: 100%;
   max-height: 100%;
+  width: auto;
   object-fit: contain;
 }
 .vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
-  width: 19cqw;
+  position: relative;
+  height: 14cqw;
 }
 .vitrine-service[data-offer='creation-de-marque']
   .vitrine-service-lettering
   img {
-  width: 50%;
+  position: absolute;
+  width: 77%;
+  height: 74%;
+  object-fit: contain;
 }
-.vitrine-service[data-offer='video-photographe'] .vitrine-service-lettering {
-  width: 22cqw;
+.vitrine-service[data-offer='creation-de-marque']
+  .vitrine-service-lettering
+  img:first-child {
+  left: 0;
+  top: 0;
 }
-.vitrine-service[data-offer='reseaux-sociaux'] .vitrine-service-lettering {
-  width: 13.5cqw;
-  height: 4.2cqw;
+.vitrine-service[data-offer='creation-de-marque']
+  .vitrine-service-lettering
+  img:last-child {
+  right: 0;
+  bottom: 0;
 }
-.vitrine-service[data-offer='graphisme'] .vitrine-service-lettering {
-  width: 10.4cqw;
-  height: 4.4cqw;
+.vitrine-service[data-offer='reseaux-sociaux'] .vitrine-service-lettering img {
+  width: 65%;
 }
-.vitrine-service[data-offer='restructuration-de-restaurants']
-  .vitrine-service-lettering {
-  width: 23.2cqw;
-  height: 6.2cqw;
-}
-.vitrine-service[data-offer='evenementiel'] .vitrine-service-lettering {
-  width: 24cqw;
-  height: 6.8cqw;
+.vitrine-service[data-offer='graphisme'] .vitrine-service-lettering img {
+  width: 54%;
 }
 .vitrine-service[data-offer='evenementiel']
   .vitrine-service-lettering
   img:first-child {
-  width: 56%;
-  height: 5.63cqw;
+  width: 51%;
+  height: 100%;
   object-fit: cover;
   object-position: left;
 }
 .vitrine-service[data-offer='evenementiel']
   .vitrine-service-lettering
+  img:nth-child(2) {
+  width: 6%;
+  height: 65%;
+  object-fit: cover;
+  object-position: right;
+}
+.vitrine-service[data-offer='evenementiel']
+  .vitrine-service-lettering
   img:last-child {
-  width: 44%;
+  width: 43%;
 }
 .vitrine-service-summary {
   display: block;
-  text-transform: uppercase;
-  white-space: pre-line;
-}
-.vitrine-service dd {
-  margin: 0;
-  white-space: pre-line;
 }
 .vitrine-service-details {
-  margin-top: 1.1cqw !important;
-  text-align: right;
+  grid-column: 2;
   font-weight: 400;
 }
 .vitrine-offer-visual {
-  margin-top: 16px !important;
+  grid-column: 1 / -1;
+  width: 50%;
+  justify-self: center;
 }
 .vitrine-offer-visual img {
-  width: 100%;
   display: block;
+  width: 100%;
 }
 .vitrine-service .vitrine-offer-hover {
-  z-index: 1;
   position: absolute;
-  left: -2cqw;
-  top: -2cqw;
+  z-index: 2;
   width: 24cqw;
+  left: 12%;
+  top: -1cqw;
   visibility: hidden;
   opacity: 0;
-  transition: opacity 160ms ease;
   pointer-events: none;
+  transition: opacity 160ms;
 }
 .vitrine-offer-hover img {
+  display: block;
   width: 100%;
   aspect-ratio: 8 / 5;
   object-fit: cover;
@@ -287,165 +287,60 @@ body:has(.vitrine-opening) {
   visibility: visible;
   opacity: 1;
 }
-.vitrine-service:focus-visible {
-  outline: 2px solid;
-  outline-offset: 6px;
-}
 .vitrine-biography {
-  margin: 8.5cqw 7.65625% 0;
+  margin: 15cqw 4.9% 0;
   scroll-margin-top: 32px;
 }
 .vitrine-biography-heading {
-  position: relative;
-  height: 9.791667cqw;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2cqw;
+  margin-right: 7%;
 }
 .vitrine-biography-heading h2 {
-  position: absolute;
-  top: 5.416667cqw;
-  left: 29.6875cqw;
+  font-size: clamp(18px, 1.875cqw, 36px);
 }
 .vitrine-biography-heading > img {
-  position: absolute;
-  width: 46.145833cqw;
-  top: 0;
-  left: 39.479167cqw;
+  width: 54%;
 }
 .vitrine-biography-intro {
   display: grid;
-  grid-template-columns: 30.32342% 1fr;
-  gap: 0;
+  grid-template-columns: 20% 1fr;
+  gap: 1.5cqw;
   align-items: start;
+  margin-top: 1cqw;
 }
-.vitrine-biography-intro > p {
-  width: 19.479167cqw;
-  padding-top: 1.041667cqw;
+.vitrine-biography-question {
+  font-size: clamp(14px, 1.04cqw, 20px);
 }
-.vitrine-biography-intro em {
-  font-weight: 700;
-  font-size: 1.2em;
-  letter-spacing: -0.1em;
+.vitrine-biography-question span {
+  font-weight: 400;
+}
+.vitrine-chapters {
+  display: grid;
+  gap: 2.5cqw;
+  margin-top: 3cqw;
+}
+.vitrine-chapters p {
+  white-space: pre-line;
 }
 .vitrine-childhood {
   position: relative;
-  grid-column: 2;
-  aspect-ratio: 953.819 / 537;
-  width: 49.678073cqw;
-  overflow: hidden;
+  width: 83%;
+  aspect-ratio: 1117.229 / 629;
+  margin: 0;
 }
 .vitrine-childhood > img:not(.vitrine-childhood-caption) {
   position: absolute;
-  width: 56.299999%;
-  height: 177.619867%;
+  width: 56.3%;
+  height: 177.62%;
   max-width: none;
   left: 21.85%;
-  top: -38.809933%;
+  top: -38.81%;
   object-fit: cover;
   transform: rotate(-90deg);
 }
-.vitrine-chapters {
-  min-height: 10.833333cqw;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 2.760417cqw;
-  margin-top: 4.375cqw;
-}
-.vitrine-chapters p {
-  font-size: var(--vitrine-small);
-  letter-spacing: -0.1em;
-  white-space: pre-line;
-}
-.vitrine-manifesto {
-  margin: 8.854167cqw 7.65625% 0;
-  scroll-margin-top: 32px;
-}
-.vitrine-manifesto h2 {
-  text-align: center;
-}
-.vitrine-manifesto-intro {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  margin-top: 3.125cqw;
-}
-.vitrine-manifesto-intro p {
-  min-height: 5.208333cqw;
-  width: 23.75cqw;
-  font-size: var(--vitrine-small);
-  letter-spacing: -0.1em;
-}
-.vitrine-manifesto-collage {
-  position: relative;
-  width: 52.1875cqw;
-  height: 34.375cqw;
-  margin: -2.5cqw 0 0 14.270833cqw;
-}
-.vitrine-manifesto-collage > img,
-.vitrine-collage-photo {
-  position: absolute;
-}
-.vitrine-collage-paper {
-  width: 21.227cqw;
-  left: 23.645833cqw;
-  top: 4.947917cqw;
-}
-.vitrine-collage-photo {
-  left: 6.197917cqw;
-  top: 11.822917cqw;
-  width: 33.541667cqw;
-  height: 13.75cqw;
-  overflow: hidden;
-}
-.vitrine-collage-photo img {
-  position: absolute;
-  width: 100%;
-  height: 150%;
-  top: -37.12%;
-}
-.vitrine-collage-bon {
-  width: 36.510417cqw;
-  left: 7.708333cqw;
-  top: 8.802083cqw;
-}
-.vitrine-collage-bien {
-  width: 40.572917cqw;
-  left: 4.479167cqw;
-  top: 18.697917cqw;
-}
-.vitrine-collage-beau {
-  width: 48.489583cqw;
-  left: 0;
-  top: 0;
-}
-.vitrine-colophon {
-  display: flex;
-  align-items: center;
-  position: absolute;
-  left: 27.604167cqw;
-  top: 32.291667cqw;
-  height: 1.770833cqw;
-  border: 1px solid var(--vitrine-ink);
-  background: var(--vitrine-paper);
-  font-size: 0.625cqw;
-  line-height: 1.333333;
-  letter-spacing: -0.06em;
-  white-space: nowrap;
-}
-.vitrine-colophon > span {
-  padding-inline: 0.833333cqw;
-}
-.vitrine-colophon > svg {
-  width: 1px;
-  height: 100%;
-  flex-shrink: 0;
-}
-.vitrine-colophon > img {
-  position: absolute;
-  width: 8.903894cqw;
-  max-width: none;
-  left: 15.677083cqw;
-  top: -1px;
-}
-
 .vitrine-childhood-caption {
   position: absolute;
   z-index: 1;
@@ -453,368 +348,12 @@ body:has(.vitrine-opening) {
   top: 7%;
   width: 47%;
 }
-.vitrine-manifesto-definition {
-  position: absolute;
-  left: 0;
-  top: 20cqw;
-}
-@media (max-width: 900px) {
-  .vitrine {
-    min-height: 100vh;
-    padding-bottom: 20vw;
-  }
-  .vitrine-biography {
-    margin-top: 12cqw;
-  }
-  .vitrine-biography-heading {
-    height: 15cqw;
-  }
-  .vitrine-biography-heading h2 {
-    left: 25cqw;
-    top: 7cqw;
-  }
-  .vitrine-biography-heading > img {
-    top: 0;
-    left: 41cqw;
-    width: 45cqw;
-  }
-  .vitrine-biography-intro > p {
-    width: auto;
-    padding-right: 20px;
-  }
-  .vitrine-chapters {
-    min-height: 10.833333cqw;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 28px;
-    margin-top: 40px;
-  }
-  .vitrine-manifesto {
-    margin-top: 70px;
-  }
-  .vitrine-manifesto-intro {
-    margin-top: 32px;
-    gap: 24px;
-  }
-  .vitrine-manifesto-intro p {
-    min-height: 5.208333cqw;
-    width: 40%;
-  }
-  .vitrine-manifesto-collage {
-    margin-top: 12px;
-  }
-}
-@media (max-width: 540px) {
-  .vitrine-navigation {
-    inset: 24px 7.65% auto;
-  }
-  .vitrine-navigation-actions {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .vitrine-connect {
-    font-size: 12px;
-  }
-  .vitrine-navigation-sections {
-    width: auto;
-    gap: 18px;
-  }
-  .vitrine-navigation-sections a {
-    font-size: 12px;
-  }
-  .vitrine-biography {
-    margin-top: 60px;
-  }
-  .vitrine-biography-heading {
-    height: 130px;
-  }
-  .vitrine-biography-heading h2 {
-    top: 0;
-    left: 0;
-  }
-  .vitrine-biography-heading > img {
-    width: 90cqw;
-    max-width: none;
-    left: -3cqw;
-    top: 20px;
-  }
-  .vitrine-biography-intro {
-    grid-template-columns: 1fr;
-    gap: 28px;
-  }
-  .vitrine-biography-intro > p {
-    max-width: 280px;
-    padding: 0;
-  }
-  .vitrine-childhood {
-    grid-column: 1;
-    width: 100%;
-  }
-  .vitrine-chapters {
-    min-height: 10.833333cqw;
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  .vitrine-manifesto {
-    margin-top: 60px;
-  }
-  .vitrine-manifesto-intro {
-    display: grid;
-  }
-  .vitrine-manifesto-intro p {
-    min-height: 5.208333cqw;
-    width: 100%;
-  }
-  .vitrine-manifesto-collage {
-    width: 100%;
-    height: 60cqw;
-    margin: 28px 0 0;
-  }
-  .vitrine-collage-paper {
-    width: 34cqw;
-    left: 37.83cqw;
-    top: 7.91cqw;
-  }
-  .vitrine-collage-photo {
-    left: 9.91cqw;
-    top: 18.91cqw;
-    width: 53.66cqw;
-    height: 22cqw;
-  }
-  .vitrine-collage-bon {
-    width: 58.41cqw;
-    left: 12.33cqw;
-    top: 14.08cqw;
-  }
-  .vitrine-collage-bien {
-    width: 64.91cqw;
-    left: 7.16cqw;
-    top: 29.91cqw;
-  }
-  .vitrine-collage-beau {
-    width: 77.58cqw;
-  }
-  .vitrine-colophon {
-    left: 13cqw;
-    top: 53cqw;
-    height: 24px;
-    font-size: 7px;
-  }
-  .vitrine-colophon > span {
-    padding-inline: 5px;
-  }
-  .vitrine-colophon > img {
-    width: 70px;
-    left: 168px;
-    top: 0;
-  }
-}
-/* Deux colonnes indépendantes : titre et première photo partagent la même ligne. */
-.vitrine-projects {
-  position: relative;
-  margin-top: 10.46875cqw;
-  scroll-margin-top: 32px;
-}
-.vitrine-projects h2 {
-  text-align: center;
-}
-.vitrine-projects-collage {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 1.666667cqw;
-  margin: 3.6cqw 3.75% 0 5.416667%;
-}
-.vitrine-project-column {
-  display: grid;
-  gap: 0;
-  min-width: 0;
-}
-.vitrine-project-group {
-  display: grid;
-  gap: 0.833333cqw;
-  min-width: 0;
-}
-.vitrine-project {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 15.46875cqw);
-  align-items: start;
-  gap: 1.666667cqw;
-  min-width: 0;
-}
-.vitrine-project-names {
-  grid-column: 1;
-  grid-row: 1;
-  display: grid;
-  justify-items: end;
-  gap: 0.833333cqw;
-  min-width: 0;
-}
-.vitrine-project-photos {
-  grid-column: 2;
-  grid-row: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: end;
-  gap: 1.041667cqw;
-  min-width: 0;
-}
-.vitrine-project-column-right .vitrine-project {
-  grid-template-columns: minmax(0, 15.46875cqw) minmax(0, 1fr);
-}
-.vitrine-project-column-right .vitrine-project-names {
-  grid-column: 2;
-  justify-items: start;
-}
-.vitrine-project-column-right .vitrine-project-photos {
-  grid-column: 1;
-  align-items: start;
-}
-.vitrine-project-piece {
-  position: relative;
-  width: min(100%, var(--piece-width));
-  aspect-ratio: var(--piece-ratio);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.vitrine-project-piece img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.vitrine-project-name img {
-  object-fit: contain;
-}
-.vitrine-project-mirror {
-  transform: scaleX(-1);
-}
-/* Le rythme vertical vient du collage : les hauteurs minimales laissent
-   les photos ajoutées depuis la gestion agrandir leur groupe naturellement. */
-.vitrine-project-column-left {
-  padding-top: 3.489583cqw;
-}
-.vitrine-project[data-project='Viande des Sorgues'] {
-  min-height: 77.65625cqw;
-}
-.vitrine-project[data-project='Club des riches'] {
-  min-height: 24.375cqw;
-}
-.vitrine-project[data-project='Club des riches'] .vitrine-project-names {
-  visibility: hidden;
-}
-.vitrine-project[data-project='Les Trois Sœurs'] {
-  min-height: 30.729167cqw;
-}
-.vitrine-project[data-project='L’Écluse Douze — Deux Mnu'],
-.vitrine-project-group {
-  min-height: 43.229167cqw;
-}
-.vitrine-project-group .vitrine-project {
-  min-height: 0;
-}
-.vitrine-project-group {
-  align-content: start;
-}
-.vitrine-project[data-project='La Spinière'] {
-  min-height: 27.604167cqw;
-}
-.vitrine-project[data-project='Annafurna'] {
-  min-height: 32.96875cqw;
-}
-.vitrine-project[data-project='Casamatta'] {
-  min-height: 38.802083cqw;
-}
-.vitrine-project[data-project='Origin'] {
-  min-height: 57.1875cqw;
-}
-.vitrine-project[data-project='Le Conseil'] {
-  min-height: 29.6875cqw;
-}
-.vitrine-project[data-project='Le Carré Vert'] {
-  min-height: 38.541667cqw;
-}
-.vitrine-project[data-project='Allegria'] {
-  min-height: 17.708333cqw;
-}
-.vitrine-project-column-right .vitrine-project-photos {
-  gap: 1.458333cqw;
-}
-.vitrine-project[data-project='Origin']
-  .vitrine-project-photo
-  + .vitrine-project-photo {
-  margin-top: 6.041667cqw;
-}
-.vitrine-project-piece > a {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.vitrine-project-piece:has(a) {
-  overflow: visible;
-}
-.vitrine-project-piece a:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 5px;
-}
-@media (max-width: 700px) {
-  .vitrine-projects {
-    margin: 70px 7.65625% 0;
-  }
-  .vitrine-projects-collage {
-    grid-template-columns: 1fr;
-    margin: 40px 0 0;
-    gap: 44px;
-  }
-  .vitrine-project-column {
-    gap: 44px;
-    padding-top: 0;
-  }
-  .vitrine-project[data-project],
-  .vitrine-project-group {
-    min-height: 0;
-  }
-  .vitrine-project[data-project='Club des riches'] .vitrine-project-names {
-    visibility: visible;
-  }
-  .vitrine-project[data-project='Origin']
-    .vitrine-project-photo
-    + .vitrine-project-photo {
-    margin-top: 0;
-  }
-  .vitrine-project-column-right .vitrine-project-photos {
-    gap: 12px;
-  }
-  .vitrine-project,
-  .vitrine-project-column-right .vitrine-project {
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-    gap: 16px;
-  }
-  .vitrine-project-column-right .vitrine-project {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
-  }
-  .vitrine-project-group,
-  .vitrine-project-names {
-    gap: 10px;
-  }
-  .vitrine-project-photos {
-    gap: 12px;
-  }
-  .vitrine-project-piece {
-    width: 100%;
-  }
-  .vitrine-project-photo {
-    width: min(100%, calc(var(--piece-width) * 3));
-  }
-}
 .vitrine-childhood-strip {
   position: absolute;
-  bottom: 16%;
-  right: 0;
+  bottom: 20%;
+  right: -20%;
   display: flex;
-  width: 67%;
+  width: 60%;
   height: 17%;
   overflow: hidden;
 }
@@ -840,7 +379,160 @@ body:has(.vitrine-opening) {
   top: -38.81%;
   transform: rotate(-90deg);
 }
-
+.vitrine-manifesto {
+  margin: 4cqw 4.9% 0;
+  scroll-margin-top: 32px;
+}
+.vitrine-manifesto h2 {
+  text-align: center;
+}
+.vitrine-manifesto-intro {
+  position: relative;
+  margin: 3cqw 0 0 17%;
+}
+.vitrine-manifesto-purpose {
+  display: block;
+  font-weight: 400;
+}
+.vitrine-manifesto-definition {
+  position: absolute;
+  top: 14cqw;
+  right: 0;
+  font-size: clamp(14px, 1.25cqw, 24px);
+}
+.vitrine-manifesto-collage {
+  position: relative;
+  width: 52cqw;
+  height: 34cqw;
+  margin: 1cqw 0 0 20cqw;
+}
+.vitrine-manifesto-collage > img,
+.vitrine-collage-photo {
+  position: absolute;
+}
+.vitrine-collage-paper {
+  width: 21.2cqw;
+  left: 19cqw;
+  top: 2cqw;
+}
+.vitrine-collage-photo {
+  left: 4cqw;
+  top: 9cqw;
+  width: 33.54cqw;
+  height: 13.75cqw;
+  overflow: hidden;
+}
+.vitrine-collage-photo img {
+  position: absolute;
+  width: 100%;
+  height: 150%;
+  top: -37.12%;
+}
+.vitrine-collage-bon {
+  width: 36.51cqw;
+  left: 5.5cqw;
+  top: 6cqw;
+}
+.vitrine-collage-bien {
+  width: 40.57cqw;
+  left: 2.5cqw;
+  top: 16cqw;
+}
+.vitrine-collage-beau {
+  width: 48.49cqw;
+  left: -2cqw;
+  top: -2cqw;
+}
+.vitrine-colophon {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 25cqw;
+  top: 30cqw;
+  height: 1.77cqw;
+  border: 1px solid;
+  background: #fff;
+  font-size: 0.625cqw;
+  white-space: nowrap;
+}
+.vitrine-colophon > span {
+  padding-inline: 0.83cqw;
+}
+.vitrine-colophon > svg {
+  width: 1px;
+  height: 100%;
+  flex-shrink: 0;
+}
+.vitrine-colophon > img {
+  position: absolute;
+  width: 8.9cqw;
+  max-width: none;
+  left: 15.67cqw;
+  top: -1px;
+}
+.vitrine-projects {
+  margin: 32cqw 7% 0;
+  scroll-margin-top: 32px;
+}
+.vitrine-projects h2 {
+  text-align: center;
+}
+.vitrine-projects-collage {
+  display: grid;
+  gap: 2cqw;
+  margin-top: 4cqw;
+}
+.vitrine-project {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 2cqw;
+  margin: 0;
+}
+.vitrine-project-names {
+  min-width: 0;
+}
+.vitrine-project-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 1.4cqw;
+  min-width: 0;
+}
+.vitrine-project-piece {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--piece-ratio);
+}
+.vitrine-project-piece img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.vitrine-project-name img {
+  object-fit: contain;
+}
+.vitrine-project-photo {
+  width: min(100%, calc(var(--piece-width) * 1.5));
+  justify-self: center;
+}
+.vitrine-project-piece > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.vitrine-project-mirror {
+  transform: scaleX(-1);
+}
+.vitrine-project-fitness-row h3 {
+  font-size: var(--vitrine-heading);
+  font-weight: 400;
+}
+.vitrine-project-fitness-row img {
+  display: block;
+  width: 100%;
+}
 .vitrine-contact {
   position: relative;
   margin-top: 7.5cqw;
@@ -924,67 +616,138 @@ body:has(.vitrine-opening) {
 .vitrine-footer a:hover {
   text-decoration: underline;
 }
+
 @media (max-width: 700px) {
+  .vitrine {
+    padding-bottom: 0;
+  }
+  .vitrine-opening {
+    padding-top: 80px;
+  }
   .vitrine-navigation {
-    left: 7%;
-    right: 7%;
-    top: 6%;
-    font-size: 12px;
-    justify-content: space-between;
+    inset: 24px 15% auto 5%;
+    font-size: 11px;
+    gap: 12px;
   }
   .vitrine-navigation-sections {
     gap: 12px;
     flex-wrap: wrap;
-    justify-content: end;
+    justify-content: flex-end;
   }
-  .vitrine-cover > img {
-    object-position: 50% 35%;
+  .vitrine-opening-number {
+    top: 14px;
+    font-size: 32px;
   }
-  .vitrine-opening-caption {
-    top: 76%;
-    left: 8%;
-    width: 45%;
+  .vitrine-introduction {
+    width: 82%;
+    margin-top: 12cqw;
   }
   .vitrine-services {
-    margin: 60px 8% 0;
+    margin: 60px 7% 0;
   }
   .vitrine-services dl {
+    gap: 36px;
+  }
+  .vitrine-service {
     grid-template-columns: 1fr;
-    gap: 42px;
+    gap: 12px;
   }
-  .vitrine-service[data-offer] {
-    grid-column: auto;
-    grid-row: auto;
-    margin: 0;
+  .vitrine-service dt,
+  .vitrine-service:nth-child(even) dt {
+    grid-column: 1;
+    grid-row: 1;
   }
-  .vitrine-service[data-offer] .vitrine-service-lettering {
-    width: min(100%, 320px);
+  .vitrine-service .vitrine-service-description,
+  .vitrine-service:nth-child(even) .vitrine-service-description {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .vitrine-service-lettering {
+    width: 100%;
     height: 90px;
-    margin-left: -8px;
   }
   .vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
-    width: 270px;
+    height: 140px;
   }
-  .vitrine-service[data-offer='reseaux-sociaux'] .vitrine-service-lettering {
-    width: 210px;
-    height: 65px;
-  }
-  .vitrine-service[data-offer='graphisme'] .vitrine-service-lettering {
-    width: 160px;
-    height: 70px;
-  }
-  .vitrine-service[data-offer='evenementiel']
-    .vitrine-service-lettering
-    img:first-child {
-    height: 70px;
+  .vitrine-service-description {
+    font-size: 18px;
   }
   .vitrine-service-details {
-    margin-top: 16px !important;
-    max-width: 85%;
-    margin-left: auto !important;
+    grid-column: 1;
+  }
+  .vitrine-biography {
+    margin: 80px 7% 0;
+  }
+  .vitrine-biography-heading {
+    display: block;
+    margin: 0;
+  }
+  .vitrine-biography-heading > img {
+    width: 100%;
+  }
+  .vitrine-biography-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .vitrine-biography-story {
+    display: contents;
+  }
+  .vitrine-biography-question {
+    order: 0;
+  }
+  .vitrine-childhood {
+    order: 1;
+    width: 85%;
+  }
+  .vitrine-chapters {
+    order: 2;
+    gap: 24px;
+    margin-top: 12px;
+  }
+  .vitrine-manifesto {
+    margin: 60px 7% 0;
+  }
+  .vitrine-manifesto-intro {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 24px;
+    margin: 24px 0 0;
   }
   .vitrine-manifesto-definition {
     position: static;
+  }
+  .vitrine-manifesto-collage {
+    margin: 25px 0 0 4%;
+    transform-origin: top left;
+    transform: scale(1.5);
+    margin-bottom: 22cqw;
+  }
+  .vitrine-colophon {
+    font-size: 5px;
+    height: 14px;
+    left: 15cqw;
+  }
+  .vitrine-colophon > img {
+    left: 20cqw;
+    width: 12cqw;
+  }
+  .vitrine-projects {
+    margin: 60px 5% 0;
+  }
+  .vitrine-projects-collage {
+    margin-top: 32px;
+    gap: 24px;
+  }
+  .vitrine-project {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 12px;
+  }
+  .vitrine-project-photo {
+    width: 100%;
+  }
+  .vitrine-project-fitness-row h3 {
+    font-size: 12px;
   }
   .vitrine-contact {
     margin-top: 60px;
@@ -1015,10 +778,10 @@ body:has(.vitrine-opening) {
 @media (hover: none), (pointer: coarse) {
   .vitrine-service .vitrine-offer-hover {
     position: static;
+    grid-column: 1 / -1;
     width: 70%;
     visibility: visible;
     opacity: 1;
-    margin-top: 16px;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1027,73 +790,107 @@ body:has(.vitrine-opening) {
   }
 }
 
-.vitrine-project-craft {
-  position: absolute;
-  top: 60.57cqw;
-  right: 4.74%;
-  width: 16.25%;
-}
-.vitrine-project-craft img {
+.vitrine-manifesto-definition > span {
   display: block;
-  width: 100%;
 }
-.vitrine-project-fitness {
-  position: absolute;
-  left: 6.5%;
-  top: 184cqw;
+@media (prefers-reduced-motion: no-preference) {
+  .vitrine-manifesto-animated .vitrine-collage-beau {
+    animation: vitrine-reveal 1s both;
+  }
+  .vitrine-manifesto-animated .vitrine-collage-bon {
+    animation: vitrine-reveal 1s 0.7s both;
+  }
+  .vitrine-manifesto-animated .vitrine-collage-bien {
+    animation: vitrine-reveal 1s 1.4s both;
+  }
+  .vitrine-manifesto-animated .vitrine-manifesto-definition > span {
+    animation: vitrine-type 16s steps(36, end) infinite both;
+  }
+  .vitrine-manifesto-animated
+    .vitrine-manifesto-definition
+    > span:nth-child(2) {
+    animation-delay: 4s;
+  }
+  .vitrine-manifesto-animated
+    .vitrine-manifesto-definition
+    > span:nth-child(3) {
+    animation-delay: 8s;
+  }
+  .vitrine-manifesto-animated
+    .vitrine-manifesto-definition
+    > span:nth-child(4) {
+    animation-delay: 12s;
+  }
+}
+@keyframes vitrine-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes vitrine-type {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  12%,
+  24% {
+    clip-path: inset(0 0 0 0);
+  }
+  25%,
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+.vitrine-project-fitness-row h3 {
+  font-family: Caveat, cursive;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Le lettrage reste lisible au-dessus de l’image de survol. */
+.vitrine-service dt {
+  position: relative;
+  z-index: 2;
+}
+.vitrine-service .vitrine-offer-hover {
+  z-index: 1;
+}
+
+.vitrine-contact {
+  padding-bottom: 0;
+}
+.vitrine-footer {
+  margin: 8cqw 0 0;
+  padding: 3cqw 5%;
+  min-height: 16.3cqw;
+  align-items: center;
+  background: #aeaeae;
+}
+.vitrine-footer > img {
+  width: 13.35cqw;
+  opacity: 0.43;
+  transform: rotate(2.16deg);
 }
 @media (max-width: 700px) {
-  .vitrine-project-craft {
-    position: static;
-    width: 45%;
-    margin: 40px auto;
-  }
-  .vitrine-project-fitness {
-    position: static;
-    text-align: center;
-    margin-top: 40px !important;
+  .vitrine-footer > img {
+    width: 130px;
   }
 }
 
-@media (min-width: 701px) {
-  .vitrine-biography {
-    margin-top: 5.43cqw;
-  }
-  .vitrine-project-column-left {
-    padding-top: 6.979167cqw;
-  }
-  .vitrine-project-column-right .vitrine-project {
-    grid-template-columns: minmax(0, 16.25cqw) minmax(0, 1fr);
-  }
-  .vitrine-project[data-project='Annafurna'] {
-    min-height: 36.25cqw;
-  }
-  .vitrine-project[data-project='Origin'] {
-    min-height: 46.77cqw;
-  }
-  .vitrine-project[data-project='Le Conseil'] {
-    min-height: 17.34375cqw;
-  }
-  .vitrine-project[data-project='Les Trois Sœurs'] {
-    min-height: 21.6cqw;
-  }
-  .vitrine-project[data-project='Allegria'] {
-    margin-top: -5cqw;
-  }
-  .vitrine-contact {
-    margin-top: 10.47cqw;
-  }
+.vitrine-introduction {
+  position: relative;
+}
+.vitrine-introduction > .vitrine-introduction-caption {
+  position: absolute;
+  width: 17.7%;
+  left: 47.9%;
+  top: 48.3%;
 }
 
-@media (min-width: 701px) and (max-width: 900px) {
-  .vitrine-navigation {
-    left: 7%;
-    right: 7%;
-    top: 6%;
-    font-size: 12px;
-    justify-content: space-between;
-  }
-  .vitrine-navigation-sections {
-    gap: 24px;
-  }
+.vitrine-manifesto h2 {
+  text-transform: none;
 }

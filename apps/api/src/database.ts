@@ -7,6 +7,7 @@ import {
   initialOffers,
   previousOffers,
   previousDesignOffers,
+  previousVitrineOffers,
 } from './offers.seed';
 
 const scrypt = promisify(deriveKey);
@@ -179,6 +180,39 @@ export class Database {
         }
         await client.query(
           "INSERT INTO migrations VALUES ('vitrine-figma-411-3')",
+        );
+      }
+      // Met à jour les textes de la vitrine sans écraser une rédaction personnalisée.
+      if (
+        !(
+          await client.query(
+            "SELECT 1 FROM migrations WHERE id='vitrine-novembre-2026-v2'",
+          )
+        ).rowCount
+      ) {
+        for (const offer of initialOffers) {
+          const previous = previousVitrineOffers.find(
+            (item) => item.slug === offer.slug,
+          )!;
+          await client.query(
+            `UPDATE offers SET content=content || $2::jsonb WHERE slug=$1 AND content->>'description'=$3 AND content->>'name'=$4
+             AND content->>'summary'=$5 AND (content->>'position')::int=$6`,
+            [
+              offer.slug,
+              {
+                description: offer.description,
+                summary: offer.summary,
+                position: offer.position,
+              },
+              previous.description,
+              previous.name,
+              previous.summary,
+              previous.position,
+            ],
+          );
+        }
+        await client.query(
+          "INSERT INTO migrations VALUES ('vitrine-novembre-2026-v2')",
         );
       }
       // Les variables servent uniquement à créer le compte initial ; aucun mot de passe en clair en base.

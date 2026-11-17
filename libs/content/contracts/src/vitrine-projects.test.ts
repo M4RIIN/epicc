@@ -61,9 +61,24 @@ it('sépare les clients, conserve un seul logo par client et préserve les dimen
     (client) => client.name === 'Viande des Sorgues',
   )!;
   const resized = clientPieces(project, [
-    { file: 'Rectangle5.png', image: null, alt: 'Test', size: 'large' },
+    { file: 'Rectangle6.png', image: null, alt: 'Test', size: 'large' },
   ]);
-  const photo = resized.find((piece) => piece.file === 'Rectangle5.png')!;
+  const photo = resized.find((piece) => piece.file === 'Rectangle6.png')!;
   expect(photo.width).toBe(297);
-  expect(photo.width / photo.height).toBeCloseTo(222 / 283);
+  expect(photo.width / photo.height).toBeCloseTo(230 / 405);
+});
+
+it('compose chaque client de la nouvelle vitrine avec un seul nom et deux photos maximum', async () => {
+  const { projectClients, showcaseClientNames } =
+    await import('./vitrine-projects');
+  for (const client of projectClients.filter((client) =>
+    showcaseClientNames.includes(client.name),
+  )) {
+    expect(client.pieces.filter((piece) => piece.role === 'name')).toHaveLength(
+      1,
+    );
+    expect(
+      client.pieces.filter((piece) => piece.role === 'photo'),
+    ).toHaveLength(2);
+  }
 });

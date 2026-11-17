@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import {
-  vitrineProjects,
+  projectOriginalPieces,
   canonicalLogo,
   logoAlias,
 } from '@epicc/content-contracts';
@@ -31,7 +31,7 @@ export async function importProjectOriginals(database: Database, root: string) {
         'Deux versions éditées du logo de L’Écluse Douze : sources conservées, choix nécessaire.',
       );
     }
-    for (const piece of vitrineProjects.flatMap((project) => project.pieces)) {
+    for (const piece of projectOriginalPieces) {
       const existing = await database.pool.query(
         'SELECT 1 FROM project_originals WHERE file=$1',
         [piece.file],

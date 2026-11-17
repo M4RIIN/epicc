@@ -1,29 +1,55 @@
+import { useEffect, useRef, useState } from 'react';
 import { Artwork } from './artwork';
 import { useVitrineImageUrl } from './media';
 
 export function Manifesto() {
+  const section = useRef<HTMLElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!section.current || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(section.current);
+    return () => observer.disconnect();
+  }, []);
   const line = useVitrineImageUrl('Line8.svg');
   return (
     <section
-      className="vitrine-manifesto"
+      ref={section}
+      className={`vitrine-manifesto ${visible ? 'vitrine-manifesto-animated' : ''}`}
       id="epicc"
       aria-labelledby="manifesto-title"
     >
-      <h2 id="manifesto-title">EPICC, c’est quoi</h2>
+      <h2 id="manifesto-title">EPICC, pourquoi ?</h2>
       <div className="vitrine-manifesto-intro">
         <p className="vitrine-manifesto-definition">
-          Épicc, pour épicurien.
-          <br />
-          Épicc, pour épique.
-          <br />
-          CC, pour Chloé Catala.
-          <br />
-          CC, pour conseil et communication.
+          {[
+            'Épicc, pour épicurien.',
+            'Épicc, pour épique.',
+            'CC, pour Chloé Catala.',
+            'CC, pour conseil et communication.',
+          ].map((phrase) => (
+            <span key={phrase}>{phrase}</span>
+          ))}
         </p>
         <p>
           Né pour accompagner les acteurs de la restauration et de
           l’agroalimentaire pour faire exister, développer et faire connaître
           leur marque.
+          <span className="vitrine-manifesto-purpose">
+            La volonté d’aider des commerçants, des entrepreneurs qui ont des
+            idées à les mettre en valeur au mieux.
+            <br />
+            Faire ressortir le beau, le bon, le bien de chaque projet que
+            j’accompagne.
+          </span>
         </p>
       </div>
       <figure
