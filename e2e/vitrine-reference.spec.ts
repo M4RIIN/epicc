@@ -24,9 +24,7 @@ for (const javaScriptEnabled of [false, true]) {
         'Événementiel & scénographie',
       ]) {
         await expect(
-          page
-            .locator('.vitrine-service-name')
-            .getByText(name, { exact: true }),
+          page.locator('.vitrine-service').getByText(name, { exact: true }),
         ).toBeVisible();
       }
       await expect(
@@ -83,7 +81,7 @@ for (const javaScriptEnabled of [false, true]) {
         })
         .first()
         .click();
-      await expect(page).toHaveURL('/clients/viandes-des-sommets');
+      await expect(page).toHaveURL('/clients/viandes-des-sommets/');
       await page.getByRole('link', { name: 'Tous les projets' }).click();
       await expect(page).toHaveURL('/#projets');
       await page.getByText('Menu', { exact: true }).click();

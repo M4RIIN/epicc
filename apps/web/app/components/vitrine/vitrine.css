@@ -1,13 +1,13 @@
 @font-face {
   font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono.ttf') format('truetype');
+  src: url('/fonts/roboto-mono.woff2') format('woff2');
   font-weight: 100 700;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Roboto Mono';
-  src: url('/fonts/roboto-mono-italic.ttf') format('truetype');
+  src: url('/fonts/roboto-mono-italic.woff2') format('woff2');
   font-weight: 100 700;
   font-style: italic;
   font-display: swap;
@@ -241,43 +241,6 @@ body:has(.vitrine) {
   .vitrine-service-lettering
   img:last-child {
   width: 43%;
-}
-.vitrine-service-summary {
-  display: block;
-}
-.vitrine-service-details {
-  grid-column: 2;
-  font-weight: 400;
-}
-.vitrine-offer-visual {
-  grid-column: 1 / -1;
-  width: 50%;
-  justify-self: center;
-}
-.vitrine-offer-visual img {
-  display: block;
-  width: 100%;
-}
-.vitrine-service .vitrine-offer-hover {
-  position: absolute;
-  z-index: 2;
-  width: 24cqw;
-  left: 12%;
-  top: -1cqw;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 160ms;
-}
-.vitrine-offer-hover img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 8 / 5;
-  object-fit: cover;
-}
-.vitrine-service:is(:hover, :focus-within) .vitrine-offer-hover {
-  visibility: visible;
-  opacity: 1;
 }
 .vitrine-biography {
   margin: 15cqw 4.9% 0;
@@ -660,9 +623,6 @@ body:has(.vitrine) {
   .vitrine-service-description {
     font-size: 18px;
   }
-  .vitrine-service-details {
-    grid-column: 1;
-  }
   .vitrine-biography {
     margin: 80px 7% 0;
   }
@@ -763,21 +723,6 @@ body:has(.vitrine) {
     margin-top: 60px;
   }
 }
-@media (hover: none), (pointer: coarse) {
-  .vitrine-service .vitrine-offer-hover {
-    position: static;
-    grid-column: 1 / -1;
-    width: 70%;
-    visibility: visible;
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .vitrine-service .vitrine-offer-hover {
-    transition: none;
-  }
-}
-
 .vitrine-manifesto-definition > span {
   display: block;
 }
@@ -837,15 +782,6 @@ body:has(.vitrine) {
   font-weight: 400;
   text-transform: none;
   letter-spacing: normal;
-}
-
-/* Le lettrage reste lisible au-dessus de l’image de survol. */
-.vitrine-service dt {
-  position: relative;
-  z-index: 2;
-}
-.vitrine-service .vitrine-offer-hover {
-  z-index: 1;
 }
 
 .vitrine-contact {

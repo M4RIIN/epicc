@@ -1,23 +1,29 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { VitrineImage } from '@epicc/content-contracts';
 
-const MediaContext = createContext<VitrineImage[]>([]);
+export type ResponsiveImageSource = { src: string; width: number };
+export type VitrineImage = { image: string; sources?: ResponsiveImageSource[] };
+type ResolveImage = (file: string, displayWidth?: number) => VitrineImage;
+
+const MediaContext = createContext<ResolveImage>(() => {
+  throw new Error('Catalogue des visuels indisponible.');
+});
+
 export function VitrineMedia({
-  images,
+  resolve,
   children,
 }: {
-  images: VitrineImage[];
+  resolve: ResolveImage;
   children: ReactNode;
 }) {
   return (
-    <MediaContext.Provider value={images}>{children}</MediaContext.Provider>
+    <MediaContext.Provider value={resolve}>{children}</MediaContext.Provider>
   );
 }
-export function useVitrineImage(file: string) {
-  return useContext(MediaContext).find((image) => image.file === file);
+
+export function useVitrineImage(file: string, displayWidth?: number) {
+  return useContext(MediaContext)(file, displayWidth);
 }
+
 export function useVitrineImageUrl(file: string) {
-  const image = useVitrineImage(file);
-  if (!image) throw new Error(`Référence de visuel absente : ${file}`);
-  return image.image;
+  return useVitrineImage(file).image;
 }

@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import { Artwork } from './artwork';
 
 export function Opening() {
@@ -30,7 +29,6 @@ export function Opening() {
             <a href="#epicc">L’esprit EPICC</a>
             <a href="#projets">Les projets clients</a>
             <a href="#contact">Contact</a>
-            <Link to="/connect">Espace de gestion</Link>
           </div>
         </details>
         <div className="vitrine-navigation-actions">
