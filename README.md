@@ -1,6 +1,6 @@
 # EPICC — Vitrine statique
 
-Le site comprend l’accueil et la réalisation Viandes des Sommets. Le build produit du HTML, du CSS, des images WebP et un petit script pour l’animation du manifeste et la préparation du message de contact. Les pages se lisent et se parcourent aussi sans JavaScript.
+Le site comprend l’accueil et les fiches projets Amafolia et Viandes des Sommets. Le build produit du HTML, du CSS, des images WebP et un petit script pour l’animation du manifeste et la préparation du message de contact. Les pages se lisent et se parcourent aussi sans JavaScript.
 
 ```sh
 npm ci

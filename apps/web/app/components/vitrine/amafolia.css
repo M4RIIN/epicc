@@ -1,0 +1,199 @@
+@font-face {
+  font-family: 'Roboto Mono';
+  src: url('../fonts/roboto-mono-italic.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+.client-project.amafolia img {
+  height: auto;
+}
+
+.amafolia-intro,
+.amafolia-applications {
+  font-family: 'Roboto Mono', monospace;
+  text-transform: uppercase;
+}
+
+.amafolia-intro ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.amafolia-nav,
+.amafolia-nav ul,
+.amafolia-missions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.amafolia-nav {
+  justify-content: space-between;
+  gap: 12px 24px;
+  font-weight: 700;
+  font-size: clamp(12px, 1.25cqw, 24px);
+  line-height: 1.25;
+  letter-spacing: -0.06em;
+}
+
+.amafolia-nav ul {
+  gap: 8px clamp(12px, 4cqw, 76px);
+}
+
+.amafolia-nav a:hover {
+  text-decoration: underline;
+}
+
+.amafolia-missions {
+  justify-content: center;
+  gap: 5px 3cqw;
+  font-weight: 700;
+  font-style: italic;
+  font-size: clamp(12px, 1.14cqw, 22px);
+  line-height: 1.25;
+  letter-spacing: -0.07em;
+}
+
+.amafolia-interventions,
+.amafolia-presentation,
+.amafolia-applications p {
+  font-weight: 700;
+  font-size: clamp(12px, 0.83cqw, 16px);
+  line-height: 1.3;
+  letter-spacing: -0.06em;
+  margin: 0;
+}
+
+.amafolia-interventions li::before {
+  content: '/ ';
+}
+
+.amafolia-interventions p {
+  font-weight: 300;
+  margin: 15px 0 0 2.3cqw;
+  font-size: 1.25em;
+}
+
+.client-project.amafolia img.amafolia-brasserie {
+  width: 63%;
+  margin: 12cqw auto 8cqw;
+}
+
+@media (width >= 1200px) {
+  .amafolia-intro,
+  .amafolia-applications {
+    position: relative;
+  }
+
+  .amafolia-intro {
+    aspect-ratio: 1920 / 908;
+  }
+
+  .amafolia-nav,
+  .amafolia-missions,
+  .amafolia-logo,
+  .amafolia-interventions,
+  .amafolia-presentation,
+  .amafolia-applications > * {
+    position: absolute;
+  }
+
+  .amafolia-nav {
+    top: 8.8%;
+    inset-inline: 7.65%;
+  }
+
+  .amafolia-missions {
+    top: 29.2%;
+    inset-inline: 6%;
+  }
+
+  .client-project.amafolia img.amafolia-logo {
+    top: 39%;
+    left: 28.65%;
+    width: 39.32%;
+  }
+
+  .amafolia-interventions {
+    top: 47.2%;
+    left: 3.4%;
+    width: 24%;
+  }
+
+  .amafolia-presentation {
+    top: 79%;
+    left: 67.2%;
+    width: 26%;
+  }
+
+  .amafolia-applications {
+    aspect-ratio: 1920 / 1111;
+  }
+
+  .client-project.amafolia img.amafolia-lettrage {
+    left: 6.7%;
+    top: 0;
+    width: 34%;
+  }
+
+  .amafolia-applications p {
+    top: 23.2%;
+    left: 16.67%;
+    width: 19.8%;
+  }
+
+  .client-project.amafolia img.amafolia-serviette {
+    left: 13.9%;
+    top: 36.6%;
+    width: 25.57%;
+  }
+
+  .client-project.amafolia img.amafolia-carte {
+    left: 46.3%;
+    top: 11%;
+    width: 46.25%;
+  }
+}
+
+@media (width >= 1500px) {
+  .amafolia-interventions {
+    width: 32%;
+  }
+}
+
+@media (width < 1200px) {
+  .amafolia-intro {
+    display: grid;
+    gap: 28px;
+    padding: 22px 20px 32px;
+  }
+
+  .amafolia-missions {
+    justify-content: start;
+  }
+
+  .client-project.amafolia img.amafolia-logo {
+    width: min(100%, 540px);
+    margin-inline: auto;
+  }
+
+  .amafolia-applications {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+    align-items: end;
+    gap: 16px;
+    padding: 12px 20px 32px;
+  }
+
+  .amafolia-applications p,
+  .amafolia-lettrage {
+    grid-column: 1 / -1;
+  }
+
+  .client-project.amafolia img.amafolia-lettrage {
+    width: 70%;
+  }
+}

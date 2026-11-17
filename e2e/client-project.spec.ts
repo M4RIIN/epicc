@@ -1,5 +1,61 @@
 import { expect, test } from '@playwright/test';
 
+test.describe('fiche Amafolia', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('le premier projet ouvre une fiche navigable sur mobile', async ({
+    page,
+  }) => {
+    const route = '/clients/amafolia/';
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    const firstProject = page.locator('.vitrine-project').first();
+    await expect(firstProject).toHaveAttribute('data-project', 'Amafolia');
+    const links = firstProject.getByRole('link', {
+      name: 'Amafolia — découvrir l’identité visuelle',
+    });
+    await expect(links).toHaveCount(3);
+    await links.first().click();
+    await expect(page).toHaveURL(route);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Amafolia',
+    );
+
+    const images = page.locator('.amafolia img');
+    expect(await images.count()).toBeGreaterThan(4);
+    for (const image of await images.all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() =>
+          image.evaluate(
+            (el: HTMLImageElement) => el.complete && el.naturalWidth > 0,
+          ),
+        )
+        .toBe(true);
+    }
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.setViewportSize({ width: 1024, height: 900 });
+    const logo = (await page.locator('.amafolia-logo').boundingBox())!;
+    const interventions = (await page
+      .locator('.amafolia-interventions')
+      .boundingBox())!;
+    expect(logo.y + logo.height).toBeLessThan(interventions.y);
+
+    const canonical = await page
+      .locator('link[rel="canonical"]')
+      .getAttribute('href');
+    expect(new URL(canonical!).pathname).toBe(route);
+    const sitemap = await page.request.get('/sitemap.xml');
+    expect(await sitemap.text()).toContain(`<loc>${canonical}</loc>`);
+    await page.getByRole('link', { name: 'Tous les projets' }).click();
+    await expect(page).toHaveURL('/#projets');
+  });
+});
+
 for (const javaScriptEnabled of [false, true]) {
   test(`projet Viandes des Sommets accessible et référencé, JavaScript ${javaScriptEnabled}`, async ({
     browser,
