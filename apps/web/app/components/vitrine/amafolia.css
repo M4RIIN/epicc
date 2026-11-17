@@ -10,32 +10,10 @@
   padding: 0;
 }
 
-.amafolia-nav,
-.amafolia-nav ul,
 .amafolia-missions {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-}
-
-.amafolia-nav {
-  justify-content: space-between;
-  gap: 12px 24px;
-  font-weight: 700;
-  font-size: clamp(12px, 1.25cqw, 24px);
-  line-height: 1.25;
-  letter-spacing: -0.06em;
-}
-
-.amafolia-nav ul {
-  gap: 8px clamp(12px, 4cqw, 76px);
-}
-
-.amafolia-nav a:hover {
-  text-decoration: underline;
-}
-
-.amafolia-missions {
   justify-content: center;
   gap: 5px 3cqw;
   font-weight: 700;
@@ -80,18 +58,12 @@
     aspect-ratio: 1920 / 908;
   }
 
-  .amafolia-nav,
   .amafolia-missions,
   .amafolia-logo,
   .amafolia-interventions,
   .amafolia-presentation,
   .amafolia-applications > * {
     position: absolute;
-  }
-
-  .amafolia-nav {
-    top: 8.8%;
-    inset-inline: 7.65%;
   }
 
   .amafolia-missions {

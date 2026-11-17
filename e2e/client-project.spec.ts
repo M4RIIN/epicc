@@ -95,6 +95,18 @@ for (const javaScriptEnabled of [false, true]) {
       expect(
         structured['@graph'].map((item: { '@type': string }) => item['@type']),
       ).toEqual(['WebPage', 'CreativeWork', 'BreadcrumbList']);
+      const menu = page.getByRole('navigation', {
+        name: 'Navigation principale',
+      });
+      await expect(
+        menu.getByRole('link', { name: 'Menu — accueil EPICC' }),
+      ).toHaveAttribute('href', '/');
+      await expect(
+        menu.getByRole('link', { name: 'À propos' }),
+      ).toHaveAttribute('href', '/#a-propos');
+      await expect(
+        menu.getByRole('link', { name: 'Les offres' }),
+      ).toHaveAttribute('href', '/#prestations');
       const images = page.locator('.client-project img');
       await expect(images).toHaveCount(10);
       const cover = page.getByRole('img', {
@@ -134,7 +146,7 @@ for (const javaScriptEnabled of [false, true]) {
           });
         }
       }
-      await page.getByRole('link', { name: 'Tous les projets' }).click();
+      await menu.getByRole('link', { name: 'Les projets clients' }).click();
       await expect(page).toHaveURL('/#projets');
       await page
         .getByRole('link', {

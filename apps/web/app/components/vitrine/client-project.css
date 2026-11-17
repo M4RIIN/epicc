@@ -39,6 +39,38 @@
   white-space: nowrap;
 }
 
+.project-nav,
+.project-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.project-nav {
+  justify-content: space-between;
+  gap: 12px 24px;
+  font-weight: 700;
+  font-size: clamp(12px, 1.25cqw, 24px);
+  line-height: 1.25;
+  letter-spacing: -0.06em;
+}
+
+.project-nav ul {
+  gap: 8px clamp(12px, 4cqw, 76px);
+}
+
+.project-nav a:hover {
+  text-decoration: underline;
+}
+
+@media (width >= 1200px) {
+  .project-nav {
+    position: absolute;
+    top: 8.8%;
+    inset-inline: 7.65%;
+  }
+}
+
 .project-footer {
   padding: 40px max(24px, 8vw) 64px;
   font-family: 'Roboto Mono', monospace;

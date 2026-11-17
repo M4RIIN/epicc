@@ -1,5 +1,6 @@
 import { Artwork } from '../components/vitrine/artwork';
 import { ClientProjectFooter } from '../components/vitrine/client-project-footer';
+import { ClientProjectNav } from '../components/vitrine/client-project-nav';
 import { amafolia } from '../site';
 
 const missions = [
@@ -14,22 +15,7 @@ export default function Amafolia({ homePath }: { homePath: string }) {
     <main id="contenu" className="client-project amafolia">
       <article aria-labelledby="amafolia-title">
         <header className="amafolia-intro">
-          <nav className="amafolia-nav" aria-label="Navigation principale">
-            <a href={homePath} aria-label="Menu — accueil EPICC">
-              Menu
-            </a>
-            <ul>
-              <li>
-                <a href={`${homePath}#a-propos`}>À propos</a>
-              </li>
-              <li>
-                <a href={`${homePath}#prestations`}>Les offres</a>
-              </li>
-              <li>
-                <a href={`${homePath}#projets`}>Les projets clients</a>
-              </li>
-            </ul>
-          </nav>
+          <ClientProjectNav homePath={homePath} />
           <h1 id="amafolia-title" className="project-sr-only">
             Amafolia
           </h1>
