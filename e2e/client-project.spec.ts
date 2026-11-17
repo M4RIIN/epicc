@@ -60,7 +60,10 @@ for (const javaScriptEnabled of [false, true]) {
   test(`projet Viandes des Sommets accessible et référencé, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }, testInfo) => {
-    const context = await browser.newContext({ javaScriptEnabled });
+    const context = await browser.newContext({
+      javaScriptEnabled,
+      reducedMotion: 'reduce',
+    });
     try {
       const page = await context.newPage();
       const response = await page.goto('/clients/viandes-des-sommets/');
@@ -107,8 +110,8 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(
         menu.getByRole('link', { name: 'Les offres' }),
       ).toHaveAttribute('href', '/#prestations');
-      const images = page.locator('.client-project img');
-      await expect(images).toHaveCount(10);
+      const images = page.locator('.client-project img:not([aria-hidden] img)');
+      await expect(images).toHaveCount(19);
       const cover = page.getByRole('img', {
         name: /pièce de viande suspendue/i,
       });
@@ -164,3 +167,53 @@ for (const javaScriptEnabled of [false, true]) {
     }
   });
 }
+
+test('le reportage défile dans les deux sens et peut être mis en pause', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1000 });
+  await page.goto('/clients/viandes-des-sommets/');
+  const pause = page.getByRole('checkbox', {
+    name: 'Mettre le défilement en pause',
+  });
+  const tracks = page.locator('.vds-photo-track');
+  await expect(tracks).toHaveCount(2);
+  await pause.check();
+  for (const track of await tracks.all()) {
+    await expect(track).toHaveCSS('animation-play-state', 'paused');
+  }
+  await pause.uncheck();
+  for (const track of await tracks.all()) {
+    await expect(track).toHaveCSS('animation-play-state', 'running');
+  }
+
+  const positions = await tracks.evaluateAll((elements) =>
+    elements.map((element) => {
+      const [animation] = element.getAnimations();
+      if (!animation) throw new Error('Animation du reportage introuvable');
+      animation.pause();
+      const positionAt = (time: number) => {
+        animation.currentTime = time;
+        return element.getBoundingClientRect().x;
+      };
+      return {
+        start: positionAt(0),
+        later: positionAt(1000),
+        loop: positionAt(30000),
+      };
+    }),
+  );
+  const top = positions[0]!;
+  const bottom = positions[1]!;
+  expect(top.later).toBeLessThan(top.start);
+  expect(bottom.later).toBeGreaterThan(bottom.start);
+  expect(top.loop).toBeCloseTo(top.start);
+  expect(bottom.loop).toBeCloseTo(bottom.start);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(pause).toBeHidden();
+  for (const track of await tracks.all()) {
+    await expect(track).toHaveCSS('animation-name', 'none');
+    await expect(track.getByRole('img')).toHaveCount(4);
+  }
+});
