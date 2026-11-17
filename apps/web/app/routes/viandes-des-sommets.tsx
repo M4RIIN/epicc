@@ -10,6 +10,48 @@ const missions = [
   'Réseaux sociaux',
 ];
 
+const reportageRows = [
+  [
+    ['elevage', 211, 645, 'Éleveuse auprès du troupeau'],
+    ['grillade', 422, 631, 'Pièce de bœuf saisie au barbecue'],
+    ['table', 421, 631, 'Repas en plein air dans les Pyrénées'],
+    ['neige', 440, 631, 'Convives installés face aux sommets enneigés'],
+  ],
+  [
+    ['service', 430, 645, 'Serveur présentant un plat en montagne'],
+    ['cuisson', 430, 645, 'Pièces de bœuf grillées sur une planche'],
+    ['troupeau', 430, 645, 'Éleveur au milieu de ses vaches'],
+    ['paysage', 138, 645, 'Table dressée en montagne sous le ciel bleu'],
+  ],
+] as const;
+
+function ReportageRow({ photos }: { photos: (typeof reportageRows)[number] }) {
+  return (
+    <div className="vds-photo-window">
+      <div className="vds-photo-track">
+        {[false, true, true].map((copy, index) => (
+          <div
+            className="vds-photo-group"
+            key={index}
+            aria-hidden={copy || undefined}
+          >
+            {photos.map(([name, width, height, alt]) => (
+              <Artwork
+                key={name}
+                file={`viandes-des-sommets/vds-${name}.webp`}
+                width={width}
+                height={height}
+                sizes={`(width < 520px) 130px, ${width / 19.2}vw`}
+                alt={copy ? '' : alt}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ViandesDesSommets({ homePath }: { homePath: string }) {
   return (
     <main id="contenu" className="client-project viandes-des-sommets">
@@ -130,13 +172,31 @@ export default function ViandesDesSommets({ homePath }: { homePath: string }) {
             sizes="100vw"
             alt="Motif typographique noir L’art du bœuf"
           />
-          <Artwork
-            file="viandes-des-sommets/vds-reportage.webp"
-            width={1920}
-            height={1702}
-            sizes="100vw"
-            alt="Tampon rouge L’art du bœuf, grillades, repas en montagne et élevage dans les Pyrénées"
-          />
+          <div className="vds-gallery">
+            <Artwork
+              className="vds-reportage-logo"
+              file="viandes-des-sommets/vds-art-du-boeuf.webp"
+              width={700}
+              height={735}
+              sizes="36.5vw"
+              alt="Logo rouge L’art du bœuf"
+            />
+            <label className="vds-gallery-pause">
+              <input type="checkbox" /> Mettre le défilement en pause
+            </label>
+            <ReportageRow photos={reportageRows[0]} />
+            <div className="vds-second-row">
+              <ReportageRow photos={reportageRows[1]} />
+              <Artwork
+                className="vds-reportage-lettering"
+                file="viandes-des-sommets/vds-jai-faim.webp"
+                width={927}
+                height={506}
+                sizes="32vw"
+                alt="J’ai faim"
+              />
+            </div>
+          </div>
         </section>
         <Artwork
           className="vds-frieze"
