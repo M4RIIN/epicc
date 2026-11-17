@@ -12,9 +12,15 @@ L’aperçu écoute sur <http://localhost:3100>. Utilisez `PORT` si nécessaire.
 
 Le dossier **`dist/site`** suffit pour publier le site sur un hébergement statique. Configurez l’hébergement pour servir `index.html` dans les dossiers et utiliser `404.html` pour les pages inconnues. Le Dockerfile fournit aussi un serveur de fichiers sans dépendance applicative. Voir [l’hébergement par conteneur](docs/railway.md).
 
+## GitHub Pages
+
+Dans les paramètres du dépôt, sélectionnez **Pages → Build and deployment → Source → GitHub Actions**. Le workflow de vérification publie `dist/site` après chaque push sur `main` dont les vérifications réussissent. Il utilise l’adresse fournie par GitHub Pages, par défaut <https://m4riin.github.io/epicc/>. Pour activer le formulaire, définissez la variable Actions `CONTACT_EMAIL` avec l’adresse publique de contact.
+
+## Variables de build
+
 Deux variables publiques peuvent être fournies **au moment du build** :
 
-- `PUBLIC_SITE_URL` définit l’origine HTTPS du site. Elle sert aux URL canoniques, au partage social, aux données structurées et au sitemap. Sans origine, le build omet les références absolues et le sitemap.
+- `PUBLIC_SITE_URL` définit l’adresse publique du site, avec son éventuel chemin de publication, par exemple `https://m4riin.github.io/epicc/`. Elle sert aux liens internes, aux URL canoniques, au partage social, aux données structurées et au sitemap. Sans adresse publique, les liens partent de la racine et le build omet les références absolues et le sitemap.
 - `CONTACT_EMAIL` active le formulaire avec une adresse de contact publique. Le formulaire ouvre la messagerie du visiteur et ne transmet aucune donnée au site.
 
 `npx playwright install chromium` installe le navigateur de test. `npm run check` vérifie le format, le lint, les types et la vitrine dans Chromium.
