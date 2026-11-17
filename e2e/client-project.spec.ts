@@ -168,21 +168,16 @@ for (const javaScriptEnabled of [false, true]) {
   });
 }
 
-test('le reportage défile dans les deux sens et peut être mis en pause', async ({
+test('le reportage défile en boucle dans les deux sens sans commande de pause', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1920, height: 1000 });
   await page.goto('/clients/viandes-des-sommets/');
-  const pause = page.getByRole('checkbox', {
-    name: 'Mettre le défilement en pause',
-  });
+  await expect(page.locator('.vds-gallery').getByRole('checkbox')).toHaveCount(
+    0,
+  );
   const tracks = page.locator('.vds-photo-track');
   await expect(tracks).toHaveCount(2);
-  await pause.check();
-  for (const track of await tracks.all()) {
-    await expect(track).toHaveCSS('animation-play-state', 'paused');
-  }
-  await pause.uncheck();
   for (const track of await tracks.all()) {
     await expect(track).toHaveCSS('animation-play-state', 'running');
   }
@@ -211,7 +206,6 @@ test('le reportage défile dans les deux sens et peut être mis en pause', async
   expect(bottom.loop).toBeCloseTo(bottom.start);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(pause).toBeHidden();
   for (const track of await tracks.all()) {
     await expect(track).toHaveCSS('animation-name', 'none');
     await expect(track.getByRole('img')).toHaveCount(4);

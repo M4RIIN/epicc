@@ -94,22 +94,6 @@
   pointer-events: none;
 }
 
-.vds-gallery-pause {
-  position: absolute;
-  top: calc(var(--vds-gallery-top) - 36px);
-  right: max(12px, 2cqw);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.vds-gallery-pause input {
-  margin: 0;
-  accent-color: #000;
-}
-
 .vds-photo-window {
   overflow: clip;
 }
@@ -157,10 +141,6 @@
   pointer-events: none;
 }
 
-.vds-gallery:has(input:checked) .vds-photo-track {
-  animation-play-state: paused;
-}
-
 @keyframes vds-photo-scroll {
   to {
     transform: translateX(calc(-100% / 3));
@@ -176,7 +156,6 @@
     --vds-photo-height: 33.6cqw;
   }
 
-  .vds-gallery-pause,
   .vds-photo-group[aria-hidden] {
     display: none;
   }

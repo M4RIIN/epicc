@@ -181,9 +181,6 @@ export default function ViandesDesSommets({ homePath }: { homePath: string }) {
               sizes="36.5vw"
               alt="Logo rouge L’art du bœuf"
             />
-            <label className="vds-gallery-pause">
-              <input type="checkbox" /> Mettre le défilement en pause
-            </label>
             <ReportageRow photos={reportageRows[0]} />
             <div className="vds-second-row">
               <ReportageRow photos={reportageRows[1]} />
