@@ -71,7 +71,15 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page).toHaveTitle(
         'Viandes des Sommets — Identité visuelle & logo | EPICC',
       );
-      await expect(page.locator('h1')).toHaveCount(1);
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+        'Viandes des Sommets',
+      );
+      await expect(page.getByRole('list', { name: 'Missions' })).toContainText(
+        'Lancement d’une nouvelle marque',
+      );
+      await expect(
+        page.getByRole('region', { name: 'Construction du logo' }),
+      ).toContainText('regroupement d’éleveurs des Pyrénées');
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
         'http://127.0.0.1:3190/clients/viandes-des-sommets/',
@@ -88,8 +96,11 @@ for (const javaScriptEnabled of [false, true]) {
         structured['@graph'].map((item: { '@type': string }) => item['@type']),
       ).toEqual(['WebPage', 'CreativeWork', 'BreadcrumbList']);
       const images = page.locator('.client-project img');
-      await expect(images).toHaveCount(15);
-      for (const width of [1920, 1440, 375, 320]) {
+      await expect(images).toHaveCount(10);
+      const cover = page.getByRole('img', {
+        name: /pièce de viande suspendue/i,
+      });
+      for (const width of [1920, 1440, 1024, 375, 320]) {
         await page.setViewportSize({ width, height: 1000 });
         for (const img of await images.all()) {
           await img.scrollIntoViewIfNeeded();
@@ -106,10 +117,10 @@ for (const javaScriptEnabled of [false, true]) {
             () => document.documentElement.scrollWidth <= innerWidth,
           ),
         ).toBe(true);
-        const hero = await page.locator('.project-hero').boundingBox();
-        expect(hero!.y).toBeLessThanOrEqual(0);
-        expect(hero!.height / hero!.width).toBeCloseTo(1031 / 1920, 2);
-        expect(hero!.width).toBe(width);
+        const coverBox = (await cover.boundingBox())!;
+        expect(coverBox.width / coverBox.height).toBeCloseTo(1364 / 791, 2);
+        expect(coverBox.x).toBeGreaterThan(0);
+        expect(coverBox.x + coverBox.width).toBeLessThan(width);
         if (javaScriptEnabled && [1920, 375].includes(width)) {
           await images.evaluateAll(async (elements) => {
             await Promise.all(
