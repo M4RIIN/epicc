@@ -5,8 +5,8 @@ export const homeTitle =
 export const homeDescription =
   'Chloé Catala, EPICC : identité visuelle, stratégie de communication, restructuration de restaurants, réseaux sociaux et événementiel à Toulouse et alentour.';
 
-export function homeStructuredData(origin: string) {
-  const url = `${origin}/`;
+export function homeStructuredData(baseUrl: string) {
+  const url = `${baseUrl}/`;
   const organization = `${url}#organisation`;
   const person = `${url}#chloe-catala`;
   return {

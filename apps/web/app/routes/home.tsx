@@ -5,7 +5,13 @@ import { Manifesto } from '../components/vitrine/manifesto';
 import { Projects } from '../components/vitrine/projects';
 import { Contact } from '../components/vitrine/contact';
 
-export default function Home({ email }: { email: string | null }) {
+export default function Home({
+  email,
+  basePath,
+}: {
+  email: string | null;
+  basePath: string;
+}) {
   return (
     <main id="contenu" className="vitrine">
       <h1 className="vitrine-sr-only">
@@ -15,7 +21,7 @@ export default function Home({ email }: { email: string | null }) {
       <Services />
       <Biography />
       <Manifesto />
-      <Projects />
+      <Projects basePath={basePath} />
       <Contact email={email} />
     </main>
   );

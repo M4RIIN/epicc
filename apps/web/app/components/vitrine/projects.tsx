@@ -9,7 +9,7 @@ function pieceStyle(piece: Piece): CSSProperties {
   } as CSSProperties;
 }
 
-export function Projects() {
+export function Projects({ basePath }: { basePath: string }) {
   function renderPiece(piece: Piece, name: string, href?: string) {
     const artwork = (
       <Artwork
@@ -29,7 +29,10 @@ export function Projects() {
         style={pieceStyle(piece)}
       >
         {href ? (
-          <a href={href} aria-label={`${name} — découvrir l’identité visuelle`}>
+          <a
+            href={basePath + href}
+            aria-label={`${name} — découvrir l’identité visuelle`}
+          >
             {artwork}
           </a>
         ) : (

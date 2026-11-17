@@ -20,17 +20,17 @@ export const viandesDesSommets: ClientProjectMetadata = {
   },
 };
 
-export function getPublicOrigin() {
+export function getPublicSiteUrl() {
   if (!process.env.PUBLIC_SITE_URL?.trim()) return null;
   const url = new URL(process.env.PUBLIC_SITE_URL.trim());
   if (
     !['https:', 'http:'].includes(url.protocol) ||
-    url.href !== `${url.origin}/`
+    url.href !== url.origin + url.pathname
   )
     throw new Error(
-      'PUBLIC_SITE_URL doit être une origine HTTP ou HTTPS sans chemin.',
+      'PUBLIC_SITE_URL doit être une URL HTTP ou HTTPS sans identifiants, paramètres ni fragment.',
     );
-  return url.origin;
+  return url;
 }
 
 export function getContactEmail() {
@@ -44,11 +44,11 @@ export function getContactEmail() {
 }
 
 export function projectStructuredData(
-  origin: string,
+  baseUrl: string,
   image: string,
   { path, name, title, workTitle, description }: ClientProjectMetadata,
 ) {
-  const url = origin + path;
+  const url = baseUrl + path;
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -59,7 +59,7 @@ export function projectStructuredData(
         name: title,
         description,
         inLanguage: 'fr-FR',
-        isPartOf: { '@id': `${origin}/#site` },
+        isPartOf: { '@id': `${baseUrl}/#site` },
         primaryImageOfPage: { '@type': 'ImageObject', url: image },
         mainEntity: { '@id': `${url}#projet` },
         breadcrumb: { '@id': `${url}#fil-ariane` },
@@ -72,7 +72,7 @@ export function projectStructuredData(
         image,
         url,
         inLanguage: 'fr-FR',
-        creator: { '@id': `${origin}/#organisation` },
+        creator: { '@id': `${baseUrl}/#organisation` },
         about: { '@type': 'Organization', name },
       },
       {
@@ -83,7 +83,7 @@ export function projectStructuredData(
             '@type': 'ListItem',
             position: 1,
             name: 'Accueil',
-            item: `${origin}/`,
+            item: `${baseUrl}/`,
           },
           {
             '@type': 'ListItem',
