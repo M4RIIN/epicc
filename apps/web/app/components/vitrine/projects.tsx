@@ -2,11 +2,9 @@ import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { Artwork } from './artwork';
 import {
-  vitrineProjects,
-  layoutPieces,
+  showcaseClientNames,
   projectClients,
   clientPieces,
-  projectSides,
   type Piece,
   type ProjectImage,
 } from '@epicc/content-contracts';
@@ -33,7 +31,7 @@ export function Projects({ images }: { images: ProjectImage[] }) {
       <Artwork
         src={image?.image ?? null}
         sources={image?.sources}
-        sizes={`(max-width: 700px) ${piece.role === 'name' ? 52 : 33}vw, (max-width: 1920px) ${piece.width / 19.2}vw, ${piece.width}px`}
+        sizes={`(max-width: 700px) ${piece.role === 'name' ? 29 : 23}vw, (max-width: 1920px) ${piece.width / 19.2}vw, ${piece.width}px`}
         file={`projets-${piece.file}`}
         width={piece.width}
         height={piece.height}
@@ -97,52 +95,43 @@ export function Projects({ images }: { images: ProjectImage[] }) {
     >
       <h2 id="projects-title">Les projets clients</h2>
       <div className="vitrine-projects-collage">
-        {projectSides.map((side) => (
-          <div
-            key={side}
-            className={`vitrine-project-column vitrine-project-column-${side}`}
-            data-side={side}
-          >
-            {vitrineProjects
-              .filter((project) => project.side === side)
-              .map((project) => {
-                const { name } = project;
-                const pieces = layoutPieces(project, images);
-                if (
-                  project.pieces.filter((piece) => piece.role === 'name')
-                    .length > 1 &&
-                  pieces.some((piece) => piece.role === 'photo')
-                ) {
-                  const clients = projectClients.filter((client) =>
-                    client.pieces.some((piece) =>
-                      project.pieces.some((slot) => slot.file === piece.file),
-                    ),
-                  );
-                  return (
-                    <div className="vitrine-project-group" key={name}>
-                      {clients.map((client) =>
-                        renderProject(
-                          client.name,
-                          clientPieces(client, images),
-                        ),
-                      )}
-                    </div>
-                  );
-                }
-                return renderProject(name, pieces);
-              })}
+        {projectClients
+          .filter((client) => showcaseClientNames.includes(client.name))
+          .map((client) =>
+            renderProject(
+              client.name,
+              clientPieces(client, images)
+                .filter((piece) => piece.role === 'name')
+                .concat(
+                  clientPieces(client, images)
+                    .filter((piece) => piece.role === 'photo')
+                    .slice(0, 2),
+                ),
+            ),
+          )}
+        <figure
+          className="vitrine-project vitrine-project-fitness-row"
+          aria-label="Fitness by Leslie"
+        >
+          <figcaption className="vitrine-project-names">
+            <h3>Fitness by Leslie</h3>
+          </figcaption>
+          <div className="vitrine-project-photos">
+            <Artwork
+              file="Fitness1.png"
+              width={338}
+              height={425}
+              alt="Séance de renforcement avec haltères, Fitness by Leslie."
+            />
+            <Artwork
+              file="Fitness2.png"
+              width={352}
+              height={441}
+              alt="Séance de fitness avec ballon, Fitness by Leslie."
+            />
           </div>
-        ))}
+        </figure>
       </div>
-      <div className="vitrine-project-craft">
-        <Artwork
-          file="Craft41.png"
-          width={312}
-          height={467}
-          alt="Création de contenu pour La Craft."
-        />
-      </div>
-      <p className="vitrine-project-fitness">Fitness by Leslie</p>
     </section>
   );
 }

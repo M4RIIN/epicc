@@ -18,7 +18,8 @@ for (const javaScriptEnabled of [false, true]) {
         const url = new URL(response.url());
         if (
           response.request().resourceType() === 'image' &&
-          (url.pathname.startsWith('/images/') ||
+          ((url.pathname.startsWith('/images/') &&
+            !url.pathname.endsWith('.svg')) ||
             (response.headers()['content-type']?.startsWith('image/') &&
               !response.headers()['content-type']?.includes('svg') &&
               !url.search))
@@ -26,7 +27,7 @@ for (const javaScriptEnabled of [false, true]) {
           originalRequests.push(url.pathname);
       });
       await page.goto('/');
-      const hero = page.locator('.vitrine-cover img');
+      const hero = page.locator('.vitrine-cover > img').first();
       await expect(hero).toHaveAttribute('loading', 'eager');
       await expect(hero).toHaveAttribute('fetchpriority', 'high');
       await expect(hero).toHaveAttribute('srcset', /320w/);
@@ -95,10 +96,7 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page.getByRole('heading', { level: 1 })).toContainText(
         'EPICC — Chloé Catala',
       );
-      await expect(blue).toHaveAttribute(
-        'alt',
-        'Texture bleue, détail du projet Casamatta.',
-      );
+      await expect(blue).toHaveAttribute('alt', 'Texture bleue de Casamatta.');
     } finally {
       await context.close();
     }

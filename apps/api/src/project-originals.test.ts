@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { vitrineProjects } from '@epicc/content-contracts';
+import {
+  vitrineProjects,
+  projectOriginalPieces,
+} from '@epicc/content-contracts';
 import { Database } from './database';
 import { importProjectOriginals } from './project-originals';
 import { migrateProjectMedia } from './migrate-images';
@@ -10,7 +13,11 @@ import {
   verifyProjectMedia,
 } from './project-media-audit';
 import { createProjectsApi } from './projects.api';
-import { initialOffers, previousOffers } from './offers.seed';
+import {
+  initialOffers,
+  previousOffers,
+  previousVitrineOffers,
+} from './offers.seed';
 // eslint-disable-next-line @nx/enforce-module-boundaries -- Utilitaire partagé uniquement entre tests PostgreSQL.
 import {
   manageTestDatabase,
@@ -49,23 +56,23 @@ afterEach(async () => {
 });
 it('importe les visuels du catalogue sans changer leurs octets, conserve leurs métadonnées et reprend sans doublon', async () => {
   expect(await importProjectOriginals(database, root)).toEqual({
-    imported: 33,
+    imported: projectOriginalPieces.length,
     skipped: 0,
     conflicts: 0,
   });
-  expect(objects.size).toBe(33);
+  expect(objects.size).toBe(projectOriginalPieces.length);
   expect(await importProjectOriginals(database, root)).toEqual({
     imported: 0,
-    skipped: 33,
+    skipped: projectOriginalPieces.length,
     conflicts: 0,
   });
-  expect(objects.size).toBe(33);
+  expect(objects.size).toBe(projectOriginalPieces.length);
   expect(await verifyProjectMedia(database, root)).toMatchObject({
-    verified: 33,
+    verified: projectOriginalPieces.length,
     metadataValid: true,
   });
   const rows = await database.pool.query('SELECT * FROM images');
-  expect(rows.rowCount).toBe(33);
+  expect(rows.rowCount).toBe(projectOriginalPieces.length);
   expect(
     rows.rows.every(
       (row) =>
@@ -95,7 +102,7 @@ it('importe les visuels du catalogue sans changer leurs octets, conserve leurs m
   await database.images.write(null, undefined, async (connection) => {
     await connection.query('DELETE FROM clients');
   });
-  expect(objects.size).toBe(33);
+  expect(objects.size).toBe(projectOriginalPieces.length);
 }, 60000);
 
 it('refuse une modification des contenus pendant la migration des médias', async () => {
@@ -125,7 +132,7 @@ it('conserve la source et ne publie pas une copie S3 non conforme', async () => 
   await database.images.cleanup();
   expect(objects.size).toBe(0);
   await importProjectOriginals(database, root);
-  expect(objects.size).toBe(33);
+  expect(objects.size).toBe(projectOriginalPieces.length);
 }, 60000);
 
 it('préserve les éditions et les images historiques non référencées pendant l’import', async () => {
@@ -141,7 +148,11 @@ it('préserve les éditions et les images historiques non référencées pendant
   await importProjectOriginals(database, root);
   const after = await inventoryProjectMedia(database);
   expect(after.contents).toEqual(before.contents);
-  expect(after.images).toEqual({ total: 34, in_bucket: 33, with_source: 1 });
+  expect(after.images).toEqual({
+    total: projectOriginalPieces.length + 1,
+    in_bucket: projectOriginalPieces.length,
+    with_source: 1,
+  });
 }, 60000);
 it('arrête l’import avant toute écriture en cas de logos édités contradictoires', async () => {
   for (const [index, file] of [
@@ -171,20 +182,20 @@ it('initialise une base vierge et reprend la migration complète sans doublon', 
   await manageTestDatabase(name, true);
   database = new Database(testDatabaseUrl(name), storage);
   expect(await migrateProjectMedia(database, root)).toMatchObject({
-    imported: 33,
+    imported: projectOriginalPieces.length,
     skipped: 0,
     conflicts: 0,
-    verified: 33,
+    verified: projectOriginalPieces.length,
     metadataValid: true,
     editedContentsPreserved: true,
   });
   expect(await migrateProjectMedia(database, root)).toMatchObject({
     imported: 0,
-    skipped: 33,
+    skipped: projectOriginalPieces.length,
     conflicts: 0,
-    verified: 33,
+    verified: projectOriginalPieces.length,
   });
-  expect(objects.size).toBe(33);
+  expect(objects.size).toBe(projectOriginalPieces.length);
 }, 60000);
 
 it('migre les anciennes offres avant de contrôler la préservation des contenus pendant l’import', async () => {
@@ -208,9 +219,9 @@ it('migre les anciennes offres avant de contrôler la préservation des contenus
   );
 
   expect(await migrateProjectMedia(database, root)).toMatchObject({
-    imported: 33,
+    imported: projectOriginalPieces.length,
     editedContentsPreserved: true,
-    verified: 33,
+    verified: projectOriginalPieces.length,
   });
   const offers = await database.pool.query('SELECT content FROM offers');
   expect(offers.rows.map((row) => row.content)).toEqual(
@@ -223,7 +234,7 @@ it('migre les anciennes offres avant de contrôler la préservation des contenus
   const migrated = await inventoryProjectMedia(database);
   expect(await migrateProjectMedia(database, root)).toMatchObject({
     imported: 0,
-    skipped: 33,
+    skipped: projectOriginalPieces.length,
     editedContentsPreserved: true,
   });
   expect(await inventoryProjectMedia(database)).toEqual(migrated);
@@ -254,7 +265,7 @@ it('renouvelle le visuel Amafolia par défaut sans perdre une image administrée
   ]);
   expect(await importProjectOriginals(database, root)).toMatchObject({
     imported: 1,
-    skipped: 32,
+    skipped: projectOriginalPieces.length - 1,
   });
   const original = (
     await database.pool.query(
@@ -270,11 +281,42 @@ it('renouvelle le visuel Amafolia par défaut sans perdre une image administrée
     ).rows[0].content,
   ).toEqual(custom);
   expect(await verifyProjectMedia(database, root)).toMatchObject({
-    verified: 33,
+    verified: projectOriginalPieces.length,
     metadataValid: true,
   });
   expect(await importProjectOriginals(database, root)).toMatchObject({
     imported: 0,
-    skipped: 33,
+    skipped: projectOriginalPieces.length,
   });
 }, 60000);
+
+it('actualise les offres d’origine sans écraser les textes et l’ordre personnalisés', async () => {
+  await database.pool.query(
+    "DELETE FROM migrations WHERE id='vitrine-novembre-2026-v2'",
+  );
+  const custom = {
+    ...previousVitrineOffers[1]!,
+    summary: 'Présentation personnalisée',
+    position: 8,
+  };
+  for (const offer of previousVitrineOffers)
+    await database.pool.query('UPDATE offers SET content=$2 WHERE slug=$1', [
+      offer.slug,
+      offer.slug === custom.slug ? custom : offer,
+    ]);
+  await database.migrate({ provisionAdmin: false });
+  const after = (
+    await database.pool.query('SELECT content FROM offers ORDER BY slug')
+  ).rows.map((row) => row.content);
+  expect(after.find((offer) => offer.slug === custom.slug)).toEqual(custom);
+  for (const offer of initialOffers.filter(
+    (offer) => offer.slug !== custom.slug,
+  ))
+    expect(after.find((item) => item.slug === offer.slug)).toEqual(offer);
+  await database.migrate({ provisionAdmin: false });
+  expect(
+    (
+      await database.pool.query('SELECT content FROM offers ORDER BY slug')
+    ).rows.map((row) => row.content),
+  ).toEqual(after);
+});

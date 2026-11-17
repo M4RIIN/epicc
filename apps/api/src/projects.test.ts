@@ -117,7 +117,7 @@ it('ajoute plusieurs photos par client, valide les tailles et permet de les modi
       headers: { authorization },
     });
   const form = new FormData();
-  form.set('project', 'Deux Mnu');
+  form.set('project', 'La Spinière');
   form.set('alt', 'Photo de test');
   form.set('size', 'medium');
   expect((await post('nouvelle', form)).status).toBe(400);
@@ -125,17 +125,18 @@ it('ajoute plusieurs photos par client, valide les tailles et permet de les modi
   form.set('size', '999');
   expect((await post('nouvelle', form)).status).toBe(400);
   form.set('size', 'small');
-  for (let count = 0; count < 4; count++)
+  for (let count = 0; count < 2; count++)
     expect((await post('nouvelle', form)).status).toBe(200);
+  expect((await post('nouvelle', form)).status).toBe(400);
   const images = projectImageSchema
     .array()
     .parse(await (await api.request('/v1/project-images')).json());
   const additions = images.filter((item) => item.file.startsWith('photo-'));
-  expect(additions).toHaveLength(4);
+  expect(additions).toHaveLength(2);
   expect(
     additions.every(
       (item) =>
-        item.project === 'Deux Mnu' &&
+        item.project === 'La Spinière' &&
         item.width === 2 &&
         item.height === 2 &&
         item.size === 'small',
@@ -165,6 +166,45 @@ it('ajoute plusieurs photos par client, valide les tailles et permet de les modi
     404,
   );
   expect((await post(file, form)).status).toBe(400);
+});
+
+it('refuse une troisième photo même lors d’ajouts simultanés et ne laisse aucun média orphelin', async () => {
+  const api = createProjectsApi(database);
+  const responses = await Promise.all(
+    Array.from({ length: 4 }, () => {
+      const form = new FormData();
+      form.set('project', 'La Spinière');
+      form.set('alt', 'Photographie de test');
+      form.set('size', 'medium');
+      form.set('image', new File([png], 'photo.png', { type: 'image/png' }));
+      return api.request('/v1/admin/project-images/nouvelle', {
+        method: 'POST',
+        body: form,
+        headers: { authorization },
+      });
+    }),
+  );
+  expect(responses.map((response) => response.status).sort()).toEqual([
+    200, 200, 400, 400,
+  ]);
+  expect(
+    (await database.pool.query('SELECT count(*)::int AS total FROM images'))
+      .rows[0].total,
+  ).toBe(2);
+  const form = new FormData();
+  form.set('project', 'Deux Mnu');
+  form.set('alt', 'Photographie de test');
+  form.set('size', 'medium');
+  form.set('image', new File([png], 'photo.png', { type: 'image/png' }));
+  const response = await api.request('/v1/admin/project-images/nouvelle', {
+    method: 'POST',
+    body: form,
+    headers: { authorization },
+  });
+  expect(response.status).toBe(400);
+  expect(await response.json()).toEqual({
+    error: 'Deux photos maximum par client. Remplacez une photo existante.',
+  });
 });
 
 it('gère un seul logo pour les deux apparitions de L’Écluse Douze', async () => {
@@ -198,5 +238,7 @@ it('gère un seul logo pour les deux apparitions de L’Écluse Douze', async ()
   expect(logos).toHaveLength(2);
   expect(logos[0]!.image).toBe(logos[1]!.image);
   expect(logos[0]!.alt).toBe(logos[1]!.alt);
-  expect(images.find((item) => item.project === 'Deux Mnu')!.image).toBeNull();
+  expect(
+    images.find((item) => item.project === 'La Spinière')!.image,
+  ).toBeNull();
 });

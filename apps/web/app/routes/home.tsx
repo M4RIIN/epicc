@@ -37,7 +37,7 @@ export async function loader() {
   ];
   return {
     images,
-    cover: fixedImages.find((image) => image.file === 'AccueilChloe.png')!
+    cover: fixedImages.find((image) => image.file === 'OpeningSignature.png')!
       .image,
     origin: getSiteOrigin(),
     offers,
@@ -74,8 +74,8 @@ export function meta({ loaderData }: Route.MetaArgs) {
       property: 'og:image',
       content: `${loaderData.origin}${loaderData.cover}`,
     },
-    { property: 'og:image:width', content: '1536' },
-    { property: 'og:image:height', content: '1024' },
+    { property: 'og:image:width', content: '1819' },
+    { property: 'og:image:height', content: '1019' },
     { property: 'og:image:alt', content: 'Chloé Catala, fondatrice d’EPICC' },
     { name: 'twitter:card', content: 'summary_large_image' },
     { name: 'twitter:title', content: title },

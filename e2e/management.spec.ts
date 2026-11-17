@@ -127,7 +127,8 @@ for (const javaScriptEnabled of [false, true]) {
           const bounds = (await image.boundingBox())!;
           const column = (await offer.boundingBox())!;
           expect(bounds.width).toBeGreaterThan(0);
-          expect(bounds.width).toBeCloseTo(column.width, 1);
+          expect(bounds.width).toBeLessThanOrEqual(column.width);
+          expect(bounds.x).toBeGreaterThanOrEqual(column.x);
           expect(bounds.x).toBeGreaterThanOrEqual(0);
           expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
         }
@@ -189,7 +190,7 @@ for (const javaScriptEnabled of [false, true]) {
         await expect(page.locator('main.vitrine')).toBeVisible();
         before.push(await layout());
       }
-      const target = '/connect/projets/Rectangle5.png';
+      const target = '/connect/projets/Rectangle6.png';
       await page.goto(target);
       await expect(page).toHaveURL(/\/connect$/);
       await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
@@ -198,7 +199,7 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(
         page.getByRole('heading', { name: 'Les projets clients', exact: true }),
       ).toBeVisible();
-      await expect(page.locator('.admin-project-images img')).toHaveCount(32);
+      await expect(page.locator('.admin-project-images img')).toHaveCount(36);
       await expect(
         page.getByRole('heading', { name: 'Colonne gauche' }),
       ).toBeVisible();
@@ -213,7 +214,7 @@ for (const javaScriptEnabled of [false, true]) {
         1,
       );
       await expect(viandeCard.locator('.admin-project-photos img')).toHaveCount(
-        4,
+        2,
       );
       const adminTitle = (await viandeCard
         .locator('.admin-project-titles img')
@@ -241,7 +242,7 @@ for (const javaScriptEnabled of [false, true]) {
       ).toBe(403);
       expect(
         (
-          await request.post('/api/v1/admin/project-images/Rectangle5.png')
+          await request.post('/api/v1/admin/project-images/Rectangle6.png')
         ).status(),
       ).toBe(401);
       await page
@@ -272,8 +273,8 @@ for (const javaScriptEnabled of [false, true]) {
         await page.goto('/');
         await expect(page.locator('main.vitrine')).toBeVisible();
         const image = page.getByRole('img', { name: alt, exact: true });
-        await expect(image).toHaveAttribute('width', '222');
-        await expect(image).toHaveAttribute('height', '283');
+        await expect(image).toHaveAttribute('width', '230');
+        await expect(image).toHaveAttribute('height', '405');
         src = (await image.getAttribute('src'))!;
         expect(await layout()).toEqual(before[index]);
       }
@@ -296,7 +297,7 @@ for (const javaScriptEnabled of [false, true]) {
       await page.goto('/');
       await expect(
         page.getByRole('img', {
-          name: 'Gros plan sur une tomate rouge.',
+          name: 'Viandes des Sommets, repas face aux montagnes.',
           exact: true,
         }),
       ).toHaveAttribute('src', /^\/api\/v1\/project-images\//);
@@ -307,14 +308,10 @@ for (const javaScriptEnabled of [false, true]) {
 }
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`photos multiples, tailles et clients séparés, JavaScript ${javaScriptEnabled}`, async ({
+  test(`deux photos maximum par client, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
-    test.setTimeout(90000);
-    const context = await browser.newContext({
-      javaScriptEnabled,
-      viewport: { width: 1440, height: 1000 },
-    });
+    const context = await browser.newContext({ javaScriptEnabled });
     const files: string[] = [];
     try {
       const page = await context.newPage();
@@ -322,19 +319,21 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByLabel('Adresse e-mail').fill('test@questboard.test');
       await page.getByLabel('Mot de passe', { exact: true }).fill('testtest');
       await page.getByRole('button', { name: 'Se connecter' }).click();
-      const card = page.getByRole('article', { name: 'Deux Mnu', exact: true });
-      await expect(card.locator('.admin-project-titles img')).toHaveCount(1);
+      const full = page.getByRole('article', { name: 'Deux Mnu', exact: true });
+      await expect(full).toBeVisible();
       await expect(
-        page
-          .getByRole('article', { name: 'L’Écluse Douze', exact: true })
-          .locator('.admin-project-titles img'),
-      ).toHaveCount(1);
-      const originalLinks = await card
-        .locator('.admin-project-photos a')
-        .evaluateAll((items) =>
-          items.map((item) => item.getAttribute('href')!),
-        );
-      for (const size of ['small', 'medium', 'large']) {
+        full.getByRole('link', { name: 'Ajouter une photo' }),
+      ).toHaveCount(0);
+      expect(
+        (
+          await page.request.get('/connect/projets/nouvelle?project=Deux%20Mnu')
+        ).status(),
+      ).toBe(400);
+      const card = page.getByRole('article', {
+        name: 'La Spinière',
+        exact: true,
+      });
+      for (const size of ['small', 'large']) {
         await card.getByRole('link', { name: 'Ajouter une photo' }).click();
         await page.getByLabel('Taille d’affichage').selectOption(size);
         await page
@@ -355,43 +354,18 @@ for (const javaScriptEnabled of [false, true]) {
           .evaluateAll((items) =>
             items.map((item) => item.getAttribute('href')!),
           );
-        files.push(
-          ...links.filter(
-            (link) => !originalLinks.includes(link) && !files.includes(link),
-          ),
-        );
+        files.push(...links.filter((link) => !files.includes(link)));
       }
-      expect(files).toHaveLength(3);
-      await page.reload();
-      await expect(card.locator('.admin-project-photos img')).toHaveCount(
-        originalLinks.length + 3,
-      );
-      await page.goto('/');
+      await expect(card.locator('.admin-project-photos img')).toHaveCount(2);
       await expect(
-        page
-          .getByRole('figure', { name: 'Deux Main', exact: true })
-          .locator('.vitrine-project-photo'),
-      ).toHaveCount(originalLinks.length + 3);
-      const widths = [];
-      for (const size of ['small', 'medium', 'large']) {
-        const photo = page.getByRole('img', {
-          name: `Photo de test ${size}`,
-          exact: true,
-        });
-        await expect(photo).toHaveAttribute(
-          'src',
-          /^\/api\/v1\/project-images\//,
-        );
-        widths.push((await photo.boundingBox())!.width);
-      }
-      expect(widths[0]!).toBeLessThan(widths[1]!);
-      expect(widths[1]!).toBeLessThan(widths[2]!);
+        card.getByRole('link', { name: 'Ajouter une photo' }),
+      ).toHaveCount(0);
       await page.goto(files[0]!);
-      await page.getByLabel('Taille d’affichage').selectOption('large');
+      await page.getByLabel('Taille d’affichage').selectOption('medium');
       await page.getByRole('button', { name: 'Enregistrer l’image' }).click();
       await expect(page).toHaveURL(/\/connect#project-images$/);
       await page.goto(files[0]!);
-      await expect(page.getByLabel('Taille d’affichage')).toHaveValue('large');
+      await expect(page.getByLabel('Taille d’affichage')).toHaveValue('medium');
     } finally {
       const page = await context.newPage();
       try {

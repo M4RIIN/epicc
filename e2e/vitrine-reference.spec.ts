@@ -62,6 +62,15 @@ for (const javaScriptEnabled of [false, true]) {
                 ),
               ),
           );
+          await page.locator('.vitrine img').evaluateAll(async (elements) => {
+            await Promise.all(
+              elements.map(async (element) => {
+                const image = element as HTMLImageElement;
+                image.loading = 'eager';
+                await image.decode();
+              }),
+            );
+          });
           await page.screenshot({
             path: testInfo.outputPath(`vitrine-${width}.png`),
             fullPage: true,

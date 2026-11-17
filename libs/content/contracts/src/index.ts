@@ -55,6 +55,8 @@ export type Offer = z.infer<typeof offerSchema>;
 export {
   vitrineProjects,
   projectClients,
+  projectOriginalPieces,
+  showcaseClientNames,
   clientPieces,
   layoutPieces,
   logoAlias,

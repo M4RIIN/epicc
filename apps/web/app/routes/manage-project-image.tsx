@@ -29,6 +29,16 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       ? item.name === new URL(request.url).searchParams.get('project')
       : clientPieces(item, images).some((piece) => piece.file === params.file),
   );
+  if (
+    creating &&
+    project &&
+    clientPieces(project, images).filter((piece) => piece.role === 'photo')
+      .length >= 2
+  )
+    throw new Response(
+      'Deux photos maximum par client. Remplacez une photo existante.',
+      { status: 400 },
+    );
   const piece = creating
     ? { file: 'nouvelle', role: 'photo' as const, width: 222, height: 333 }
     : project &&
@@ -95,7 +105,7 @@ export default function ManageProjectImage({
       <h1>{project}</h1>
       <p>
         {creating
-          ? 'Ajoutez une photo à ce client. Vous pouvez en ajouter autant que nécessaire.'
+          ? 'Ajoutez une photo à ce client, dans la limite de deux photos.'
           : 'Remplacez ce visuel ou choisissez sa taille d’affichage. Les proportions sont conservées.'}
       </p>
       <Form

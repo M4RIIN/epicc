@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import sharp from 'sharp';
-import { vitrineProjects } from '@epicc/content-contracts';
+import { projectOriginalPieces } from '@epicc/content-contracts';
 import type { Database } from './database';
 
 const digest = (bytes: Uint8Array | string) =>
@@ -55,7 +55,7 @@ export async function verifyProjectMedia(database: Database, root: string) {
   const rows = await database.pool
     .query(`SELECT p.file, i.id, i.mime, i.storage_key,
     i.byte_size, i.sha256, i.width, i.height FROM project_originals p JOIN images i ON i.id=p.image_id`);
-  const pieces = vitrineProjects.flatMap((project) => project.pieces);
+  const pieces = projectOriginalPieces;
   if (rows.rowCount !== pieces.length)
     throw new Error('Inventaire des originaux incomplet.');
   let bytes = 0;

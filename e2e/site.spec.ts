@@ -8,7 +8,7 @@ test('la vitrine et ses métadonnées sont présentes sans JavaScript', async ({
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('<h1');
-  expect(html).toContain('Salut, moi c’est');
+  expect(html).toContain('Hello, moi c’est');
   expect(html).toContain('Né pour accompagner les acteurs de la restauration');
   expect(html).not.toContain('data-home-loading');
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -169,7 +169,7 @@ test('le menu et les sections de la maquette fonctionnent sans JavaScript', asyn
       .click();
     await expect(page).toHaveURL(/#a-propos$/);
     await expect(
-      page.getByRole('heading', { name: /Salut, moi c’est/ }),
+      page.getByRole('heading', { name: /Hello, moi c’est/ }),
     ).toBeInViewport();
     await page.goto('/');
     await page.getByText('Menu', { exact: true }).first().click();
@@ -259,7 +259,7 @@ test('la connexion reste accessible depuis le menu sans JavaScript et les visuel
         ),
       ).toBe(true);
     }
-    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+    await expect(page.locator('.vitrine-cover > img').first()).toHaveAttribute(
       'src',
       /^\/api\/v1\/vitrine-images\/[a-f0-9-]+$/,
     );
@@ -288,20 +288,20 @@ test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigat
   });
   const media = await (await page.request.get('/api/v1/vitrine-images')).json();
   const stampUrl = media.find(
-    (item: { file: string }) => item.file === 'Group16.svg',
+    (item: { file: string }) => item.file === 'LogoEpicc.png',
   ).image;
-  await page.route(`**${stampUrl}`, async (route) => {
+  await page.route(`**${stampUrl}*`, async (route) => {
     await pending;
     await route.continue();
   });
   try {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main.vitrine')).toBeVisible();
-    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+    await expect(page.locator('.vitrine-cover > img').first()).toHaveAttribute(
       'loading',
       'eager',
     );
-    await expect(page.locator('.vitrine-cover img')).toHaveAttribute(
+    await expect(page.locator('.vitrine-cover > img').first()).toHaveAttribute(
       'fetchpriority',
       'high',
     );
@@ -320,9 +320,9 @@ test('les images lentes ne masquent pas la vitrine et ne bloquent pas la navigat
 test('une image en erreur ne bloque pas le contenu', async ({ page }) => {
   const media = await (await page.request.get('/api/v1/vitrine-images')).json();
   const stampUrl = media.find(
-    (item: { file: string }) => item.file === 'Group16.svg',
+    (item: { file: string }) => item.file === 'LogoEpicc.png',
   ).image;
-  await page.route(`**${stampUrl}`, (route) => route.abort());
+  await page.route(`**${stampUrl}*`, (route) => route.abort());
   await page.goto('/');
   await expect(page.locator('main.vitrine')).toBeVisible();
 });
@@ -385,7 +385,7 @@ test('les projets et le contact complètent la vitrine sur bureau et mobile', as
       await expect(
         page.getByRole('heading', { name: 'Les projets clients' }),
       ).toBeInViewport();
-      await expect(page.locator('.vitrine-project')).toHaveCount(14);
+      await expect(page.locator('.vitrine-project')).toHaveCount(12);
       await page.getByText('Menu', { exact: true }).click();
       await page.getByRole('link', { name: 'Contact', exact: true }).click();
       await expect(page).toHaveURL(/#contact$/);

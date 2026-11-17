@@ -5,6 +5,8 @@ import { bodyLimit } from 'hono/body-limit';
 import {
   projectImageSchema,
   projectClients,
+  vitrineProjects,
+  projectOriginalPieces,
   logoAlias,
   canonicalLogo,
 } from '@epicc/content-contracts';
@@ -18,14 +20,23 @@ import {
   publicImageSources,
 } from './image-variants';
 
-const pieces = projectClients.flatMap((project) =>
-  project.pieces.map((piece) => ({
-    file: piece.file,
-    project: project.name,
-    image: null,
-    alt: piece.role === 'name' ? project.name : (piece.alt ?? project.name),
-  })),
-);
+const pieces = projectOriginalPieces
+  .filter((piece) => piece.file !== logoAlias)
+  .map((piece) => {
+    const project =
+      projectClients.find((project) =>
+        project.pieces.some((item) => item.file === piece.file),
+      ) ??
+      vitrineProjects.find((project) =>
+        project.pieces.some((item) => item.file === piece.file),
+      )!;
+    return {
+      file: piece.file,
+      project: project.name,
+      image: null,
+      alt: piece.role === 'name' ? project.name : (piece.alt ?? project.name),
+    };
+  });
 
 export function createProjectsApi(database: Database) {
   const api = new Hono();
@@ -191,17 +202,43 @@ export function createProjectsApi(database: Database) {
         },
         400,
       );
-    await database.images.write(id, image, async (connection) => {
-      await assertImageReference(connection, parsed.data.image);
-      if (file === canonicalLogo)
-        await connection.query('DELETE FROM project_images WHERE file=$1', [
-          logoAlias,
-        ]);
-      await connection.query(
-        'INSERT INTO project_images VALUES ($1, $2) ON CONFLICT (file) DO UPDATE SET content = EXCLUDED.content',
-        [parsed.data.file, parsed.data],
-      );
-    });
+    try {
+      await database.images.write(id, image, async (connection) => {
+        if (creating) {
+          await connection.query('SELECT pg_advisory_xact_lock(hashtext($1))', [
+            project.name,
+          ]);
+          const additions = await connection.query(
+            "SELECT count(*)::int AS total FROM project_images WHERE content->>'project'=$1 AND file LIKE 'photo-%'",
+            [project.name],
+          );
+          const originals = project.pieces.filter(
+            (piece) => piece.role === 'photo',
+          ).length;
+          if (originals + additions.rows[0].total >= 2)
+            throw new Error('PROJECT_PHOTO_LIMIT');
+        }
+        await assertImageReference(connection, parsed.data.image);
+        if (file === canonicalLogo)
+          await connection.query('DELETE FROM project_images WHERE file=$1', [
+            logoAlias,
+          ]);
+        await connection.query(
+          'INSERT INTO project_images VALUES ($1, $2) ON CONFLICT (file) DO UPDATE SET content = EXCLUDED.content',
+          [parsed.data.file, parsed.data],
+        );
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'PROJECT_PHOTO_LIMIT')
+        return c.json(
+          {
+            error:
+              'Deux photos maximum par client. Remplacez une photo existante.',
+          },
+          400,
+        );
+      throw error;
+    }
     return c.json({ ok: true });
   });
   return api;
