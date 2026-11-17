@@ -9,6 +9,16 @@ for (const javaScriptEnabled of [false, true]) {
       const page = await context.newPage();
       await page.goto('/');
       await expect(page.locator('.vitrine-project')).toHaveCount(12);
+      await expect(page.locator('.vitrine-opening-number')).toHaveCount(0);
+      await expect(
+        page.getByRole('figure', { name: 'Amafolia', exact: true }),
+      ).toHaveAttribute('data-side', 'right');
+      await expect(
+        page.getByRole('figure', { name: 'Viandes des Sommets', exact: true }),
+      ).toHaveAttribute('data-side', 'left');
+      await expect(
+        page.getByRole('figure', { name: 'L’Écluse Douze', exact: true }),
+      ).toHaveAttribute('data-side', 'right');
       const viande = page.getByRole('figure', {
         name: 'Viandes des Sommets',
         exact: true,
@@ -38,14 +48,27 @@ for (const javaScriptEnabled of [false, true]) {
                 };
               });
               return {
-                title: { right: title.right, y: title.y, bottom: title.bottom },
+                title: {
+                  x: title.x,
+                  right: title.right,
+                  y: title.y,
+                  bottom: title.bottom,
+                },
+                side: project.getAttribute('data-side'),
                 photos,
               };
             }),
           );
-        for (const { title, photos } of rows) {
+        for (const { title, photos, side } of rows) {
           expect(photos.length).toBeLessThanOrEqual(2);
-          expect(photos[0]!.x).toBeGreaterThan(title.right);
+          if (width > 700 && side === 'right') {
+            expect(title.x).toBeGreaterThan(photos.at(-1)!.right);
+            expect(title.x - photos.at(-1)!.right).toBeLessThan(width * 0.02);
+          } else {
+            expect(photos[0]!.x).toBeGreaterThan(title.right);
+            if (width > 700)
+              expect(photos[0]!.x - title.right).toBeLessThan(width * 0.02);
+          }
           expect(
             Math.abs(
               (title.y + title.bottom) / 2 -
@@ -62,15 +85,34 @@ for (const javaScriptEnabled of [false, true]) {
             ).toBeLessThan(1);
           }
         }
+        if (width > 700) {
+          const seam = rows[0]!.photos[0]!.right;
+          for (const { photos } of rows) {
+            expect(Math.abs(photos[0]!.right - seam)).toBeLessThan(1);
+            expect(photos[1]!.x - photos[0]!.right).toBeLessThan(width * 0.02);
+            for (const photo of photos)
+              expect(photo.right - photo.x).toBeLessThan(width * 0.19);
+          }
+        }
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
           ),
         ).toBe(true);
-        if (javaScriptEnabled && [1440, 375].includes(width))
+        if (javaScriptEnabled && [1920, 1440, 375].includes(width)) {
+          await page.locator('#projets img').evaluateAll(async (elements) => {
+            await Promise.all(
+              elements.map(async (element) => {
+                const image = element as HTMLImageElement;
+                image.loading = 'eager';
+                await image.decode();
+              }),
+            );
+          });
           await page
             .locator('#projets')
             .screenshot({ path: testInfo.outputPath(`projets-${width}.png`) });
+        }
       }
     } finally {
       await context.close();
