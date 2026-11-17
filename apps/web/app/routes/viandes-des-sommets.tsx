@@ -12,7 +12,7 @@ const missions = [
 
 const reportageRows = [
   [
-    ['elevage', 211, 645, 'Éleveuse auprès du troupeau'],
+    ['elevage', 430, 645, 'Photographe devant un troupeau de vaches'],
     ['grillade', 422, 631, 'Pièce de bœuf saisie au barbecue'],
     ['table', 421, 631, 'Repas en plein air dans les Pyrénées'],
     ['neige', 440, 631, 'Convives installés face aux sommets enneigés'],
@@ -21,7 +21,7 @@ const reportageRows = [
     ['service', 430, 645, 'Serveur présentant un plat en montagne'],
     ['cuisson', 430, 645, 'Pièces de bœuf grillées sur une planche'],
     ['troupeau', 430, 645, 'Éleveur au milieu de ses vaches'],
-    ['paysage', 138, 645, 'Table dressée en montagne sous le ciel bleu'],
+    ['paysage', 430, 645, 'Planche de viande en montagne sous un ciel bleu'],
   ],
 ] as const;
 

@@ -209,5 +209,8 @@ test('le reportage défile en boucle dans les deux sens sans commande de pause',
   for (const track of await tracks.all()) {
     await expect(track).toHaveCSS('animation-name', 'none');
     await expect(track.getByRole('img')).toHaveCount(4);
+    const lastPhoto = track.getByRole('img').last();
+    const photoBox = (await lastPhoto.boundingBox())!;
+    expect(photoBox.x + photoBox.width).toBeLessThanOrEqual(1920);
   }
 });
