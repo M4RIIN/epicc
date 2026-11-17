@@ -1,29 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
 import { Artwork } from './artwork';
 import { useVitrineImageUrl } from './media';
 
 export function Manifesto() {
-  const section = useRef<HTMLElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    if (!section.current || !('IntersectionObserver' in window)) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.25 },
-    );
-    observer.observe(section.current);
-    return () => observer.disconnect();
-  }, []);
   const line = useVitrineImageUrl('Line8.svg');
   return (
     <section
-      ref={section}
-      className={`vitrine-manifesto ${visible ? 'vitrine-manifesto-animated' : ''}`}
+      className="vitrine-manifesto"
       id="epicc"
       aria-labelledby="manifesto-title"
     >

@@ -7,7 +7,7 @@ for (const javaScriptEnabled of [false, true]) {
     const context = await browser.newContext({ javaScriptEnabled });
     try {
       const page = await context.newPage();
-      const response = await page.goto('/clients/viandes-des-sommets');
+      const response = await page.goto('/clients/viandes-des-sommets/');
       await page.evaluate(() => {
         document.documentElement.style.scrollBehavior = 'auto';
       });
@@ -18,7 +18,7 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page.locator('h1')).toHaveCount(1);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',
-        'http://127.0.0.1:3190/clients/viandes-des-sommets',
+        'http://127.0.0.1:3190/clients/viandes-des-sommets/',
       );
       await expect(page.locator('meta[name="description"]')).toHaveAttribute(
         'content',
@@ -75,10 +75,10 @@ for (const javaScriptEnabled of [false, true]) {
         })
         .first()
         .click();
-      await expect(page).toHaveURL('/clients/viandes-des-sommets');
+      await expect(page).toHaveURL('/clients/viandes-des-sommets/');
       const sitemap = await page.request.get('/sitemap.xml');
       expect(await sitemap.text()).toContain(
-        '<loc>http://127.0.0.1:3190/clients/viandes-des-sommets</loc>',
+        '<loc>http://127.0.0.1:3190/clients/viandes-des-sommets/</loc>',
       );
     } finally {
       await context.close();

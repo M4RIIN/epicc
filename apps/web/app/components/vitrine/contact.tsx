@@ -1,16 +1,6 @@
-import type { FormEvent } from 'react';
 import { Artwork } from './artwork';
 
 export function Contact({ email }: { email: string | null }) {
-  function composeMessage(event: FormEvent<HTMLFormElement>) {
-    if (!email) return;
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const subject = `Une collaboration avec ${data.get('prenom')} ${data.get('nom')}`;
-    const body = `Nom : ${data.get('nom')}\nPrénom : ${data.get('prenom')}\n\n${data.get('demande')}`;
-    window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  }
-
   return (
     <section
       className="vitrine-contact"
@@ -38,7 +28,6 @@ export function Contact({ email }: { email: string | null }) {
         action={email ? `mailto:${email}` : undefined}
         method="post"
         encType="text/plain"
-        onSubmit={composeMessage}
         aria-describedby="contact-help"
       >
         <label htmlFor="contact-nom">Nom</label>

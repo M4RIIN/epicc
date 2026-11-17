@@ -1,13 +1,11 @@
-import type { Offer } from '@epicc/content-contracts';
+import { offers } from '../content/offers';
 
 export const homeTitle =
   'Chloé Catala — Communication & identité visuelle à Toulouse | EPICC';
 export const homeDescription =
   'Chloé Catala, EPICC : identité visuelle, stratégie de communication, restructuration de restaurants, réseaux sociaux et événementiel à Toulouse et alentour.';
 
-// Les prestations restent celles publiées depuis le backoffice : aucune copie
-// éditoriale à maintenir, ni page projet annoncée avant sa publication.
-export function homeStructuredData(origin: string, offers: Offer[]) {
+export function homeStructuredData(origin: string) {
   const url = `${origin}/`;
   const organization = `${url}#organisation`;
   const person = `${url}#chloe-catala`;
