@@ -1,4 +1,4 @@
-import { viandesDesSommets } from '../site';
+import { amafolia, viandesDesSommets } from '../site';
 
 export type Piece = {
   file: string;
@@ -19,6 +19,7 @@ export const projects: Project[] = [
   {
     name: 'Amafolia',
     side: 'right',
+    href: amafolia.path,
     lettering: {
       file: 'CaptureDecran20261029A15334241.png',
       width: 248,

@@ -7,6 +7,19 @@ export type ClientProjectMetadata = {
   cover: { file: string; alt: string };
 };
 
+export const amafolia: ClientProjectMetadata = {
+  path: '/clients/amafolia/',
+  name: 'Amafolia',
+  title: 'Amafolia — Identité visuelle & photographie | EPICC',
+  workTitle: 'Amafolia — Identité visuelle',
+  description:
+    'Découvrez la nouvelle identité d’Amafolia, restaurant italien : stratégie, création du logo, reportage photo et déclinaisons sur les supports du restaurant.',
+  cover: {
+    file: 'amafolia/amafolia-motif.webp',
+    alt: 'Motif des logos Amafolia en bleu et vert',
+  },
+};
+
 export const viandesDesSommets: ClientProjectMetadata = {
   path: '/clients/viandes-des-sommets/',
   name: 'Viandes des Sommets',

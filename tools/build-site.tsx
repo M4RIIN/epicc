@@ -10,6 +10,7 @@ import {
   VitrineMedia,
   type VitrineImage,
 } from '../apps/web/app/components/vitrine/media';
+import Amafolia from '../apps/web/app/routes/amafolia';
 import Home from '../apps/web/app/routes/home';
 import ViandesDesSommets from '../apps/web/app/routes/viandes-des-sommets';
 import {
@@ -18,6 +19,7 @@ import {
   homeTitle,
 } from '../apps/web/app/services/seo';
 import {
+  amafolia,
   getContactEmail,
   getPublicSiteUrl,
   projectStructuredData,
@@ -67,6 +69,7 @@ async function stylesheet(name: string, specific: string) {
 }
 
 const clientProjects = [
+  { metadata: amafolia, content: <Amafolia homePath={homePath} /> },
   {
     metadata: viandesDesSommets,
     content: <ViandesDesSommets homePath={homePath} />,

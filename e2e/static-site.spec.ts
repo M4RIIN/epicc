@@ -13,7 +13,11 @@ test('le build ne publie que les pages et fichiers de la vitrine', async ({
     'robots.txt',
     'sitemap.xml',
   ]);
-  for (const route of ['/', '/clients/viandes-des-sommets/']) {
+  for (const route of [
+    '/',
+    '/clients/amafolia/',
+    '/clients/viandes-des-sommets/',
+  ]) {
     const response = await request.get(route);
     expect(response.ok()).toBe(true);
     const file =

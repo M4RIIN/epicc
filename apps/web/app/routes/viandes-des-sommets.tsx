@@ -1,4 +1,5 @@
 import { Artwork } from '../components/vitrine/artwork';
+import { ClientProjectFooter } from '../components/vitrine/client-project-footer';
 
 const imageRoot = 'viandes-des-sommets/';
 
@@ -197,23 +198,11 @@ export default function ViandesDesSommets({ homePath }: { homePath: string }) {
             height={340}
           />
         </div>
-        <footer className="project-footer">
-          <nav aria-label="Fil d’Ariane">
-            <a href={homePath}>EPICC</a>
-            <span aria-hidden="true"> / </span>
-            <span aria-current="page">Viandes des Sommets</span>
-          </nav>
-          <h2>Viandes des Sommets</h2>
-          <p>
-            Identité visuelle, construction du logo et déclinaisons de marque :
-            un projet à découvrir à travers son univers photographique et ses
-            supports imprimés.
-          </p>
-          <a href={`${homePath}#projets`}>← Tous les projets</a>
-          <a href={`${homePath}#contact`}>
-            Parlons de votre identité visuelle ↗
-          </a>
-        </footer>
+        <ClientProjectFooter
+          homePath={homePath}
+          name="Viandes des Sommets"
+          description="Identité visuelle, construction du logo et déclinaisons de marque : un projet à découvrir à travers son univers photographique et ses supports imprimés."
+        />
       </article>
     </main>
   );
