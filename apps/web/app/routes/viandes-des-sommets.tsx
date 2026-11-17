@@ -1,5 +1,6 @@
 import { Artwork } from '../components/vitrine/artwork';
 import { ClientProjectFooter } from '../components/vitrine/client-project-footer';
+import { ClientProjectNav } from '../components/vitrine/client-project-nav';
 import { viandesDesSommets } from '../site';
 
 const missions = [
@@ -14,6 +15,7 @@ export default function ViandesDesSommets({ homePath }: { homePath: string }) {
     <main id="contenu" className="client-project viandes-des-sommets">
       <article aria-labelledby="vds-title">
         <header className="vds-intro">
+          <ClientProjectNav homePath={homePath} />
           <h1 id="vds-title" className="project-sr-only">
             Viandes des Sommets
           </h1>
