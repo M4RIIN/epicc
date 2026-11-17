@@ -10,11 +10,11 @@ npm start
 
 L’aperçu écoute sur <http://localhost:3100>. Utilisez `PORT` si nécessaire. Pour modifier le contenu, éditez les fichiers dans `apps/web/app/content` et les composants de la vitrine dans `apps/web/app/components/vitrine`, puis relancez le build. Les images sources sont dans `apps/web/public/images`.
 
-Le dossier **`dist/site`** suffit pour publier le site sur un hébergement statique. Configurez l’hébergement pour servir `index.html` dans les dossiers et utiliser `404.html` pour les pages inconnues. Le Dockerfile fournit aussi un serveur de fichiers sans dépendance applicative. Voir [l’hébergement par conteneur](docs/railway.md).
+Le dossier **`dist/site`** suffit pour publier le site sur un hébergement statique. Configurez l’hébergement pour servir `index.html` dans les dossiers et utiliser `404.html` pour les pages inconnues. Le Dockerfile fournit aussi un serveur de fichiers sans dépendance applicative.
 
 ## GitHub Pages
 
-Dans les paramètres du dépôt, sélectionnez **Pages → Build and deployment → Source → GitHub Actions**. Le workflow de vérification publie `dist/site` après chaque push sur `main` dont les vérifications réussissent. Il utilise l’adresse fournie par GitHub Pages, par défaut <https://m4riin.github.io/epicc/>. Pour activer le formulaire, définissez la variable Actions `CONTACT_EMAIL` avec l’adresse publique de contact.
+Dans les paramètres du dépôt, sélectionnez **Pages → Build and deployment → Source → GitHub Actions**. Le workflow génère `dist/site` après les vérifications, y compris sur les pull requests. Un push sur `main` déclenche ensuite la publication à l’adresse fournie par GitHub Pages, par défaut <https://m4riin.github.io/epicc/>. Pour activer le formulaire, définissez la variable Actions `CONTACT_EMAIL` avec l’adresse publique de contact.
 
 ## Variables de build
 
