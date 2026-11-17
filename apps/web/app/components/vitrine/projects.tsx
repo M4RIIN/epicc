@@ -29,10 +29,7 @@ export function Projects() {
         style={pieceStyle(piece)}
       >
         {href ? (
-          <a
-            href={href}
-            aria-label="Viandes des Sommets — découvrir l’identité visuelle"
-          >
+          <a href={href} aria-label={`${name} — découvrir l’identité visuelle`}>
             {artwork}
           </a>
         ) : (
