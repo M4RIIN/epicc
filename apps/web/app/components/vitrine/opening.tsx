@@ -41,9 +41,6 @@ export function Opening() {
           </div>
         </div>
       </nav>
-      <span className="vitrine-opening-number" aria-hidden="true">
-        07
-      </span>
       <div className="vitrine-introduction">
         <Artwork
           file="OpeningPortrait.png"

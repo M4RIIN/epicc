@@ -24,6 +24,12 @@ const displayNames: Record<string, string> = {
   'L’Écluse Douze — Deux Mnu': 'L’Écluse Douze — Deux Main',
 };
 
+// Le placement suit la maquette ; les groupes historiques de gestion restent stables.
+const displaySides: Record<string, 'left' | 'right'> = {
+  Allegria: 'left',
+  'L’Écluse Douze': 'right',
+};
+
 export function Projects({ images }: { images: ProjectImage[] }) {
   function renderPiece(piece: Piece, name: string) {
     const image = images.find((image) => image.file === piece.file);
@@ -65,12 +71,25 @@ export function Projects({ images }: { images: ProjectImage[] }) {
       </div>
     );
   }
-  function renderProject(name: string, pieces: Piece[]) {
+  function renderProject(
+    name: string,
+    pieces: Piece[],
+    side: 'left' | 'right',
+  ) {
+    const photos = pieces.filter((piece) => piece.role === 'photo');
+    const lettering = pieces.find((piece) => piece.role === 'name');
+    const style = {
+      '--first-photo-width': `${(photos[0]?.width ?? 0) / 19.2}cqw`,
+      '--second-photo-width': `${(photos[1]?.width ?? 0) / 19.2}cqw`,
+      '--project-name-width': `${(lettering?.width ?? 300) / 19.2}cqw`,
+    } as CSSProperties;
     return (
       <figure
         className="vitrine-project"
         key={name}
         data-project={name}
+        data-side={side}
+        style={style}
         aria-label={displayNames[name] ?? name}
       >
         <figcaption className="vitrine-project-names">
@@ -107,11 +126,20 @@ export function Projects({ images }: { images: ProjectImage[] }) {
                     .filter((piece) => piece.role === 'photo')
                     .slice(0, 2),
                 ),
+              displaySides[client.name] ?? client.side,
             ),
           )}
         <figure
           className="vitrine-project vitrine-project-fitness-row"
           aria-label="Fitness by Leslie"
+          data-side="left"
+          style={
+            {
+              '--first-photo-width': `${338 / 19.2}cqw`,
+              '--second-photo-width': `${352 / 19.2}cqw`,
+              '--project-name-width': '16cqw',
+            } as CSSProperties
+          }
         >
           <figcaption className="vitrine-project-names">
             <h3>Fitness by Leslie</h3>

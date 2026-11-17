@@ -87,14 +87,6 @@ body:has(.vitrine) {
   top: 0;
   width: 16.5%;
 }
-.vitrine-opening-number {
-  position: absolute;
-  right: 2.1%;
-  top: 0;
-  font-size: 5cqw;
-  font-weight: 400;
-  color: #9c9c9c;
-}
 .vitrine-navigation {
   position: absolute;
   inset: 2.5cqw 16% auto 7.1%;
@@ -634,10 +626,6 @@ body:has(.vitrine) {
     flex-wrap: wrap;
     justify-content: flex-end;
   }
-  .vitrine-opening-number {
-    top: 14px;
-    font-size: 32px;
-  }
   .vitrine-introduction {
     width: 82%;
     margin-top: 12cqw;
@@ -893,4 +881,51 @@ body:has(.vitrine) {
 
 .vitrine-manifesto h2 {
   text-transform: none;
+}
+
+/* Les photographies se rejoignent au centre ; les noms restent contre leur duo. */
+@media (min-width: 701px) {
+  .vitrine-projects-collage {
+    gap: 1.04cqw;
+    margin-right: -2cqw;
+  }
+  .vitrine-project {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1.25cqw;
+  }
+  .vitrine-project-names {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    width: min(
+      var(--project-name-width),
+      calc(100% - var(--first-photo-width) - 1.25cqw)
+    );
+    margin-right: calc(var(--first-photo-width) + 1.25cqw);
+  }
+  .vitrine-project[data-side='right'] .vitrine-project-names {
+    grid-column: 2;
+    justify-self: start;
+    width: min(
+      var(--project-name-width),
+      calc(100% - var(--second-photo-width) - 1.25cqw)
+    );
+    margin-right: 0;
+    margin-left: calc(var(--second-photo-width) + 1.25cqw);
+  }
+  .vitrine-project-photos {
+    display: contents;
+  }
+  .vitrine-project-photos > :first-child {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    width: var(--first-photo-width);
+  }
+  .vitrine-project-photos > :nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+    width: var(--second-photo-width);
+  }
 }
