@@ -26,10 +26,10 @@ export const viandesDesSommets: ClientProjectMetadata = {
   title: 'Viandes des Sommets — Identité visuelle & logo | EPICC',
   workTitle: 'Viandes des Sommets — Identité visuelle',
   description:
-    'Découvrez l’identité visuelle de Viandes des Sommets par EPICC : construction du logo, univers photographique, packaging et déclinaisons de marque.',
+    'Découvrez l’identité visuelle de Viandes des Sommets par EPICC : construction du logo, reportage photographique dans les Pyrénées et création des emballages.',
   cover: {
-    file: 'viandes-des-sommets/ouverture.webp',
-    alt: 'Univers de marque Viandes des Sommets',
+    file: 'viandes-des-sommets/vds-ouverture.webp',
+    alt: 'Pièce de viande suspendue au-dessus d’une assiette, dans l’univers Viandes des Sommets',
   },
 };
 

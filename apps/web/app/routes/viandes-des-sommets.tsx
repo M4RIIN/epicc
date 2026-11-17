@@ -1,207 +1,152 @@
 import { Artwork } from '../components/vitrine/artwork';
 import { ClientProjectFooter } from '../components/vitrine/client-project-footer';
+import { viandesDesSommets } from '../site';
 
-const imageRoot = 'viandes-des-sommets/';
-
-function ProjectImage({
-  name,
-  alt,
-  width,
-  height,
-  eager = false,
-}: {
-  name: string;
-  alt: string;
-  width: number;
-  height: number;
-  eager?: boolean;
-}) {
-  return (
-    <Artwork
-      file={`${imageRoot}${name}.webp`}
-      sizes="100vw"
-      alt={alt}
-      width={width}
-      height={height}
-      eager={eager}
-    />
-  );
-}
+const missions = [
+  'Mission / Lancement d’une nouvelle marque',
+  'Création de contenus',
+  'Identité visuelle',
+  'Réseaux sociaux',
+];
 
 export default function ViandesDesSommets({ homePath }: { homePath: string }) {
   return (
-    <main id="contenu" className="client-project">
-      <article aria-labelledby="project-title">
-        <h1 id="project-title" className="project-sr-only">
-          Viandes des Sommets : une identité visuelle par EPICC
-        </h1>
-        <div className="project-hero">
-          <ProjectImage
-            name="ouverture"
-            alt="Viandes des Sommets : café renversé et étiquettes de marque sur une table"
-            width={1936}
-            height={1464}
+    <main id="contenu" className="client-project viandes-des-sommets">
+      <article aria-labelledby="vds-title">
+        <header className="vds-intro">
+          <h1 id="vds-title" className="project-sr-only">
+            Viandes des Sommets
+          </h1>
+          <ul className="vds-missions" aria-label="Missions">
+            {missions.map((mission) => (
+              <li key={mission}>{mission}</li>
+            ))}
+          </ul>
+          <Artwork
+            className="vds-logo"
+            file="viandes-des-sommets/vds-logo.webp"
+            width={543}
+            height={257}
+            sizes="(width < 1200px) 80vw, 29vw"
+            alt="Logo noir VDS avec une silhouette de montagne"
             eager
           />
-        </div>
-        <section className="project-logo" aria-labelledby="logo-title">
-          <h2 id="logo-title" className="project-sr-only">
-            Construction du logo et lettrage
-          </h2>
-          <div className="project-logo-grid">
-            <ProjectImage
-              name="construction-logo"
-              alt="Construction géométrique du logo rouge Viandes des Sommets"
-              width={1947}
-              height={1095}
-            />
+          <div className="vds-interventions">
+            <ul aria-label="Interventions">
+              <li>
+                Création d’une identité visuelle et déclinaison du logo en
+                plusieurs supports
+              </li>
+              <li>
+                Accompagnement en stratégie, positionnement et développement
+                commercial
+              </li>
+              <li>Création de contenus, photos et vidéos</li>
+              <li>Social media</li>
+              <li>Organisation d’événements, tables et scénographie</li>
+            </ul>
+            <p>Pour @Arthur.</p>
           </div>
-          <div className="project-lettering project-lettering-first">
-            <ProjectImage
-              name="lettrage"
-              alt="Viandes, recherche de lettrage manuscrit"
-              width={1280}
-              height={377}
-            />
-          </div>
-          <div className="project-lettering project-lettering-second">
-            <ProjectImage
-              name="lettrage"
-              alt="Des Sommets, suite du lettrage manuscrit"
-              width={1280}
-              height={377}
-            />
-          </div>
-          <p className="project-margin-note">
-            Puis, j’ai continué mes armes chez Metro (on se rapproche de la
-            restauration tout doucement...) en stratégie, puis sur la force de
-            vente au contact direct des restaurateurs.
-            <br />
-            <br />
-            J’ai rencontré des chefs, commencé à développer mon réseau.
-          </p>
-        </section>
-        <section className="project-symbol" aria-labelledby="symbol-title">
-          <h2 id="symbol-title" className="project-sr-only">
-            Un symbole entre initiale et sommets
-          </h2>
-          <ProjectImage
-            name="symbole"
-            alt="Déclinaisons du logo : nom blanc sur fond rouge et initiale V évoquant les sommets"
-            width={1919}
-            height={1079}
+        </header>
+        <section
+          className="vds-feature"
+          aria-label="Identité visuelle et packaging"
+        >
+          <Artwork
+            file={viandesDesSommets.cover.file}
+            width={1364}
+            height={791}
+            sizes="(width < 1200px) 96vw, 71vw"
+            alt={viandesDesSommets.cover.alt}
           />
-        </section>
-        <section
-          className="project-photography"
-          aria-labelledby="photography-title"
-        >
-          <h2 id="photography-title" className="project-sr-only">
-            L’univers photographique de la marque
-          </h2>
-          <figure className="project-photo project-photo-grill">
-            <ProjectImage
-              name="grillade"
-              alt="Viande rôtie au-dessus des braises"
-              width={422}
-              height={631}
-            />
-          </figure>
-          <figure className="project-photo project-photo-table">
-            <ProjectImage
-              name="table"
-              alt="Préparation d’un repas autour d’une table en plein air"
-              width={459}
-              height={688}
-            />
-          </figure>
-          <figure className="project-photo project-photo-mountain">
-            <ProjectImage
-              name="montagne"
-              alt="Photographie de montagne de l’univers Viandes des Sommets"
-              width={430}
-              height={645}
-            />
-          </figure>
-          <figure className="project-photo project-photo-products">
-            <ProjectImage
-              name="produits"
-              alt="Produits Viandes des Sommets sur fond de paysage de montagne"
-              width={391}
-              height={586}
-            />
-          </figure>
-          <figure className="project-photo project-photo-meeting">
-            <ProjectImage
-              name="rencontre"
-              alt="Moment partagé sur des chaises longues dans la neige"
-              width={440}
-              height={645}
-            />
-          </figure>
-        </section>
-        <section
-          className="project-applications"
-          aria-labelledby="applications-title"
-        >
-          <h2 id="applications-title" className="project-sr-only">
-            Packaging et supports de l’identité visuelle
-          </h2>
-          <div className="project-black-panel" aria-hidden="true" />
-          <figure className="project-application project-cards">
-            <ProjectImage
-              name="packaging-cartes"
-              alt="Cartes et packaging rouge et blanc Viandes des Sommets"
+          <div className="vds-packaging">
+            <Artwork
+              className="vds-card"
+              file="viandes-des-sommets/vds-carte.webp"
               width={534}
               height={329}
+              sizes="(width < 1200px) 46vw, 28vw"
+              alt="Carte rouge et blanche de Viandes des Sommets"
             />
-          </figure>
-          <figure className="project-application project-box">
-            <ProjectImage
-              name="coffret"
-              alt="Coffret Viandes des Sommets avec carte illustrée"
-              width={413}
-              height={254}
+            <Artwork
+              className="vds-box"
+              file="viandes-des-sommets/vds-coffret.webp"
+              width={530}
+              height={326}
+              sizes="(width < 1200px) 46vw, 28vw"
+              alt="Coffret Viandes des Sommets ouvert sur ses pièces de viande"
             />
-          </figure>
-          <figure className="project-application project-bag">
-            <ProjectImage
-              name="sac"
-              alt="Sac en toile avec anses rouges et logo Viandes des Sommets"
-              width={578}
-              height={578}
+            <Artwork
+              className="vds-lettering"
+              file="viandes-des-sommets/vds-lettrage.webp"
+              width={648}
+              height={321}
+              sizes="(width < 1200px) 55vw, 34vw"
             />
-          </figure>
-          <div
-            className="project-swatches"
-            aria-label="Quatre échantillons gris de présentation"
-          >
-            <span />
-            <span />
-            <span />
-            <span />
+            <p>
+              Nous voulions créer une identité moderne pour cette sélection de
+              viandes premium qui touche une cible précise, les restaurants et
+              boucheries, sur un positionnement haut de gamme.
+            </p>
           </div>
-          <figure className="project-application project-stamp">
-            <ProjectImage
-              name="tampon"
-              alt="Tampon circulaire rouge de l’identité Viandes des Sommets"
-              width={346}
-              height={364}
-            />
-          </figure>
-        </section>
-        <div className="project-frieze">
-          <ProjectImage
-            name="frise"
-            alt="Frise des logos Viandes des Sommets"
-            width={2134}
-            height={340}
+          <Artwork
+            file="viandes-des-sommets/vds-tablier.webp"
+            width={1362}
+            height={742}
+            sizes="(width < 1200px) 96vw, 71vw"
+            alt="Plat de viande présenté par une personne portant le tablier rouge VDS"
           />
-        </div>
+        </section>
+        <section className="vds-construction" aria-label="Construction du logo">
+          <p>
+            Viandes des Sommets, c’est un regroupement d’éleveurs des Pyrénées.
+            Il apparaissait donc naturel d’utiliser la symbolique de la
+            montagne, dans laquelle les vaches transhument, pour mettre en
+            valeur la race locale.
+          </p>
+          <Artwork
+            file="viandes-des-sommets/vds-construction.webp"
+            width={1920}
+            height={773}
+            sizes="100vw"
+            alt="Déclinaisons rouges et grille de construction du logo VDS"
+          />
+        </section>
+        <section
+          className="vds-reportage"
+          aria-label="L’art du bœuf et reportage photographique"
+        >
+          <p>
+            Puis, j’ai continué mes armes chez Metro (on se rapproche de la
+            restauration tout doucement…) en stratégie, puis sur la force de
+            vente au contact direct des restaurateurs.
+          </p>
+          <Artwork
+            file="viandes-des-sommets/vds-frise-noire.webp"
+            width={1920}
+            height={764}
+            sizes="100vw"
+            alt="Motif typographique noir L’art du bœuf"
+          />
+          <Artwork
+            file="viandes-des-sommets/vds-reportage.webp"
+            width={1920}
+            height={1702}
+            sizes="100vw"
+            alt="Tampon rouge L’art du bœuf, grillades, repas en montagne et élevage dans les Pyrénées"
+          />
+        </section>
+        <Artwork
+          className="vds-frieze"
+          file="viandes-des-sommets/vds-frise-rouge.svg"
+          width={1341}
+          height={484}
+          alt="Motif typographique rouge L’art du bœuf"
+        />
         <ClientProjectFooter
           homePath={homePath}
-          name="Viandes des Sommets"
-          description="Identité visuelle, construction du logo et déclinaisons de marque : un projet à découvrir à travers son univers photographique et ses supports imprimés."
+          name={viandesDesSommets.name}
+          description={viandesDesSommets.description}
         />
       </article>
     </main>

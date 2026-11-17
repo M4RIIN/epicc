@@ -1,0 +1,210 @@
+.vds-intro,
+.vds-packaging p,
+.vds-construction p,
+.vds-reportage p {
+  font-family: 'Roboto Mono', monospace;
+  font-size: clamp(12px, 0.83cqw, 16px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.06em;
+  text-transform: uppercase;
+}
+
+.vds-intro ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vds-missions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 3cqw;
+  font-size: clamp(12px, 1.14cqw, 22px);
+  font-style: italic;
+  line-height: 1.25;
+}
+
+.vds-interventions li::before {
+  content: '/ ';
+}
+
+.vds-interventions p {
+  margin: 1.8cqw 0 0 4cqw;
+  font-size: 1.25em;
+  font-weight: 300;
+}
+
+.vds-feature {
+  width: 71%;
+  margin-inline: auto;
+}
+
+.vds-packaging {
+  display: grid;
+  grid-template-columns: 39.15% 1fr 38.85%;
+  align-content: start;
+  align-items: start;
+  row-gap: 1.45cqw;
+  margin-top: 1.45cqw;
+}
+
+.vds-card {
+  grid-column: 1;
+}
+
+.vds-box {
+  grid-column: 3;
+}
+
+.vds-packaging p {
+  grid-column: 1;
+  margin: 0;
+}
+
+.vds-construction {
+  margin-top: 6.2cqw;
+}
+
+.vds-reportage {
+  margin-top: 12.6cqw;
+}
+
+.vds-reportage p {
+  background: #d9d9d9;
+  margin: 0;
+}
+
+.viandes-des-sommets .vds-frieze {
+  width: 69.85%;
+  margin: clamp(56px, 51.66cqw, 992px) 0 0 30%;
+}
+
+@media (width >= 1200px) {
+  .vds-intro,
+  .vds-packaging,
+  .vds-construction,
+  .vds-reportage {
+    position: relative;
+  }
+
+  .vds-intro {
+    aspect-ratio: 1920 / 896;
+  }
+
+  .vds-missions,
+  .vds-logo,
+  .vds-interventions,
+  .vds-lettering,
+  .vds-construction p,
+  .vds-reportage p {
+    position: absolute;
+  }
+
+  .vds-missions {
+    top: 29.8%;
+    inset-inline: 6%;
+  }
+
+  .vds-intro .vds-logo {
+    top: 44.75%;
+    left: 36.15%;
+    width: 28.28%;
+  }
+
+  .vds-interventions {
+    top: 55.7%;
+    left: 65.4%;
+    width: 30.05%;
+  }
+
+  .vds-packaging {
+    min-height: 24.27cqw;
+  }
+
+  .vds-packaging .vds-lettering {
+    top: 7.6cqw;
+    left: 38.2%;
+    width: 47.5%;
+  }
+
+  .vds-construction p {
+    right: 5.35%;
+    top: -2.9cqw;
+    width: 13.8%;
+    margin: 0;
+  }
+
+  .vds-reportage p {
+    display: grid;
+    align-content: center;
+    left: 37.24%;
+    top: 9cqw;
+    width: 22.19%;
+    min-height: 19.53cqw;
+    padding: 2.55cqw 3.3cqw;
+  }
+}
+
+@media (width < 1200px) {
+  .vds-intro {
+    display: grid;
+    gap: 24px;
+    padding: 40px 20px;
+  }
+
+  .vds-missions {
+    justify-content: start;
+  }
+
+  .vds-intro .vds-logo {
+    width: min(100%, 440px);
+    margin-inline: auto;
+  }
+
+  .vds-interventions p {
+    margin-top: 12px;
+  }
+
+  .vds-feature {
+    width: calc(100% - 36px);
+  }
+
+  .vds-packaging {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0 22px;
+  }
+
+  .vds-box {
+    grid-column: 2;
+  }
+
+  .vds-packaging .vds-lettering,
+  .vds-packaging p {
+    grid-column: 1 / -1;
+  }
+
+  .vds-packaging .vds-lettering {
+    z-index: 1;
+    width: min(55%, 355px);
+    margin: -11% auto 0;
+  }
+
+  .vds-construction p {
+    max-width: 520px;
+    margin: 0 20px 16px;
+  }
+
+  .vds-reportage p {
+    max-width: 520px;
+    margin: 0 auto 20px;
+    padding: 20px;
+    width: calc(100% - 40px);
+  }
+
+  .viandes-des-sommets .vds-frieze {
+    margin-top: 22cqw;
+  }
+}
