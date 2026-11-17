@@ -4,7 +4,7 @@ import { join, parse } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import { renderToStaticMarkup } from 'react-dom/server';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import sharp from 'sharp';
 import {
   VitrineMedia,
@@ -20,10 +20,8 @@ import {
 import {
   getContactEmail,
   getPublicOrigin,
-  projectDescription,
-  projectPath,
   projectStructuredData,
-  projectTitle,
+  viandesDesSommets,
 } from '../apps/web/app/site';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -65,6 +63,10 @@ async function stylesheet(name: string, specific: string) {
   return writeAsset(name, 'css', result.outputFiles[0]!.contents);
 }
 
+const clientProjects = [
+  { metadata: viandesDesSommets, content: <ViandesDesSommets /> },
+];
+
 const [homeCss, projectCss, script] = await Promise.all([
   stylesheet('accueil', 'vitrine'),
   stylesheet('projet', 'client-project'),
@@ -80,10 +82,16 @@ const [homeCss, projectCss, script] = await Promise.all([
 ]);
 
 const home = <Home email={email} />;
-const project = <ViandesDesSommets />;
 const requestedImages = new Map<string, number>();
-const covers = ['OpeningSignature.png', 'viandes-des-sommets/ouverture.webp'];
-// Les composants déclarent eux-mêmes les fichiers utilisés par les deux pages.
+const homeCover = {
+  file: 'OpeningSignature.png',
+  alt: 'Chloé signe la vitrine d’un restaurant.',
+};
+const covers = [
+  homeCover.file,
+  ...clientProjects.map(({ metadata }) => metadata.cover.file),
+];
+// Les composants déclarent les fichiers affichés sur chaque page.
 renderToStaticMarkup(
   <VitrineMedia
     resolve={(file, width = 0) => {
@@ -95,7 +103,9 @@ renderToStaticMarkup(
     }}
   >
     {home}
-    {project}
+    {clientProjects.map(({ metadata, content }) => (
+      <Fragment key={metadata.path}>{content}</Fragment>
+    ))}
   </VitrineMedia>,
 );
 
@@ -227,7 +237,6 @@ function renderPage({
   );
 }
 
-await mkdir(join(output, projectPath), { recursive: true });
 await writeFile(
   join(output, 'index.html'),
   renderPage({
@@ -237,27 +246,29 @@ await writeFile(
     css: homeCss,
     script,
     content: home,
-    cover: { file: covers[0]!, alt: 'Chloé signe la vitrine d’un restaurant.' },
+    cover: homeCover,
     ...(origin && { structuredData: homeStructuredData(origin) }),
   }),
 );
-await writeFile(
-  join(output, projectPath, 'index.html'),
-  renderPage({
-    path: projectPath,
-    title: projectTitle,
-    description: projectDescription,
-    css: projectCss,
-    content: project,
-    cover: { file: covers[1]!, alt: 'Univers de marque Viandes des Sommets' },
-    ...(origin && {
-      structuredData: projectStructuredData(
-        origin,
-        origin + imageFor(covers[1]!).image,
-      ),
+for (const { metadata, content } of clientProjects) {
+  const directory = join(output, metadata.path);
+  await mkdir(directory, { recursive: true });
+  await writeFile(
+    join(directory, 'index.html'),
+    renderPage({
+      ...metadata,
+      css: projectCss,
+      content,
+      ...(origin && {
+        structuredData: projectStructuredData(
+          origin,
+          origin + imageFor(metadata.cover.file).image,
+          metadata,
+        ),
+      }),
     }),
-  }),
-);
+  );
+}
 await writeFile(
   join(output, '404.html'),
   renderPage({
@@ -279,9 +290,13 @@ await writeFile(
   `User-agent: *\nAllow: /\n${origin ? `Sitemap: ${origin}/sitemap.xml\n` : ''}`,
 );
 if (origin) {
+  const paths = ['/', ...clientProjects.map(({ metadata }) => metadata.path)];
+  const urls = paths
+    .map((path) => `<url><loc>${origin}${path}</loc></url>`)
+    .join('');
   await writeFile(
     join(output, 'sitemap.xml'),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${origin}/</loc></url><url><loc>${origin}${projectPath}</loc></url></urlset>\n`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>\n`,
   );
 }
 

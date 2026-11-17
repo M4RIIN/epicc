@@ -1,4 +1,4 @@
-import { projectPath } from '../site';
+import { viandesDesSommets } from '../site';
 
 export type Piece = {
   file: string;
@@ -36,7 +36,7 @@ export const projects: Project[] = [
   {
     name: 'Viandes des Sommets',
     side: 'left',
-    href: projectPath,
+    href: viandesDesSommets.path,
     lettering: {
       file: 'CaptureDecran20261029A15334231.png',
       width: 599,

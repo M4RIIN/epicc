@@ -1,8 +1,24 @@
-export const projectPath = '/clients/viandes-des-sommets/';
-export const projectTitle =
-  'Viandes des Sommets — Identité visuelle & logo | EPICC';
-export const projectDescription =
-  'Découvrez l’identité visuelle de Viandes des Sommets par EPICC : construction du logo, univers photographique, packaging et déclinaisons de marque.';
+export type ClientProjectMetadata = {
+  path: string;
+  name: string;
+  title: string;
+  workTitle: string;
+  description: string;
+  cover: { file: string; alt: string };
+};
+
+export const viandesDesSommets: ClientProjectMetadata = {
+  path: '/clients/viandes-des-sommets/',
+  name: 'Viandes des Sommets',
+  title: 'Viandes des Sommets — Identité visuelle & logo | EPICC',
+  workTitle: 'Viandes des Sommets — Identité visuelle',
+  description:
+    'Découvrez l’identité visuelle de Viandes des Sommets par EPICC : construction du logo, univers photographique, packaging et déclinaisons de marque.',
+  cover: {
+    file: 'viandes-des-sommets/ouverture.webp',
+    alt: 'Univers de marque Viandes des Sommets',
+  },
+};
 
 export function getPublicOrigin() {
   if (!process.env.PUBLIC_SITE_URL?.trim()) return null;
@@ -27,8 +43,12 @@ export function getContactEmail() {
   return email;
 }
 
-export function projectStructuredData(origin: string, image: string) {
-  const url = origin + projectPath;
+export function projectStructuredData(
+  origin: string,
+  image: string,
+  { path, name, title, workTitle, description }: ClientProjectMetadata,
+) {
+  const url = origin + path;
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -36,8 +56,8 @@ export function projectStructuredData(origin: string, image: string) {
         '@type': 'WebPage',
         '@id': url,
         url,
-        name: projectTitle,
-        description: projectDescription,
+        name: title,
+        description,
         inLanguage: 'fr-FR',
         isPartOf: { '@id': `${origin}/#site` },
         primaryImageOfPage: { '@type': 'ImageObject', url: image },
@@ -47,13 +67,13 @@ export function projectStructuredData(origin: string, image: string) {
       {
         '@type': 'CreativeWork',
         '@id': `${url}#projet`,
-        name: 'Viandes des Sommets — Identité visuelle',
-        description: projectDescription,
+        name: workTitle,
+        description,
         image,
         url,
         inLanguage: 'fr-FR',
         creator: { '@id': `${origin}/#organisation` },
-        about: { '@type': 'Organization', name: 'Viandes des Sommets' },
+        about: { '@type': 'Organization', name },
       },
       {
         '@type': 'BreadcrumbList',
@@ -68,7 +88,7 @@ export function projectStructuredData(origin: string, image: string) {
           {
             '@type': 'ListItem',
             position: 2,
-            name: 'Viandes des Sommets',
+            name,
             item: url,
           },
         ],
