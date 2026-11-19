@@ -435,7 +435,10 @@ body:has(.vitrine) {
 .vitrine-projects-collage {
   display: grid;
   gap: 2cqw;
+  max-block-size: 70svh;
   margin-top: 4cqw;
+  padding-block: 6px;
+  overflow-y: auto;
 }
 .vitrine-project {
   display: grid;
