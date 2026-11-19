@@ -72,6 +72,7 @@ test('le mobile charge une image WebP adaptée et aucun code React', async ({
 test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async ({
   page,
 }) => {
+  await page.mouse.move(-1, -1);
   for (const path of [
     '/',
     '/clients/amafolia/',
