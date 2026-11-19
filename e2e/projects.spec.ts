@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`le titre reste en haut jusqu’au dernier projet, JavaScript ${javaScriptEnabled}`, async ({
+  test(`la galerie défile sous son titre puis laisse place au contact, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -26,21 +26,53 @@ for (const javaScriptEnabled of [false, true]) {
           name: 'Fitness by Leslie',
         });
         const header = section.locator('header');
+        const gallery = section.getByRole('group', {
+          name: 'Liste des projets clients',
+        });
+        const viewportEdges = section.locator('.vitrine-projects-viewport');
         await expect(title).toBeInViewport({ ratio: 1 });
         await expect(lastProject).not.toBeInViewport();
         const mainWidth = await page
           .getByRole('main')
           .evaluate((main) => main.clientWidth);
         expect((await header.boundingBox())?.width).toBe(mainWidth);
+        await expect
+          .poll(async () => (await header.boundingBox())?.y)
+          .toBeCloseTo(0, 0);
+        if (javaScriptEnabled) {
+          await expect
+            .poll(() =>
+              viewportEdges.evaluate(
+                (el) => getComputedStyle(el, '::after').opacity,
+              ),
+            )
+            .toBe('1');
+          await page.evaluate(() => window.scrollBy(0, -120));
+          expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
+        }
 
         await page.mouse.move(viewport.width / 2, viewport.height / 2);
         await page.mouse.wheel(0, 250);
-        await expect.poll(async () => (await header.boundingBox())?.y).toBe(0);
+        await expect
+          .poll(() => gallery.evaluate((el) => el.scrollTop))
+          .toBeGreaterThan(0);
+        await expect
+          .poll(async () => (await header.boundingBox())?.y)
+          .toBeCloseTo(0, 0);
 
-        await lastProject.scrollIntoViewIfNeeded();
+        await gallery.press('End');
         await expect(lastProject).toBeInViewport({ ratio: 1 });
         await expect(title).toBeInViewport({ ratio: 1 });
-        expect((await header.boundingBox())?.y).toBe(0);
+        expect((await header.boundingBox())?.y).toBeCloseTo(0, 0);
+        if (javaScriptEnabled) {
+          await expect
+            .poll(() =>
+              viewportEdges.evaluate(
+                (el) => getComputedStyle(el, '::after').opacity,
+              ),
+            )
+            .toBe('0');
+        }
 
         await page.mouse.wheel(0, viewport.height);
         await expect(title).not.toBeInViewport();

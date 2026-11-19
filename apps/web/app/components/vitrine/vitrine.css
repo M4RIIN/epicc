@@ -425,9 +425,15 @@ body:has(.vitrine) {
   left: 15.67cqw;
   top: -1px;
 }
+:root:has(.vitrine-projects:target) {
+  scroll-padding-top: 0;
+  scroll-behavior: auto;
+}
 .vitrine-projects {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-block-size: 100svh;
   margin-block-start: clamp(60px, 6cqw, 112px);
-  scroll-margin-top: 32px;
 }
 .vitrine-projects-header {
   position: sticky;
@@ -440,7 +446,48 @@ body:has(.vitrine) {
 .vitrine-projects-collage {
   display: grid;
   gap: 2cqw;
-  padding: clamp(12px, 1.25cqw, 24px) clamp(12px, 3cqw, 32px) 0;
+  padding: clamp(12px, 1.25cqw, 24px) clamp(12px, 3cqw, 32px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #767676 var(--vitrine-paper);
+  scrollbar-gutter: stable both-edges;
+}
+.vitrine-projects-collage:focus-visible {
+  outline-offset: -4px;
+}
+.vitrine-projects-viewport {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+.vitrine-projects-viewport::before,
+.vitrine-projects-viewport::after {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 16px;
+  block-size: 18px;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+.vitrine-projects-viewport::before {
+  inset-block-start: 0;
+  background: linear-gradient(to bottom, var(--vitrine-paper), transparent);
+}
+.vitrine-projects-viewport::after {
+  inset-block-end: 0;
+  background: linear-gradient(to top, var(--vitrine-paper), transparent);
+}
+.vitrine-projects[data-projects-above] .vitrine-projects-viewport::before,
+.vitrine-projects[data-projects-below] .vitrine-projects-viewport::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-projects-viewport::before,
+  .vitrine-projects-viewport::after {
+    transition: none;
+  }
 }
 .vitrine-project {
   display: grid;
@@ -481,7 +528,7 @@ body:has(.vitrine) {
   display: block;
   width: 100%;
   height: 100%;
-  scroll-margin-block-start: 64px;
+  scroll-margin-block: 18px;
 }
 .vitrine-project-mirror {
   transform: scaleX(-1);
