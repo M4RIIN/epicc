@@ -108,7 +108,7 @@ for (const javaScriptEnabled of [false, true]) {
         menu.getByRole('link', { name: 'À propos' }),
       ).toHaveAttribute('href', '/#a-propos');
       await expect(
-        menu.getByRole('link', { name: 'Les offres' }),
+        menu.getByRole('link', { name: 'Les expertises' }),
       ).toHaveAttribute('href', '/#prestations');
       const images = page.locator('.client-project img:not([aria-hidden] img)');
       await expect(images).toHaveCount(19);

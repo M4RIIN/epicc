@@ -9,7 +9,7 @@ export function ClientProjectNav({ homePath }: { homePath: string }) {
           <a href={`${homePath}#a-propos`}>À propos</a>
         </li>
         <li>
-          <a href={`${homePath}#prestations`}>Les offres</a>
+          <a href={`${homePath}#prestations`}>Les expertises</a>
         </li>
         <li>
           <a href={`${homePath}#projets`}>Les projets clients</a>

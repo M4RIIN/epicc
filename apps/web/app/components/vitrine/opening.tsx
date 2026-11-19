@@ -24,7 +24,7 @@ export function Opening() {
         <details className="vitrine-menu">
           <summary>Menu</summary>
           <div className="vitrine-menu-panel">
-            <a href="#prestations">Les prestations</a>
+            <a href="#prestations">Les expertises</a>
             <a href="#a-propos">À propos de Chloé</a>
             <a href="#epicc">L’esprit EPICC</a>
             <a href="#projets">Les projets clients</a>
