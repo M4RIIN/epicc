@@ -1,5 +1,38 @@
 import { expect, test } from '@playwright/test';
 
+test('les photos et le repère suivent le défilement avec un mode fixe', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/#projets');
+  const gallery = page.getByRole('group', {
+    name: 'Liste des projets clients',
+  });
+  const photo = gallery
+    .getByRole('figure', { name: 'Casamatta', exact: true })
+    .locator('.vitrine-project-photo-frame img')
+    .first();
+  const hint = page.locator('.vitrine-projects-scroll-hint');
+  await expect(photo).toHaveCSS('animation-name', 'vitrine-project-parallax');
+  const photoPosition = await photo.evaluate(
+    (image) => getComputedStyle(image).translate,
+  );
+  const progress = () =>
+    hint.evaluate((element) => getComputedStyle(element, '::after').transform);
+  const initialProgress = await progress();
+
+  await gallery.evaluate((element) => element.scrollBy(0, 240));
+  await expect
+    .poll(() => photo.evaluate((image) => getComputedStyle(image).translate))
+    .not.toBe(photoPosition);
+  await expect.poll(progress).not.toBe(initialProgress);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(photo).toHaveCSS('translate', 'none');
+  await expect(photo).toHaveCSS('scale', 'none');
+  await expect.poll(progress).toBe('none');
+});
+
 test('les fiches clients affichent leur aperçu au survol et au clavier', async ({
   page,
 }) => {
@@ -50,7 +83,7 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
 });
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`la marge et le lien Contact permettent de poursuivre la page, JavaScript ${javaScriptEnabled}`, async ({
+  test(`les blancs du collage et le lien Contact laissent passer vers la suite, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
     const page = await browser.newPage({
@@ -71,13 +104,20 @@ for (const javaScriptEnabled of [false, true]) {
         const start = await page.evaluate(() => scrollY);
         const galleryBox = (await gallery.boundingBox())!;
 
-        await page.mouse.move(galleryBox.x / 2, galleryBox.y + 120);
-        await page.mouse.wheel(0, 360);
-        await expect.poll(() => page.evaluate(() => scrollY)).toBe(start + 360);
-        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
-        await expect(contact).toBeInViewport();
+        for (const fraction of width > 700 ? [0.22, 0.76] : [0.22]) {
+          const x = galleryBox.x + galleryBox.width * fraction;
+          await page.mouse.move(x, galleryBox.y + 36);
+          await page.mouse.wheel(0, 360);
+          await expect
+            .poll(() => page.evaluate(() => scrollY))
+            .toBe(start + 360);
+          expect(await gallery.evaluate((element) => element.scrollTop)).toBe(
+            0,
+          );
+          await expect(contact).toBeInViewport();
+          await page.evaluate((y) => window.scrollTo(0, y), start);
+        }
 
-        await page.evaluate((y) => window.scrollTo(0, y), start);
         const link = section.getByRole('link', { name: 'Contact' });
         await expect(link).toBeInViewport({ ratio: 1 });
         await link.press('Enter');
