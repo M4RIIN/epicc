@@ -6,9 +6,9 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/#projets');
 
-  for (const { name, cover } of [
-    { name: 'Amafolia', cover: /amafolia-motif/ },
-    { name: 'Viandes des Sommets', cover: /vds-ouverture/ },
+  for (const { name, screenshot } of [
+    { name: 'Amafolia', screenshot: /apercu-amafolia/ },
+    { name: 'Viandes des Sommets', screenshot: /apercu-viandes-des-sommets/ },
   ]) {
     const project = page.getByRole('figure', { name, exact: true });
     const link = project.getByRole('link').first();
@@ -18,7 +18,7 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     await expect(preview).toHaveCSS('opacity', '1');
     await expect(preview).toBeInViewport({ ratio: 1 });
     const image = preview.locator('img');
-    await expect(image).toHaveAttribute('src', cover);
+    await expect(image).toHaveAttribute('src', screenshot);
     await image.evaluate((element) => (element as HTMLImageElement).decode());
     await page.mouse.move(0, 0);
     await expect(preview).toHaveCSS('opacity', '0');

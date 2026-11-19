@@ -64,7 +64,7 @@ export function Projects({ basePath }: { basePath: string }) {
         {page && (
           <div className="vitrine-project-preview" aria-hidden="true">
             <Artwork
-              file={page.cover.file}
+              file={page.previewFile}
               width={300}
               height={180}
               sizes="(max-width: 1154px) 26vw, 300px"
