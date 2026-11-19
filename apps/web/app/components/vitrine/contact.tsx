@@ -65,12 +65,6 @@ export function Contact({ email }: { email: string | null }) {
           </button>
         </div>
       </form>
-      <footer className="vitrine-footer">
-        <Artwork file="LogoEpicc.png" width={256} height={189} alt="EPICC" />
-        <a href="#prestations">Lancement de marque</a>
-        <a href="#prestations">Stratégie de communication</a>
-        <a href="#contenu">Retour en haut ↑</a>
-      </footer>
     </section>
   );
 }

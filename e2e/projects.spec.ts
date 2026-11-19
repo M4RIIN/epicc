@@ -10,6 +10,7 @@ for (const javaScriptEnabled of [false, true]) {
     });
     try {
       for (const viewport of [
+        { width: 2560, height: 900 },
         { width: 1440, height: 900 },
         { width: 375, height: 667 },
       ]) {
@@ -86,12 +87,17 @@ for (const javaScriptEnabled of [false, true]) {
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
         );
-        const footer = page.locator('.vitrine-footer');
+        const footer = page.getByRole('contentinfo');
         await expect
           .poll(() =>
-            footer.evaluate((element) =>
-              Math.abs(innerHeight - element.getBoundingClientRect().bottom),
-            ),
+            footer.evaluate((element) => {
+              const { left, right, bottom } = element.getBoundingClientRect();
+              return Math.max(
+                Math.abs(left),
+                Math.abs(document.documentElement.clientWidth - right),
+                Math.abs(innerHeight - bottom),
+              );
+            }),
           )
           .toBeLessThan(1);
         await page.close();
