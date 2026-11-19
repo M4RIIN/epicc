@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`la liste défile sous son titre, JavaScript ${javaScriptEnabled}`, async ({
+  test(`le titre reste en haut jusqu’au dernier projet, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -16,30 +16,34 @@ for (const javaScriptEnabled of [false, true]) {
         const page = await context.newPage();
         await page.setViewportSize(viewport);
         await page.goto('/#projets');
-        const title = page.getByRole('heading', {
+        const section = page.getByRole('region', {
           name: 'Les projets clients',
         });
-        const list = page.getByRole('group', {
-          name: 'Liste des projets clients',
+        const title = section.getByRole('heading', {
+          name: 'Les projets clients',
         });
-        const lastProject = list.getByRole('figure', {
+        const lastProject = section.getByRole('figure', {
           name: 'Fitness by Leslie',
         });
+        const header = section.locator('header');
         await expect(title).toBeInViewport({ ratio: 1 });
         await expect(lastProject).not.toBeInViewport();
+        const mainWidth = await page
+          .getByRole('main')
+          .evaluate((main) => main.clientWidth);
+        expect((await header.boundingBox())?.width).toBe(mainWidth);
 
-        await list.hover();
-        const titlePosition = await title.boundingBox();
+        await page.mouse.move(viewport.width / 2, viewport.height / 2);
         await page.mouse.wheel(0, 250);
-        await expect
-          .poll(() => list.evaluate((el) => el.scrollTop))
-          .toBeGreaterThan(0);
-        expect(await title.boundingBox()).toEqual(titlePosition);
+        await expect.poll(async () => (await header.boundingBox())?.y).toBe(0);
 
-        await list.press('End');
+        await lastProject.scrollIntoViewIfNeeded();
         await expect(lastProject).toBeInViewport({ ratio: 1 });
         await expect(title).toBeInViewport({ ratio: 1 });
-        expect(await title.boundingBox()).toEqual(titlePosition);
+        expect((await header.boundingBox())?.y).toBe(0);
+
+        await page.mouse.wheel(0, viewport.height);
+        await expect(title).not.toBeInViewport();
         await page.close();
       }
     } finally {

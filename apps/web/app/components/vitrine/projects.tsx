@@ -74,15 +74,8 @@ export function Projects({ basePath }: { basePath: string }) {
     >
       <header className="vitrine-projects-header">
         <h2 id="projects-title">Les projets clients</h2>
-        <p id="projects-scroll-hint">Faire défiler pour voir la suite</p>
       </header>
-      <div
-        className="vitrine-projects-collage"
-        role="group"
-        aria-label="Liste des projets clients"
-        aria-describedby="projects-scroll-hint"
-        tabIndex={0}
-      >
+      <div className="vitrine-projects-collage">
         {projects.map(renderProject)}
         <figure
           className="vitrine-project vitrine-project-fitness-row"
