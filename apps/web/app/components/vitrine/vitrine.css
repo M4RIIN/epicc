@@ -21,12 +21,10 @@ body:has(.vitrine) {
   --vitrine-heading: clamp(18px, 1.40625cqw, 27px);
   --vitrine-copy: clamp(12px, 0.833333cqw, 16px);
   --vitrine-small: clamp(11px, 0.833333cqw, 16px);
-  container-type: inline-size;
-  overflow-x: clip;
-  width: 100%;
-  max-width: 1920px;
+  --vitrine-max-width: 1920px;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  margin: 0 auto;
   background: var(--vitrine-paper);
   color: var(--vitrine-ink);
   font:
@@ -34,6 +32,17 @@ body:has(.vitrine) {
     monospace;
   text-transform: uppercase;
   letter-spacing: -0.1em;
+}
+.vitrine-content,
+.vitrine-footer-content {
+  max-width: var(--vitrine-max-width);
+  margin-inline: auto;
+}
+.vitrine-content {
+  flex: 1;
+  width: 100%;
+  container-type: inline-size;
+  overflow-x: clip;
 }
 .vitrine h2 {
   margin: 0;
@@ -581,7 +590,7 @@ body:has(.vitrine) {
 .vitrine-contact {
   position: relative;
   margin-top: 7.5cqw;
-  padding-bottom: 5cqw;
+  padding-bottom: 8cqw;
   scroll-margin-top: 32px;
 }
 .vitrine-contact h2 {
@@ -653,10 +662,23 @@ body:has(.vitrine) {
   cursor: not-allowed;
 }
 .vitrine-footer {
+  container-type: inline-size;
+  background: #aeaeae;
+}
+.vitrine-footer-content {
+  --footer-layout-width: min(100cqw, var(--vitrine-max-width));
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 24px;
-  margin: 8cqw 8%;
+  padding: calc(0.03 * var(--footer-layout-width))
+    calc(0.05 * var(--footer-layout-width));
+  min-height: calc(0.163 * var(--footer-layout-width));
+}
+.vitrine-footer-content > img {
+  width: calc(0.1335 * var(--footer-layout-width));
+  opacity: 0.43;
+  transform: rotate(2.16deg);
 }
 .vitrine-footer a:hover {
   text-decoration: underline;
@@ -805,9 +827,11 @@ body:has(.vitrine) {
   .vitrine-contact-send p {
     max-width: 100%;
   }
-  .vitrine-footer {
+  .vitrine-footer-content {
     flex-direction: column;
-    margin-top: 60px;
+  }
+  .vitrine-footer-content > img {
+    width: 130px;
   }
 }
 .vitrine-manifesto-definition > span {
@@ -881,27 +905,6 @@ body:has(.vitrine) {
   font-weight: 400;
   text-transform: none;
   letter-spacing: normal;
-}
-
-.vitrine-contact {
-  padding-bottom: 0;
-}
-.vitrine-footer {
-  margin: 8cqw 0 0;
-  padding: 3cqw 5%;
-  min-height: 16.3cqw;
-  align-items: center;
-  background: #aeaeae;
-}
-.vitrine-footer > img {
-  width: 13.35cqw;
-  opacity: 0.43;
-  transform: rotate(2.16deg);
-}
-@media (max-width: 700px) {
-  .vitrine-footer > img {
-    width: 130px;
-  }
 }
 
 .vitrine-introduction {
