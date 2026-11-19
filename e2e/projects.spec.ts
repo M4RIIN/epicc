@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('le défilement de la page anime l’entrée, l’alignement et la sortie des lettrages', async ({
-  page,
-}) => {
-  for (const width of [1440, 375]) {
-    await page.setViewportSize({ width, height: 900 });
+test('l’arc des lettrages commence au milieu de l’écran', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1440, height: 390 },
+    { width: 375, height: 667 },
+  ]) {
+    await page.setViewportSize(viewport);
     await page.goto('/#projets');
     const gallery = page.getByRole('group', {
       name: 'Liste des projets clients',
@@ -13,7 +15,7 @@ test('le défilement de la page anime l’entrée, l’alignement et la sortie d
     const headerHeight = (await header.boundingBox())!.height;
 
     for (const { name, direction } of [
-      { name: 'Le Conseil', direction: width > 700 ? 1 : -1 },
+      { name: 'Le Carré Vert', direction: viewport.width > 700 ? 1 : -1 },
       { name: 'Deux Main', direction: -1 },
     ]) {
       const row = gallery.getByRole('figure', { name, exact: true });
@@ -45,25 +47,42 @@ test('le défilement de la page anime l’entrée, l’alignement et la sortie d
           };
         });
 
-      await scrollTo(top - viewHeight + height * 0.44);
+      const midpoint = top + height / 2 - viewHeight / 2;
+      await scrollTo(midpoint - 3);
+      await expect(caption).toHaveCSS('opacity', '0');
+
+      await scrollTo(midpoint + 3);
+      expect((await readCaption()).opacity).toBeGreaterThan(0);
+
+      const entryDistance = Math.min(112, Math.max(36, viewHeight * 0.12));
+      await scrollTo(midpoint + entryDistance / 2);
       const entry = await readCaption();
       expect(entry.x * direction).toBeGreaterThan(0);
       expect(entry.y).toBeGreaterThan(0);
       expect(entry.opacity).toBeGreaterThan(0);
       expect(entry.opacity).toBeLessThan(1);
 
-      const aligned = top - (viewHeight + headerHeight - height) / 2;
+      const entryEnd = midpoint + entryDistance;
+      const aligned = entryEnd + 4;
       await scrollTo(aligned);
       expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
 
-      await scrollTo(top - headerHeight + height * 0.44);
+      const exitStart = Math.max(
+        top - headerHeight + height * 0.08,
+        entryEnd + 12,
+      );
+      const exitEnd = Math.max(
+        top - headerHeight + height * 0.56,
+        entryEnd + 44,
+      );
+      await scrollTo(exitStart + (exitEnd - exitStart) * 0.75);
       const exit = await readCaption();
       expect(exit.x * direction).toBeGreaterThan(0);
       expect(exit.y).toBeLessThan(0);
       expect(exit.opacity).toBeGreaterThan(0);
       expect(exit.opacity).toBeLessThan(entry.opacity);
 
-      await scrollTo(top - headerHeight + height * 0.69);
+      await scrollTo(exitEnd + 3);
       await expect(caption).toHaveCSS('opacity', '0');
 
       await scrollTo(aligned);

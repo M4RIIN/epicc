@@ -537,17 +537,24 @@ body:has(.vitrine) {
   inherits: false;
   initial-value: 0deg;
 }
-@supports (animation-timeline: --vitrine-project-row) and
-  (animation-range: entry 0% exit 100%) and (translate: calc(1px * sin(1deg))) {
+@supports (animation-timeline: --vitrine-name-entry, --vitrine-name-exit) and
+  (animation-range: entry-crossing 50% entry-crossing 100%) and
+  (translate: calc(1px * sin(1deg))) {
   @media (prefers-reduced-motion: no-preference) {
     .vitrine-project {
-      view-timeline-name: --vitrine-project-row;
-      view-timeline-inset: var(--projects-header-height) 0;
+      view-timeline-name: --vitrine-name-entry, --vitrine-name-exit;
+      view-timeline-inset:
+        0 50%,
+        var(--projects-header-height) 0;
     }
     .vitrine-project-names {
       --name-arc-width: clamp(22px, 4cqw, 64px);
       --name-arc-height: clamp(8px, 1.6cqw, 22px);
       --name-arc-side: -1;
+      --name-entry-travel: clamp(36px, 12svh, 112px);
+      --name-entry-end-from-header: calc(
+        50% - 50svh + var(--name-entry-travel) + var(--projects-header-height)
+      );
       translate: calc(
           var(--name-arc-side) * var(--name-arc-width) *
             (1 - cos(var(--vitrine-name-angle)))
@@ -556,10 +563,11 @@ body:has(.vitrine) {
       animation:
         vitrine-name-enter auto linear both,
         vitrine-name-exit auto linear forwards;
-      animation-timeline: --vitrine-project-row;
+      animation-timeline: --vitrine-name-entry, --vitrine-name-exit;
       animation-range:
-        entry 16% entry 72%,
-        exit 8% exit 56%;
+        entry-crossing 50% entry-crossing calc(50% + var(--name-entry-travel)),
+        exit-crossing max(8%, calc(var(--name-entry-end-from-header) + 12px))
+          exit-crossing max(56%, calc(var(--name-entry-end-from-header) + 44px));
     }
     .vitrine-project-names:focus-within {
       animation: none;
