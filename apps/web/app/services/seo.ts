@@ -29,7 +29,7 @@ export function homeStructuredData(baseUrl: string) {
         areaServed: { '@type': 'Place', name: 'Toulouse et alentours' },
         hasOfferCatalog: {
           '@type': 'OfferCatalog',
-          name: 'Les prestations EPICC',
+          name: 'Les expertises EPICC',
           itemListElement: offers.map((offer) => ({
             '@type': 'Offer',
             itemOffered: {

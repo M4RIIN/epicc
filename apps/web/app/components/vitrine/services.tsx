@@ -33,7 +33,7 @@ export function Services() {
       aria-labelledby="services-title"
     >
       <h2 className="vitrine-sr-only" id="services-title">
-        Les prestations
+        Les expertises
       </h2>
       <dl>
         {offers.map(({ slug, name, description }) => (
