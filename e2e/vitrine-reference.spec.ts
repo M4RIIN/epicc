@@ -80,7 +80,7 @@ for (const javaScriptEnabled of [false, true]) {
         ).toBeVisible();
       }
       await expect(
-        page.getByRole('figure', { name: 'Viandes des Sommets', exact: true }),
+        page.getByRole('radio', { name: 'Viandes des Sommets', exact: true }),
       ).toBeVisible();
       await expect(
         page.getByRole('figure', { name: 'Amafolia', exact: true }),
@@ -128,10 +128,13 @@ for (const javaScriptEnabled of [false, true]) {
         }
       }
       await page
+        .locator('.vitrine-project-index label')
+        .filter({ hasText: 'Viandes des Sommets' })
+        .click();
+      await page
         .getByRole('link', {
-          name: 'Viandes des Sommets — découvrir l’identité visuelle',
+          name: 'Voir la fiche — Viandes des Sommets',
         })
-        .first()
         .click();
       await expect(page).toHaveURL('/clients/viandes-des-sommets/');
       await page.getByRole('link', { name: 'Tous les projets' }).click();
