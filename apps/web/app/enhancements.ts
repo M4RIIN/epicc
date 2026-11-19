@@ -1,3 +1,27 @@
+const pointerLogo = document.querySelector<HTMLElement>('.epicc-pointer-logo');
+if (pointerLogo) {
+  const hidePointerLogo = () => pointerLogo.removeAttribute('data-visible');
+
+  window.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') {
+      hidePointerLogo();
+      return;
+    }
+
+    const { clientX, clientY } = event;
+    pointerLogo.style.transform = `translate(${clientX}px, ${clientY}px)`;
+    pointerLogo.toggleAttribute('data-flip-x', clientX > innerWidth - 56);
+    pointerLogo.toggleAttribute('data-flip-y', clientY > innerHeight - 50);
+    pointerLogo.setAttribute('data-visible', '');
+  });
+  window.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'mouse') hidePointerLogo();
+  });
+  document.documentElement.addEventListener('pointerleave', hidePointerLogo);
+  window.addEventListener('pointercancel', hidePointerLogo);
+  window.addEventListener('blur', hidePointerLogo);
+}
+
 const manifesto = document.querySelector('#epicc');
 if (
   manifesto &&

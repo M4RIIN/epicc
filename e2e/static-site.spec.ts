@@ -62,8 +62,57 @@ test('le mobile charge une image WebP adaptée et aucun code React', async ({
   expect((await font.body()).byteLength).toBeLessThan(120_000);
   const scripts = page.locator('script[src]');
   await expect(scripts).toHaveCount(1);
-  const script = await page.request.get((await scripts.getAttribute('src'))!);
+  const scriptPath = (await scripts.getAttribute('src'))!;
+  const script = await page.request.get(scriptPath);
   expect((await script.body()).byteLength).toBeLessThan(2048);
   await page.goto('/clients/viandes-des-sommets/');
-  await expect(page.locator('script[src]')).toHaveCount(0);
+  await expect(scripts).toHaveAttribute('src', scriptPath);
+});
+
+test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async ({
+  page,
+}) => {
+  for (const path of [
+    '/',
+    '/clients/amafolia/',
+    '/clients/viandes-des-sommets/',
+  ]) {
+    await page.goto(path);
+    const logo = page.locator('.epicc-pointer-logo');
+    await expect(logo).toBeHidden();
+    await page.mouse.move(100, 100);
+    await expect(logo).toBeVisible();
+    await expect(logo).toHaveCSS('pointer-events', 'none');
+    await expect(logo).toHaveCSS('translate', '12px 12px');
+    expect(await logo.boundingBox()).toMatchObject({ x: 112, y: 112 });
+    await logo.evaluate((image) => image.decode());
+
+    const { width, height } = page.viewportSize()!;
+    await page.mouse.move(width - 1, height - 1);
+    await expect(logo).toHaveAttribute('data-flip-x', '');
+    await expect(logo).toHaveAttribute('data-flip-y', '');
+    expect(await logo.boundingBox()).toMatchObject({
+      x: width - 53,
+      y: height - 47,
+    });
+    await page.mouse.move(-1, -1);
+    await expect(logo).toBeHidden();
+  }
+});
+
+test('le logo reste masqué lors d’une interaction tactile', async ({
+  browser,
+}) => {
+  const page = await browser.newPage({
+    hasTouch: true,
+    isMobile: true,
+    viewport: { width: 375, height: 812 },
+  });
+  try {
+    await page.goto('/');
+    await page.touchscreen.tap(100, 100);
+    await expect(page.locator('.epicc-pointer-logo')).toBeHidden();
+  } finally {
+    await page.close();
+  }
 });
