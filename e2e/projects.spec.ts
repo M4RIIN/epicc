@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('l’arc des lettrages commence au milieu de l’écran', async ({ page }) => {
+test('les lettrages sont entièrement alignés à mi-écran', async ({ page }) => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1440, height: 390 },
@@ -48,32 +48,33 @@ test('l’arc des lettrages commence au milieu de l’écran', async ({ page }) 
         });
 
       const midpoint = top + height / 2 - viewHeight / 2;
-      await scrollTo(midpoint - 3);
+      const entryDistance = Math.min(112, Math.max(36, viewHeight * 0.12));
+      const entryStart = midpoint - entryDistance;
+      await scrollTo(entryStart - 3);
       await expect(caption).toHaveCSS('opacity', '0');
 
-      await scrollTo(midpoint + 3);
+      await scrollTo(entryStart + 3);
       expect((await readCaption()).opacity).toBeGreaterThan(0);
 
-      const entryDistance = Math.min(112, Math.max(36, viewHeight * 0.12));
-      await scrollTo(midpoint + entryDistance / 2);
+      await scrollTo(midpoint - entryDistance / 2);
       const entry = await readCaption();
       expect(entry.x * direction).toBeGreaterThan(0);
       expect(entry.y).toBeGreaterThan(0);
       expect(entry.opacity).toBeGreaterThan(0);
       expect(entry.opacity).toBeLessThan(1);
 
-      const entryEnd = midpoint + entryDistance;
-      const aligned = entryEnd + 4;
+      const aligned = Math.ceil(midpoint);
       await scrollTo(aligned);
       expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
 
+      const holdEnd = midpoint + entryDistance;
       const exitStart = Math.max(
         top - headerHeight + height * 0.08,
-        entryEnd + 12,
+        holdEnd + 12,
       );
       const exitEnd = Math.max(
         top - headerHeight + height * 0.56,
-        entryEnd + 44,
+        holdEnd + 44,
       );
       await scrollTo(exitStart + (exitEnd - exitStart) * 0.75);
       const exit = await readCaption();

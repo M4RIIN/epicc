@@ -552,7 +552,7 @@ body:has(.vitrine) {
       --name-arc-height: clamp(8px, 1.6cqw, 22px);
       --name-arc-side: -1;
       --name-entry-travel: clamp(36px, 12svh, 112px);
-      --name-entry-end-from-header: calc(
+      --name-hold-end-from-header: calc(
         50% - 50svh + var(--name-entry-travel) + var(--projects-header-height)
       );
       translate: calc(
@@ -565,9 +565,9 @@ body:has(.vitrine) {
         vitrine-name-exit auto linear forwards;
       animation-timeline: --vitrine-name-entry, --vitrine-name-exit;
       animation-range:
-        entry-crossing 50% entry-crossing calc(50% + var(--name-entry-travel)),
-        exit-crossing max(8%, calc(var(--name-entry-end-from-header) + 12px))
-          exit-crossing max(56%, calc(var(--name-entry-end-from-header) + 44px));
+        entry-crossing calc(50% - var(--name-entry-travel)) entry-crossing 50%,
+        exit-crossing max(8%, calc(var(--name-hold-end-from-header) + 12px))
+          exit-crossing max(56%, calc(var(--name-hold-end-from-header) + 44px));
     }
     .vitrine-project-names:focus-within {
       animation: none;
