@@ -429,16 +429,26 @@ body:has(.vitrine) {
   margin: 32cqw 7% 0;
   scroll-margin-top: 32px;
 }
-.vitrine-projects h2 {
+.vitrine-projects-header {
   text-align: center;
+}
+.vitrine-projects-header p {
+  margin-block-start: 8px;
+  font-size: var(--vitrine-small);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 .vitrine-projects-collage {
   display: grid;
   gap: 2cqw;
   max-block-size: 70svh;
-  margin-top: 4cqw;
-  padding-block: 6px;
+  margin-block-start: clamp(16px, 2cqw, 32px);
+  padding: clamp(12px, 1.25cqw, 24px) 8px;
+  border-block: 1px solid var(--vitrine-ink);
   overflow-y: auto;
+  scrollbar-color: var(--vitrine-ink) #e8e8e8;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable both-edges;
 }
 .vitrine-project {
   display: grid;
@@ -687,7 +697,6 @@ body:has(.vitrine) {
     margin: 60px 5% 0;
   }
   .vitrine-projects-collage {
-    margin-top: 32px;
     gap: 24px;
   }
   .vitrine-project {
@@ -826,7 +835,6 @@ body:has(.vitrine) {
 @media (min-width: 701px) {
   .vitrine-projects-collage {
     gap: 1.04cqw;
-    margin-right: -2cqw;
   }
   .vitrine-project {
     grid-template-columns: repeat(2, minmax(0, 1fr));

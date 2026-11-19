@@ -72,11 +72,15 @@ export function Projects({ basePath }: { basePath: string }) {
       id="projets"
       aria-labelledby="projects-title"
     >
-      <h2 id="projects-title">Les projets clients</h2>
+      <header className="vitrine-projects-header">
+        <h2 id="projects-title">Les projets clients</h2>
+        <p id="projects-scroll-hint">Faire défiler pour voir la suite</p>
+      </header>
       <div
         className="vitrine-projects-collage"
         role="group"
         aria-label="Liste des projets clients"
+        aria-describedby="projects-scroll-hint"
         tabIndex={0}
       >
         {projects.map(renderProject)}
