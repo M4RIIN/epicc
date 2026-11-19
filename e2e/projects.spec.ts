@@ -1,6 +1,52 @@
 import { expect, test } from '@playwright/test';
 
 for (const javaScriptEnabled of [false, true]) {
+  test(`la liste défile sous son titre, JavaScript ${javaScriptEnabled}`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled,
+      reducedMotion: 'reduce',
+    });
+    try {
+      for (const viewport of [
+        { width: 1440, height: 900 },
+        { width: 375, height: 667 },
+      ]) {
+        const page = await context.newPage();
+        await page.setViewportSize(viewport);
+        await page.goto('/#projets');
+        const title = page.getByRole('heading', {
+          name: 'Les projets clients',
+        });
+        const list = page.getByRole('group', {
+          name: 'Liste des projets clients',
+        });
+        const lastProject = list.getByRole('figure', {
+          name: 'Fitness by Leslie',
+        });
+        await expect(title).toBeInViewport({ ratio: 1 });
+        await expect(lastProject).not.toBeInViewport();
+
+        await list.hover();
+        const titlePosition = await title.boundingBox();
+        await page.mouse.wheel(0, 250);
+        await expect
+          .poll(() => list.evaluate((el) => el.scrollTop))
+          .toBeGreaterThan(0);
+        expect(await title.boundingBox()).toEqual(titlePosition);
+
+        await list.press('End');
+        await expect(lastProject).toBeInViewport({ ratio: 1 });
+        await expect(title).toBeInViewport({ ratio: 1 });
+        expect(await title.boundingBox()).toEqual(titlePosition);
+        await page.close();
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
   test(`clients sur une ligne avec deux photos maximum, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }, testInfo) => {
