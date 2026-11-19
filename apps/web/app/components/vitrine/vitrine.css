@@ -439,101 +439,57 @@ body:has(.vitrine) {
   scroll-behavior: auto;
 }
 .vitrine-projects {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  max-block-size: 100svh;
+  --projects-gutter: clamp(12px, 3cqw, 32px);
+  --projects-header-height: calc(var(--vitrine-heading) * 1.333333 + 24px);
   margin-block-start: clamp(60px, 6cqw, 112px);
 }
 .vitrine-projects-header {
   position: sticky;
   inset-block-start: 0;
-  z-index: 1;
-  padding-block: 12px;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-block-size: var(--projects-header-height);
+  padding-inline: var(--projects-gutter);
   background: var(--vitrine-paper);
   text-align: center;
+}
+.vitrine-projects-header h2 {
+  grid-column: 2;
+}
+.vitrine-projects-contact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+  min-block-size: 44px;
+  padding-inline: 6px;
+  font-size: clamp(11px, 0.833333cqw, 16px);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.vitrine-projects-contact:hover {
+  text-decoration-thickness: 2px;
+}
+@media (max-width: 480px) {
+  .vitrine-projects-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    text-align: start;
+  }
+  .vitrine-projects-header h2 {
+    grid-column: 1;
+  }
 }
 .vitrine-projects-collage {
   /* Contient les titres masqués positionnés dans les projets. */
   position: relative;
   display: grid;
   gap: 2cqw;
-  padding: clamp(12px, 1.25cqw, 24px) clamp(12px, 3cqw, 32px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #767676 var(--vitrine-paper);
-  scrollbar-gutter: stable both-edges;
-}
-@supports selector(::-webkit-scrollbar) {
-  @media (pointer: fine) and (forced-colors: none) {
-    .vitrine-projects-collage {
-      scrollbar-width: auto;
-      scrollbar-color: auto;
-    }
-    .vitrine-projects-collage::-webkit-scrollbar {
-      width: 16px;
-    }
-    .vitrine-projects-collage::-webkit-scrollbar-track {
-      background: repeating-linear-gradient(
-          to bottom,
-          #ababab 0 7px,
-          transparent 7px 9px,
-          #bfbfbf 9px 13px,
-          transparent 13px 14px
-        )
-        center / 1px 100% no-repeat;
-    }
-    .vitrine-projects-collage::-webkit-scrollbar-thumb {
-      border-radius: 45% 55% 48% 52% / 7px 4px 6px 5px;
-      background:
-        repeating-linear-gradient(165deg, transparent 0 9px, #ffffff70 9px 10px)
-          center / 3px 100% no-repeat,
-        linear-gradient(
-          91deg,
-          transparent 25%,
-          #636363 31%,
-          var(--vitrine-ink) 41% 58%,
-          #555 67%,
-          transparent 74%
-        );
-    }
-  }
-}
-.vitrine-projects-collage:focus-visible {
-  outline-offset: -4px;
-}
-.vitrine-projects-viewport {
-  position: relative;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr);
-}
-.vitrine-projects-viewport::before,
-.vitrine-projects-viewport::after {
-  position: absolute;
-  z-index: 1;
-  inset-inline: 16px;
-  block-size: 18px;
-  content: '';
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 180ms ease-out;
-}
-.vitrine-projects-viewport::before {
-  inset-block-start: 0;
-  background: linear-gradient(to bottom, var(--vitrine-paper), transparent);
-}
-.vitrine-projects-viewport::after {
-  inset-block-end: 0;
-  background: linear-gradient(to top, var(--vitrine-paper), transparent);
-}
-.vitrine-projects[data-projects-above] .vitrine-projects-viewport::before,
-.vitrine-projects[data-projects-below] .vitrine-projects-viewport::after {
-  opacity: 1;
-}
-@media (prefers-reduced-motion: reduce) {
-  .vitrine-projects-viewport::before,
-  .vitrine-projects-viewport::after {
-    transition: none;
-  }
+  padding: clamp(12px, 1.25cqw, 24px) var(--projects-gutter);
 }
 .vitrine-project {
   display: grid;
@@ -574,7 +530,80 @@ body:has(.vitrine) {
   display: block;
   width: 100%;
   height: 100%;
-  scroll-margin-block: 18px;
+  scroll-margin-block: calc(var(--projects-header-height) + 18px) 18px;
+}
+@property --vitrine-name-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@supports (animation-timeline: --vitrine-name-entry, --vitrine-name-exit) and
+  (animation-range: entry-crossing 50% entry-crossing 100%) and
+  (translate: calc(1px * sin(1deg))) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vitrine-project {
+      view-timeline-name: --vitrine-name-entry, --vitrine-name-exit;
+      view-timeline-inset:
+        0 50%,
+        var(--projects-header-height) 0;
+    }
+    .vitrine-project-names {
+      --name-arc-width: clamp(22px, 4cqw, 64px);
+      --name-arc-height: clamp(8px, 1.6cqw, 22px);
+      --name-arc-side: -1;
+      --name-entry-travel: clamp(36px, 12svh, 112px);
+      --name-hold-end-from-header: calc(
+        50% - 50svh + var(--name-entry-travel) + var(--projects-header-height)
+      );
+      translate: calc(
+          var(--name-arc-side) * var(--name-arc-width) *
+            (1 - cos(var(--vitrine-name-angle)))
+        )
+        calc(var(--name-arc-height) * sin(var(--vitrine-name-angle)));
+      animation:
+        vitrine-name-enter auto linear both,
+        vitrine-name-exit auto linear forwards;
+      animation-timeline: --vitrine-name-entry, --vitrine-name-exit;
+      animation-range:
+        entry-crossing calc(50% - var(--name-entry-travel)) entry-crossing 50%,
+        exit-crossing max(8%, calc(var(--name-hold-end-from-header) + 12px))
+          exit-crossing max(56%, calc(var(--name-hold-end-from-header) + 44px));
+    }
+    .vitrine-project-names:focus-within {
+      animation: none;
+    }
+    @media (min-width: 701px) {
+      .vitrine-project[data-side='right'] .vitrine-project-names {
+        --name-arc-side: 1;
+      }
+    }
+    @media (max-width: 700px) {
+      .vitrine-project-names {
+        --name-arc-width: 10px;
+        --name-arc-height: clamp(8px, 2.5cqw, 14px);
+      }
+    }
+  }
+}
+@keyframes vitrine-name-enter {
+  from {
+    --vitrine-name-angle: 90deg;
+    opacity: 0;
+  }
+  to {
+    --vitrine-name-angle: 0deg;
+    opacity: 1;
+  }
+}
+@keyframes vitrine-name-exit {
+  from {
+    --vitrine-name-angle: 0deg;
+    opacity: 1;
+  }
+  to {
+    --vitrine-name-angle: -90deg;
+    opacity: 0;
+  }
 }
 .vitrine-project-mirror {
   transform: scaleX(-1);
@@ -586,7 +615,7 @@ body:has(.vitrine) {
   --preview-width: min(26cqw, 300px);
   --preview-height: calc(var(--preview-width) * 3 / 5);
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   inset-inline-end: 0;
   inset-block-start: 50%;
   inline-size: var(--preview-width);

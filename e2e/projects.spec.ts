@@ -1,5 +1,102 @@
 import { expect, test } from '@playwright/test';
 
+test('les lettrages sont entièrement alignés à mi-écran', async ({ page }) => {
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1440, height: 390 },
+    { width: 375, height: 667 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/#projets');
+    const gallery = page.getByRole('group', {
+      name: 'Liste des projets clients',
+    });
+    const header = page.locator('.vitrine-projects-header');
+    const headerHeight = (await header.boundingBox())!.height;
+
+    for (const { name, direction } of [
+      { name: 'Le Carré Vert', direction: viewport.width > 700 ? 1 : -1 },
+      { name: 'Deux Main', direction: -1 },
+    ]) {
+      const row = gallery.getByRole('figure', { name, exact: true });
+      const caption = row.locator('.vitrine-project-names');
+      const geometry = await row.evaluate((element) => {
+        const row = element.getBoundingClientRect();
+        return {
+          top: row.top + scrollY,
+          height: row.height,
+          viewHeight: innerHeight,
+        };
+      });
+      const { top, height, viewHeight } = geometry;
+      const scrollTo = (offset: number) =>
+        page.evaluate(async (y) => {
+          window.scrollTo({ top: y, behavior: 'instant' });
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
+        }, offset);
+      const readCaption = () =>
+        caption.evaluate((element) => {
+          const { translate, opacity } = getComputedStyle(element);
+          const [x, y = 0] = translate.split(' ').map(Number.parseFloat);
+          return {
+            x: Math.round(x!),
+            y: Math.round(y),
+            opacity: Number(opacity),
+          };
+        });
+
+      const midpoint = top + height / 2 - viewHeight / 2;
+      const entryDistance = Math.min(112, Math.max(36, viewHeight * 0.12));
+      const entryStart = midpoint - entryDistance;
+      await scrollTo(entryStart - 3);
+      await expect(caption).toHaveCSS('opacity', '0');
+
+      await scrollTo(entryStart + 3);
+      expect((await readCaption()).opacity).toBeGreaterThan(0);
+
+      await scrollTo(midpoint - entryDistance / 2);
+      const entry = await readCaption();
+      expect(entry.x * direction).toBeGreaterThan(0);
+      expect(entry.y).toBeGreaterThan(0);
+      expect(entry.opacity).toBeGreaterThan(0);
+      expect(entry.opacity).toBeLessThan(1);
+
+      const aligned = Math.ceil(midpoint);
+      await scrollTo(aligned);
+      expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
+
+      const holdEnd = midpoint + entryDistance;
+      const exitStart = Math.max(
+        top - headerHeight + height * 0.08,
+        holdEnd + 12,
+      );
+      const exitEnd = Math.max(
+        top - headerHeight + height * 0.56,
+        holdEnd + 44,
+      );
+      await scrollTo(exitStart + (exitEnd - exitStart) * 0.75);
+      const exit = await readCaption();
+      expect(exit.x * direction).toBeGreaterThan(0);
+      expect(exit.y).toBeLessThan(0);
+      expect(exit.opacity).toBeGreaterThan(0);
+      expect(exit.opacity).toBeLessThan(entry.opacity);
+
+      await scrollTo(exitEnd + 3);
+      await expect(caption).toHaveCSS('opacity', '0');
+
+      await scrollTo(aligned);
+      expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
+
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await expect(caption).toHaveCSS('translate', 'none');
+      await expect(caption).toHaveCSS('opacity', '1');
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+    }
+  }
+});
+
 test('les fiches clients affichent leur aperçu au survol et au clavier', async ({
   page,
 }) => {
@@ -50,10 +147,10 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
 });
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`la galerie défile sous son titre puis laisse place au contact, JavaScript ${javaScriptEnabled}`, async ({
+  test(`la page défile des projets au contact, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
-    const context = await browser.newContext({
+    const page = await browser.newPage({
       javaScriptEnabled,
       reducedMotion: 'reduce',
     });
@@ -62,8 +159,8 @@ for (const javaScriptEnabled of [false, true]) {
         { width: 2560, height: 900 },
         { width: 1440, height: 900 },
         { width: 375, height: 667 },
+        { width: 320, height: 580 },
       ]) {
-        const page = await context.newPage();
         await page.setViewportSize(viewport);
         await page.goto('/#projets');
         const section = page.getByRole('region', {
@@ -72,66 +169,40 @@ for (const javaScriptEnabled of [false, true]) {
         const title = section.getByRole('heading', {
           name: 'Les projets clients',
         });
-        const lastProject = section.getByRole('figure', {
-          name: 'Fitness by Leslie',
-        });
-        const header = section.locator('header');
         const gallery = section.getByRole('group', {
           name: 'Liste des projets clients',
         });
-        const viewportEdges = section.locator('.vitrine-projects-viewport');
+        const lastProject = gallery.getByRole('figure', {
+          name: 'Fitness by Leslie',
+        });
+        const contact = page.getByRole('region', { name: 'Contact' });
+        const start = await page.evaluate(() => scrollY);
+        await expect(gallery).toHaveCSS('overflow-y', 'visible');
         await expect(title).toBeInViewport({ ratio: 1 });
         await expect(lastProject).not.toBeInViewport();
-        const mainWidth = await page
-          .getByRole('main')
-          .evaluate((main) => main.clientWidth);
-        expect((await header.boundingBox())?.width).toBe(mainWidth);
-        await expect
-          .poll(async () => (await header.boundingBox())?.y)
-          .toBeCloseTo(0, 0);
-        if (javaScriptEnabled) {
-          await expect
-            .poll(() =>
-              viewportEdges.evaluate(
-                (el) => getComputedStyle(el, '::after').opacity,
-              ),
-            )
-            .toBe('1');
-        }
 
-        await page.evaluate(() => window.scrollBy(0, -120));
-        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
-        await page.mouse.move(viewport.width / 2, viewport.height / 2);
-        await page.mouse.wheel(0, 250);
-        await expect
-          .poll(() => gallery.evaluate((el) => el.scrollTop))
-          .toBeGreaterThan(0);
-        if (javaScriptEnabled) {
-          await expect(section).toHaveAttribute('data-projects-above', '');
-        }
-        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
-
-        await page.evaluate(() => window.scrollBy(0, 145));
-        await expect
-          .poll(async () => (await header.boundingBox())?.y)
-          .toBeCloseTo(0, 0);
-
-        await gallery.press('End');
-        await expect(lastProject).toBeInViewport({ ratio: 1 });
+        const photo = gallery.locator('.vitrine-project-photo').first();
+        const photoBox = (await photo.boundingBox())!;
+        await page.mouse.move(photoBox.x + photoBox.width / 2, photoBox.y + 12);
+        await page.mouse.wheel(0, 180);
+        await expect.poll(() => page.evaluate(() => scrollY)).toBe(start + 180);
         await expect(title).toBeInViewport({ ratio: 1 });
-        expect((await header.boundingBox())?.y).toBeCloseTo(0, 0);
-        if (javaScriptEnabled) {
-          await expect
-            .poll(() =>
-              viewportEdges.evaluate(
-                (el) => getComputedStyle(el, '::after').opacity,
-              ),
-            )
-            .toBe('0');
-        }
+        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
 
-        await page.mouse.wheel(0, viewport.height);
-        await expect(title).not.toBeInViewport();
+        await lastProject.scrollIntoViewIfNeeded();
+        await expect(lastProject).toBeInViewport();
+        await page.mouse.wheel(0, Math.round(viewport.height * 0.55));
+        await expect(contact).toBeInViewport();
+
+        await page.evaluate((y) => window.scrollTo(0, y), start + 180);
+        const link = section.getByRole('link', { name: 'Contact' });
+        await expect(link).toBeInViewport({ ratio: 1 });
+        await link.press('Enter');
+        await expect(page).toHaveURL('/#contact');
+        await expect(contact).toBeInViewport();
+        await expect(contact).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(page.getByLabel('Nom', { exact: true })).toBeFocused();
 
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
@@ -139,27 +210,24 @@ for (const javaScriptEnabled of [false, true]) {
         const footer = page.getByRole('contentinfo');
         await expect
           .poll(() =>
-            footer.evaluate((element) => {
-              const { left, right, bottom } = element.getBoundingClientRect();
-              return Math.max(
-                Math.abs(left),
-                Math.abs(document.documentElement.clientWidth - right),
-                Math.abs(innerHeight - bottom),
-              );
-            }),
+            footer.evaluate((element) =>
+              Math.abs(innerHeight - element.getBoundingClientRect().bottom),
+            ),
           )
           .toBeLessThan(1);
-        await page.close();
       }
     } finally {
-      await context.close();
+      await page.close();
     }
   });
 
   test(`clients sur une ligne avec deux photos maximum, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }, testInfo) => {
-    const context = await browser.newContext({ javaScriptEnabled });
+    const context = await browser.newContext({
+      javaScriptEnabled,
+      reducedMotion: 'reduce',
+    });
     try {
       const page = await context.newPage();
       await page.goto('/');

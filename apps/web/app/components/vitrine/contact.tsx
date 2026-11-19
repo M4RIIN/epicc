@@ -6,6 +6,7 @@ export function Contact({ email }: { email: string | null }) {
       className="vitrine-contact"
       id="contact"
       aria-labelledby="contact-title"
+      tabIndex={-1}
     >
       <h2 id="contact-title">
         <Artwork
