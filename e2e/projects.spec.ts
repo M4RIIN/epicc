@@ -19,7 +19,7 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     await expect(preview).toBeInViewport({ ratio: 1 });
     const image = preview.locator('img');
     await expect(image).toHaveAttribute('src', cover);
-    await image.evaluate((element) => element.decode());
+    await image.evaluate((element) => (element as HTMLImageElement).decode());
     await page.mouse.move(0, 0);
     await expect(preview).toHaveCSS('opacity', '0');
 
