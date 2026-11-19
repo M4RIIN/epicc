@@ -17,6 +17,17 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     await link.hover();
     await expect(preview).toHaveCSS('opacity', '1');
     await expect(preview).toBeInViewport({ ratio: 1 });
+    const linkBox = (await link.boundingBox())!;
+    const mouseX = Math.round(linkBox.x + linkBox.width / 2) + 16;
+    const mouseY = Math.round(linkBox.y + linkBox.height / 2);
+    await page.mouse.move(mouseX, mouseY);
+    const previewBox = (await preview.boundingBox())!;
+    expect(previewBox.x + previewBox.width / 2).toBeCloseTo(mouseX, 0);
+    expect(
+      mouseY < previewBox.y
+        ? previewBox.y - mouseY
+        : mouseY - (previewBox.y + previewBox.height),
+    ).toBeLessThanOrEqual(56);
     const image = preview.locator('img');
     await expect(image).toHaveAttribute('src', screenshot);
     await image.evaluate((element) => (element as HTMLImageElement).decode());
@@ -26,6 +37,7 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     await page.keyboard.press('Tab');
     await link.focus();
     await expect(preview).toHaveCSS('opacity', '1');
+    await expect(preview).toHaveCSS('position', 'absolute');
     await link.blur();
     await expect(preview).toHaveCSS('opacity', '0');
   }

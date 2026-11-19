@@ -52,6 +52,19 @@ const gallery = projects?.querySelector<HTMLElement>(
   '.vitrine-projects-collage',
 );
 if (projects && gallery) {
+  gallery.addEventListener(
+    'pointermove',
+    ({ clientX, clientY, pointerType }) => {
+      if (pointerType !== 'mouse') return;
+      gallery.style.setProperty('--preview-x', `${clientX}px`);
+      gallery.style.setProperty('--preview-y', `${clientY}px`);
+      gallery.setAttribute(
+        'data-preview-pointer',
+        clientY < 216 ? 'below' : 'above',
+      );
+    },
+  );
+
   const updateProjectsEdges = () => {
     const { scrollTop, scrollHeight, clientHeight } = gallery;
     projects.toggleAttribute('data-projects-above', scrollTop > 1);
