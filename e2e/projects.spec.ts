@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
+test('le défilement de la page anime l’entrée, l’alignement et la sortie des lettrages', async ({
   page,
 }) => {
   for (const width of [1440, 375]) {
@@ -9,12 +9,8 @@ test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
     const gallery = page.getByRole('group', {
       name: 'Liste des projets clients',
     });
-    const hint = page.locator('.vitrine-projects-scroll-hint');
-    const readProgress = () =>
-      hint.evaluate(
-        (element) => getComputedStyle(element, '::after').transform,
-      );
-    const initialProgress = await readProgress();
+    const header = page.locator('.vitrine-projects-header');
+    const headerHeight = (await header.boundingBox())!.height;
 
     for (const { name, direction } of [
       { name: 'Le Conseil', direction: width > 700 ? 1 : -1 },
@@ -23,19 +19,17 @@ test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
       const row = gallery.getByRole('figure', { name, exact: true });
       const caption = row.locator('.vitrine-project-names');
       const geometry = await row.evaluate((element) => {
-        const scroller = element.parentElement!;
         const row = element.getBoundingClientRect();
-        const viewport = scroller.getBoundingClientRect();
         return {
-          top: row.top - viewport.top + scroller.scrollTop,
+          top: row.top + scrollY,
           height: row.height,
-          viewHeight: scroller.clientHeight,
+          viewHeight: innerHeight,
         };
       });
       const { top, height, viewHeight } = geometry;
       const scrollTo = (offset: number) =>
-        gallery.evaluate(async (element, y) => {
-          element.scrollTop = y;
+        page.evaluate(async (y) => {
+          window.scrollTo({ top: y, behavior: 'instant' });
           await new Promise((resolve) =>
             requestAnimationFrame(() => requestAnimationFrame(resolve)),
           );
@@ -58,18 +52,18 @@ test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
       expect(entry.opacity).toBeGreaterThan(0);
       expect(entry.opacity).toBeLessThan(1);
 
-      const aligned = top - (viewHeight - height) / 2;
+      const aligned = top - (viewHeight + headerHeight - height) / 2;
       await scrollTo(aligned);
       expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
 
-      await scrollTo(top + height * 0.44);
+      await scrollTo(top - headerHeight + height * 0.44);
       const exit = await readCaption();
       expect(exit.x * direction).toBeGreaterThan(0);
       expect(exit.y).toBeLessThan(0);
       expect(exit.opacity).toBeGreaterThan(0);
       expect(exit.opacity).toBeLessThan(entry.opacity);
 
-      await scrollTo(top + height * 0.69);
+      await scrollTo(top - headerHeight + height * 0.69);
       await expect(caption).toHaveCSS('opacity', '0');
 
       await scrollTo(aligned);
@@ -80,13 +74,6 @@ test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
       await expect(caption).toHaveCSS('opacity', '1');
       await page.emulateMedia({ reducedMotion: 'no-preference' });
     }
-
-    if (width > 700) {
-      await expect.poll(readProgress).not.toBe(initialProgress);
-    }
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect.poll(readProgress).toBe('none');
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
   }
 });
 
@@ -140,60 +127,10 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
 });
 
 for (const javaScriptEnabled of [false, true]) {
-  test(`les blancs du collage et le lien Contact laissent passer vers la suite, JavaScript ${javaScriptEnabled}`, async ({
+  test(`la page défile des projets au contact, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {
     const page = await browser.newPage({
-      javaScriptEnabled,
-      reducedMotion: 'reduce',
-    });
-    try {
-      for (const width of [1440, 320]) {
-        await page.setViewportSize({ width, height: 800 });
-        await page.goto('/#projets');
-        const section = page.getByRole('region', {
-          name: 'Les projets clients',
-        });
-        const gallery = section.getByRole('group', {
-          name: 'Liste des projets clients',
-        });
-        const contact = page.getByRole('region', { name: 'Contact' });
-        const start = await page.evaluate(() => scrollY);
-        const galleryBox = (await gallery.boundingBox())!;
-
-        for (const fraction of width > 700 ? [0.22, 0.76] : [0.22]) {
-          const x = galleryBox.x + galleryBox.width * fraction;
-          await page.mouse.move(x, galleryBox.y + 36);
-          await page.mouse.wheel(0, 360);
-          await expect
-            .poll(() => page.evaluate(() => scrollY))
-            .toBe(start + 360);
-          expect(await gallery.evaluate((element) => element.scrollTop)).toBe(
-            0,
-          );
-          await expect(contact).toBeInViewport();
-          await page.evaluate((y) => window.scrollTo(0, y), start);
-        }
-
-        const link = section.getByRole('link', { name: 'Contact' });
-        await expect(link).toBeInViewport({ ratio: 1 });
-        await link.press('Enter');
-        await expect(page).toHaveURL('/#contact');
-        await expect(contact).toBeInViewport();
-        await expect(contact).toBeFocused();
-        await page.keyboard.press('Tab');
-        await expect(page.getByLabel('Nom', { exact: true })).toBeFocused();
-        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
-      }
-    } finally {
-      await page.close();
-    }
-  });
-
-  test(`la galerie défile sous son titre puis laisse place au contact, JavaScript ${javaScriptEnabled}`, async ({
-    browser,
-  }) => {
-    const context = await browser.newContext({
       javaScriptEnabled,
       reducedMotion: 'reduce',
     });
@@ -202,8 +139,8 @@ for (const javaScriptEnabled of [false, true]) {
         { width: 2560, height: 900 },
         { width: 1440, height: 900 },
         { width: 375, height: 667 },
+        { width: 320, height: 580 },
       ]) {
-        const page = await context.newPage();
         await page.setViewportSize(viewport);
         await page.goto('/#projets');
         const section = page.getByRole('region', {
@@ -212,66 +149,40 @@ for (const javaScriptEnabled of [false, true]) {
         const title = section.getByRole('heading', {
           name: 'Les projets clients',
         });
-        const lastProject = section.getByRole('figure', {
-          name: 'Fitness by Leslie',
-        });
-        const header = section.locator('header');
         const gallery = section.getByRole('group', {
           name: 'Liste des projets clients',
         });
-        const viewportEdges = section.locator('.vitrine-projects-viewport');
+        const lastProject = gallery.getByRole('figure', {
+          name: 'Fitness by Leslie',
+        });
+        const contact = page.getByRole('region', { name: 'Contact' });
+        const start = await page.evaluate(() => scrollY);
+        await expect(gallery).toHaveCSS('overflow-y', 'visible');
         await expect(title).toBeInViewport({ ratio: 1 });
         await expect(lastProject).not.toBeInViewport();
-        const mainWidth = await page
-          .getByRole('main')
-          .evaluate((main) => main.clientWidth);
-        expect((await header.boundingBox())?.width).toBe(mainWidth);
-        await expect
-          .poll(async () => (await header.boundingBox())?.y)
-          .toBeCloseTo(0, 0);
-        if (javaScriptEnabled) {
-          await expect
-            .poll(() =>
-              viewportEdges.evaluate(
-                (el) => getComputedStyle(el, '::after').opacity,
-              ),
-            )
-            .toBe('1');
-        }
 
-        await page.evaluate(() => window.scrollBy(0, -120));
-        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
-        await page.mouse.move(viewport.width / 2, viewport.height / 2);
-        await page.mouse.wheel(0, 250);
-        await expect
-          .poll(() => gallery.evaluate((el) => el.scrollTop))
-          .toBeGreaterThan(0);
-        if (javaScriptEnabled) {
-          await expect(section).toHaveAttribute('data-projects-above', '');
-        }
-        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
-
-        await page.evaluate(() => window.scrollBy(0, 145));
-        await expect
-          .poll(async () => (await header.boundingBox())?.y)
-          .toBeCloseTo(0, 0);
-
-        await gallery.press('End');
-        await expect(lastProject).toBeInViewport({ ratio: 1 });
+        const photo = gallery.locator('.vitrine-project-photo').first();
+        const photoBox = (await photo.boundingBox())!;
+        await page.mouse.move(photoBox.x + photoBox.width / 2, photoBox.y + 12);
+        await page.mouse.wheel(0, 180);
+        await expect.poll(() => page.evaluate(() => scrollY)).toBe(start + 180);
         await expect(title).toBeInViewport({ ratio: 1 });
-        expect((await header.boundingBox())?.y).toBeCloseTo(0, 0);
-        if (javaScriptEnabled) {
-          await expect
-            .poll(() =>
-              viewportEdges.evaluate(
-                (el) => getComputedStyle(el, '::after').opacity,
-              ),
-            )
-            .toBe('0');
-        }
+        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
 
-        await page.mouse.wheel(0, viewport.height);
-        await expect(title).not.toBeInViewport();
+        await lastProject.scrollIntoViewIfNeeded();
+        await expect(lastProject).toBeInViewport();
+        await page.mouse.wheel(0, Math.round(viewport.height * 0.55));
+        await expect(contact).toBeInViewport();
+
+        await page.evaluate((y) => window.scrollTo(0, y), start + 180);
+        const link = section.getByRole('link', { name: 'Contact' });
+        await expect(link).toBeInViewport({ ratio: 1 });
+        await link.press('Enter');
+        await expect(page).toHaveURL('/#contact');
+        await expect(contact).toBeInViewport();
+        await expect(contact).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(page.getByLabel('Nom', { exact: true })).toBeFocused();
 
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
@@ -279,20 +190,14 @@ for (const javaScriptEnabled of [false, true]) {
         const footer = page.getByRole('contentinfo');
         await expect
           .poll(() =>
-            footer.evaluate((element) => {
-              const { left, right, bottom } = element.getBoundingClientRect();
-              return Math.max(
-                Math.abs(left),
-                Math.abs(document.documentElement.clientWidth - right),
-                Math.abs(innerHeight - bottom),
-              );
-            }),
+            footer.evaluate((element) =>
+              Math.abs(innerHeight - element.getBoundingClientRect().bottom),
+            ),
           )
           .toBeLessThan(1);
-        await page.close();
       }
     } finally {
-      await context.close();
+      await page.close();
     }
   });
 

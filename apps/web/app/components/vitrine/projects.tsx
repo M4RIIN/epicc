@@ -81,55 +81,47 @@ export function Projects({ basePath }: { basePath: string }) {
       aria-labelledby="projects-title"
     >
       <header className="vitrine-projects-header">
-        <p className="vitrine-projects-scroll-hint" id="projects-scroll-hint">
-          Défiler sur les photos
-        </p>
         <h2 id="projects-title">Les projets clients</h2>
         <a className="vitrine-projects-contact" href="#contact">
           Contact <span aria-hidden="true">↓</span>
         </a>
       </header>
-      <div className="vitrine-projects-viewport">
-        <div
-          className="vitrine-projects-collage"
-          role="group"
-          aria-label="Liste des projets clients"
-          aria-describedby="projects-scroll-hint"
-          tabIndex={0}
+      <div
+        className="vitrine-projects-collage"
+        role="group"
+        aria-label="Liste des projets clients"
+      >
+        {projects.map(renderProject)}
+        <figure
+          className="vitrine-project vitrine-project-fitness-row"
+          aria-label="Fitness by Leslie"
+          data-side="left"
+          style={
+            {
+              '--first-photo-width': `${338 / 19.2}cqw`,
+              '--second-photo-width': `${352 / 19.2}cqw`,
+              '--project-name-width': '16cqw',
+            } as CSSProperties
+          }
         >
-          {projects.map(renderProject)}
-          <figure
-            className="vitrine-project vitrine-project-fitness-row"
-            aria-label="Fitness by Leslie"
-            data-side="left"
-            style={
-              {
-                '--first-photo-width': `${338 / 19.2}cqw`,
-                '--second-photo-width': `${352 / 19.2}cqw`,
-                '--project-name-width': '16cqw',
-              } as CSSProperties
-            }
-          >
-            <figcaption className="vitrine-project-names">
-              <h3>Fitness by Leslie</h3>
-            </figcaption>
-            <div className="vitrine-project-photos">
-              <Artwork
-                file="Fitness1.png"
-                width={338}
-                height={425}
-                alt="Séance de renforcement avec haltères, Fitness by Leslie."
-              />
-              <Artwork
-                file="Fitness2.png"
-                width={352}
-                height={441}
-                alt="Séance de fitness avec ballon, Fitness by Leslie."
-              />
-            </div>
-          </figure>
-        </div>
-        <div className="vitrine-projects-scroll-margins" aria-hidden="true" />
+          <figcaption className="vitrine-project-names">
+            <h3>Fitness by Leslie</h3>
+          </figcaption>
+          <div className="vitrine-project-photos">
+            <Artwork
+              file="Fitness1.png"
+              width={338}
+              height={425}
+              alt="Séance de renforcement avec haltères, Fitness by Leslie."
+            />
+            <Artwork
+              file="Fitness2.png"
+              width={352}
+              height={441}
+              alt="Séance de fitness avec ballon, Fitness by Leslie."
+            />
+          </div>
+        </figure>
       </div>
     </section>
   );
