@@ -4,6 +4,7 @@ if (
   'IntersectionObserver' in window &&
   !matchMedia('(prefers-reduced-motion: reduce)').matches
 ) {
+  manifesto.classList.add('vitrine-manifesto-rotation');
   const observer = new IntersectionObserver(
     ([entry]) => {
       if (!entry?.isIntersecting) return;
