@@ -452,6 +452,41 @@ body:has(.vitrine) {
   scrollbar-color: #767676 var(--vitrine-paper);
   scrollbar-gutter: stable both-edges;
 }
+@supports selector(::-webkit-scrollbar) {
+  @media (pointer: fine) and (forced-colors: none) {
+    .vitrine-projects-collage {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
+    .vitrine-projects-collage::-webkit-scrollbar {
+      width: 16px;
+    }
+    .vitrine-projects-collage::-webkit-scrollbar-track {
+      background: repeating-linear-gradient(
+          to bottom,
+          #ababab 0 7px,
+          transparent 7px 9px,
+          #bfbfbf 9px 13px,
+          transparent 13px 14px
+        )
+        center / 1px 100% no-repeat;
+    }
+    .vitrine-projects-collage::-webkit-scrollbar-thumb {
+      border-radius: 45% 55% 48% 52% / 7px 4px 6px 5px;
+      background:
+        repeating-linear-gradient(165deg, transparent 0 9px, #ffffff70 9px 10px)
+          center / 3px 100% no-repeat,
+        linear-gradient(
+          91deg,
+          transparent 25%,
+          #636363 31%,
+          var(--vitrine-ink) 41% 58%,
+          #555 67%,
+          transparent 74%
+        );
+    }
+  }
+}
 .vitrine-projects-collage:focus-visible {
   outline-offset: -4px;
 }
