@@ -69,6 +69,33 @@ p {
   text-decoration: underline;
 }
 
+.epicc-pointer-logo {
+  position: fixed;
+  inset: 0 auto auto 0;
+  z-index: 20;
+  width: 40px;
+  height: 34px;
+  padding: 4px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 1px 6px #0003;
+  translate: var(--pointer-offset-x, 12px) var(--pointer-offset-y, 12px);
+  pointer-events: none;
+  visibility: hidden;
+}
+.epicc-pointer-logo[data-flip-x] {
+  --pointer-offset-x: calc(-100% - 12px);
+}
+.epicc-pointer-logo[data-flip-y] {
+  --pointer-offset-y: calc(-100% - 12px);
+}
+@media (any-pointer: fine) and (forced-colors: none) {
+  .epicc-pointer-logo[data-visible] {
+    visibility: visible;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     scroll-behavior: auto;

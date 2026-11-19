@@ -6,6 +6,7 @@ import { build } from 'esbuild';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Fragment, type ReactNode } from 'react';
 import sharp from 'sharp';
+import { Artwork } from '../apps/web/app/components/vitrine/artwork';
 import {
   VitrineMedia,
   type VitrineImage,
@@ -91,6 +92,15 @@ const [homeCss, projectCss, script] = await Promise.all([
 ]);
 
 const home = <Home email={email} basePath={basePath} />;
+const pointerLogo = (
+  <Artwork
+    className="epicc-pointer-logo"
+    file="LogoEpicc.png"
+    width={40}
+    height={34}
+    sizes="40px"
+  />
+);
 const requestedImages = new Map<string, number>();
 const homeCover = {
   file: 'OpeningSignature.png',
@@ -111,6 +121,7 @@ renderToStaticMarkup(
       return { image: 'data:,' };
     }}
   >
+    {pointerLogo}
     {home}
     {clientProjects.map(({ metadata, content }) => (
       <Fragment key={metadata.path}>{content}</Fragment>
@@ -175,7 +186,6 @@ type Page = {
   css: string;
   cover?: { file: string; alt: string };
   structuredData?: object;
-  script?: string;
   content: ReactNode;
 };
 
@@ -186,7 +196,6 @@ function renderPage({
   css,
   cover,
   structuredData,
-  script,
   content,
 }: Page) {
   const url = baseUrl && path !== '/404.html' ? baseUrl + path : null;
@@ -233,13 +242,16 @@ function renderPage({
           )}
           {path === '/404.html' && <meta name="robots" content="noindex" />}
           <link rel="stylesheet" href={css} />
-          {script && <script type="module" src={script} />}
+          <script type="module" src={script} />
         </head>
         <body>
           <a className="skip-link" href="#contenu">
             Aller au contenu
           </a>
-          <VitrineMedia resolve={imageFor}>{content}</VitrineMedia>
+          <VitrineMedia resolve={imageFor}>
+            {content}
+            {pointerLogo}
+          </VitrineMedia>
         </body>
       </html>,
     )
@@ -253,7 +265,6 @@ await writeFile(
     title: homeTitle,
     description: homeDescription,
     css: homeCss,
-    script,
     content: home,
     cover: homeCover,
     ...(baseUrl && { structuredData: homeStructuredData(baseUrl) }),
