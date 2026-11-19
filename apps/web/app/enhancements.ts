@@ -20,7 +20,6 @@ const gallery = projects?.querySelector<HTMLElement>(
   '.vitrine-projects-collage',
 );
 if (projects && gallery) {
-  let previousScrollTop = gallery.scrollTop;
   const updateProjectsEdges = () => {
     const { scrollTop, scrollHeight, clientHeight } = gallery;
     projects.toggleAttribute('data-projects-above', scrollTop > 1);
@@ -29,22 +28,7 @@ if (projects && gallery) {
       scrollHeight - clientHeight - scrollTop > 1,
     );
   };
-  gallery.addEventListener(
-    'scroll',
-    () => {
-      const scrollTop = gallery.scrollTop;
-      const movingDown = scrollTop > previousScrollTop;
-      previousScrollTop = scrollTop;
-      updateProjectsEdges();
-
-      if (!movingDown) return;
-      const { top } = projects.getBoundingClientRect();
-      if (top > 1 && top < innerHeight) {
-        window.scrollBy({ top, behavior: 'instant' });
-      }
-    },
-    { passive: true },
-  );
+  gallery.addEventListener('scroll', updateProjectsEdges, { passive: true });
   if ('ResizeObserver' in window) {
     new ResizeObserver(updateProjectsEdges).observe(gallery);
   }

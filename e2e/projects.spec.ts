@@ -47,15 +47,21 @@ for (const javaScriptEnabled of [false, true]) {
               ),
             )
             .toBe('1');
-          await page.evaluate(() => window.scrollBy(0, -120));
-          expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
         }
 
+        await page.evaluate(() => window.scrollBy(0, -120));
+        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
         await page.mouse.move(viewport.width / 2, viewport.height / 2);
         await page.mouse.wheel(0, 250);
         await expect
           .poll(() => gallery.evaluate((el) => el.scrollTop))
           .toBeGreaterThan(0);
+        if (javaScriptEnabled) {
+          await expect(section).toHaveAttribute('data-projects-above', '');
+        }
+        expect((await header.boundingBox())?.y).toBeCloseTo(120, 0);
+
+        await page.evaluate(() => window.scrollBy(0, 145));
         await expect
           .poll(async () => (await header.boundingBox())?.y)
           .toBeCloseTo(0, 0);
