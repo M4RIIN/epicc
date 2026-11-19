@@ -82,6 +82,18 @@ for (const javaScriptEnabled of [false, true]) {
 
         await page.mouse.wheel(0, viewport.height);
         await expect(title).not.toBeInViewport();
+
+        await page.evaluate(() =>
+          window.scrollTo(0, document.documentElement.scrollHeight),
+        );
+        const footer = page.locator('.vitrine-footer');
+        await expect
+          .poll(() =>
+            footer.evaluate((element) =>
+              Math.abs(innerHeight - element.getBoundingClientRect().bottom),
+            ),
+          )
+          .toBeLessThan(1);
         await page.close();
       }
     } finally {
