@@ -85,7 +85,7 @@ test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async (
     await expect(logo).toHaveCSS('pointer-events', 'none');
     await expect(logo).toHaveCSS('translate', '12px 12px');
     expect(await logo.boundingBox()).toMatchObject({ x: 112, y: 112 });
-    await logo.evaluate((image) => image.decode());
+    await logo.evaluate((image) => (image as HTMLImageElement).decode());
 
     const { width, height } = page.viewportSize()!;
     await page.mouse.move(width - 1, height - 1);
