@@ -6,7 +6,6 @@ import { build } from 'esbuild';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Fragment, type ReactNode } from 'react';
 import sharp from 'sharp';
-import { Artwork } from '../apps/web/app/components/vitrine/artwork';
 import {
   VitrineMedia,
   type VitrineImage,
@@ -92,14 +91,10 @@ const [homeCss, projectCss, script] = await Promise.all([
 ]);
 
 const home = <Home email={email} basePath={basePath} />;
-const pointerLogo = (
-  <Artwork
-    className="epicc-pointer-logo"
-    file="LogoEpicc.png"
-    width={40}
-    height={34}
-    sizes="40px"
-  />
+const icon = await writeAsset(
+  'epicc-icone',
+  'png',
+  await readFile(join(publicFiles, 'images/vitrine/epicc-icone.png')),
 );
 const requestedImages = new Map<string, number>();
 const homeCover = {
@@ -121,7 +116,6 @@ renderToStaticMarkup(
       return { image: 'data:,' };
     }}
   >
-    {pointerLogo}
     {home}
     {clientProjects.map(({ metadata, content }) => (
       <Fragment key={metadata.path}>{content}</Fragment>
@@ -241,6 +235,7 @@ function renderPage({
             />
           )}
           {path === '/404.html' && <meta name="robots" content="noindex" />}
+          <link rel="icon" href={icon} type="image/png" sizes="64x64" />
           <link rel="stylesheet" href={css} />
           <script type="module" src={script} />
         </head>
@@ -248,10 +243,14 @@ function renderPage({
           <a className="skip-link" href="#contenu">
             Aller au contenu
           </a>
-          <VitrineMedia resolve={imageFor}>
-            {content}
-            {pointerLogo}
-          </VitrineMedia>
+          <VitrineMedia resolve={imageFor}>{content}</VitrineMedia>
+          <img
+            className="epicc-pointer-logo"
+            src={icon}
+            alt=""
+            width={40}
+            height={40}
+          />
         </body>
       </html>,
     )

@@ -79,6 +79,13 @@ test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async (
   ]) {
     await page.goto(path);
     const logo = page.locator('.epicc-pointer-logo');
+    const icon = page.locator('link[rel="icon"]');
+    const imagePath = (await logo.getAttribute('src'))!;
+    await expect(icon).toHaveAttribute('href', imagePath);
+    await expect(icon).toHaveAttribute('sizes', '64x64');
+    const response = await page.request.get(imagePath);
+    expect(response.ok()).toBe(true);
+    expect(response.headers()['content-type']).toBe('image/png');
     await expect(logo).toBeHidden();
     await page.mouse.move(100, 100);
     await expect(logo).toBeVisible();
@@ -93,14 +100,14 @@ test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async (
     await expect(logo).toHaveAttribute('data-flip-y', '');
     expect(await logo.boundingBox()).toMatchObject({
       x: width - 53,
-      y: height - 47,
+      y: height - 53,
     });
     await page.mouse.move(-1, -1);
     await expect(logo).toBeHidden();
   }
 });
 
-test('le logo reste masqué lors d’une interaction tactile', async ({
+test('le logo distingue la souris du tactile sur un appareil hybride', async ({
   browser,
 }) => {
   const page = await browser.newPage({
@@ -110,8 +117,11 @@ test('le logo reste masqué lors d’une interaction tactile', async ({
   });
   try {
     await page.goto('/');
+    const logo = page.locator('.epicc-pointer-logo');
+    await page.mouse.move(100, 100);
+    await expect(logo).toBeVisible();
     await page.touchscreen.tap(100, 100);
-    await expect(page.locator('.epicc-pointer-logo')).toBeHidden();
+    await expect(logo).toBeHidden();
   } finally {
     await page.close();
   }
