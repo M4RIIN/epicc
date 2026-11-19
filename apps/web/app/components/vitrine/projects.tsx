@@ -29,10 +29,7 @@ export function Projects({ basePath }: { basePath: string }) {
         style={pieceStyle(piece)}
       >
         {href ? (
-          <a
-            href={basePath + href}
-            aria-label={`${name} — découvrir l’identité visuelle`}
-          >
+          <a href={href} aria-label={`${name} — découvrir l’identité visuelle`}>
             {artwork}
           </a>
         ) : (
@@ -41,7 +38,8 @@ export function Projects({ basePath }: { basePath: string }) {
       </div>
     );
   }
-  function renderProject({ name, lettering, photos, side, href }: Project) {
+  function renderProject({ name, lettering, photos, side, page }: Project) {
+    const href = page && basePath + page.path;
     const style = {
       '--first-photo-width': `${(photos[0]?.width ?? 0) / 19.2}cqw`,
       '--second-photo-width': `${(photos[1]?.width ?? 0) / 19.2}cqw`,
@@ -63,6 +61,16 @@ export function Projects({ basePath }: { basePath: string }) {
         <div className="vitrine-project-photos">
           {photos.map((piece) => renderPiece(piece, name, href))}
         </div>
+        {page && (
+          <div className="vitrine-project-preview" aria-hidden="true">
+            <Artwork
+              file={page.cover.file}
+              width={300}
+              height={180}
+              sizes="(max-width: 1154px) 26vw, 300px"
+            />
+          </div>
+        )}
       </figure>
     );
   }

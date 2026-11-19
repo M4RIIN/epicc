@@ -1,5 +1,42 @@
 import { expect, test } from '@playwright/test';
 
+test('les fiches clients affichent leur aperçu au survol et au clavier', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/#projets');
+
+  for (const { name, cover } of [
+    { name: 'Amafolia', cover: /amafolia-motif/ },
+    { name: 'Viandes des Sommets', cover: /vds-ouverture/ },
+  ]) {
+    const project = page.getByRole('figure', { name, exact: true });
+    const link = project.getByRole('link').first();
+    const preview = project.locator('.vitrine-project-preview');
+    await expect(preview).toHaveCSS('opacity', '0');
+    await link.hover();
+    await expect(preview).toHaveCSS('opacity', '1');
+    await expect(preview).toBeInViewport({ ratio: 1 });
+    const image = preview.locator('img');
+    await expect(image).toHaveAttribute('src', cover);
+    await image.evaluate((element) => element.decode());
+    await page.mouse.move(0, 0);
+    await expect(preview).toHaveCSS('opacity', '0');
+
+    await page.keyboard.press('Tab');
+    await link.focus();
+    await expect(preview).toHaveCSS('opacity', '1');
+    await link.blur();
+    await expect(preview).toHaveCSS('opacity', '0');
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.vitrine-project-preview').first()).toHaveCSS(
+    'transition-duration',
+    '0s',
+  );
+});
+
 for (const javaScriptEnabled of [false, true]) {
   test(`la galerie défile sous son titre puis laisse place au contact, JavaScript ${javaScriptEnabled}`, async ({
     browser,
