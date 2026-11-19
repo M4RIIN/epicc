@@ -1,36 +1,93 @@
 import { expect, test } from '@playwright/test';
 
-test('les photos et le repère suivent le défilement avec un mode fixe', async ({
+test('les lettrages entrent en courbe, s’alignent et s’effacent', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/#projets');
-  const gallery = page.getByRole('group', {
-    name: 'Liste des projets clients',
-  });
-  const photo = gallery
-    .getByRole('figure', { name: 'Casamatta', exact: true })
-    .locator('.vitrine-project-photo-frame img')
-    .first();
-  const hint = page.locator('.vitrine-projects-scroll-hint');
-  await expect(photo).toHaveCSS('animation-name', 'vitrine-project-parallax');
-  const photoPosition = await photo.evaluate(
-    (image) => getComputedStyle(image).translate,
-  );
-  const progress = () =>
-    hint.evaluate((element) => getComputedStyle(element, '::after').transform);
-  const initialProgress = await progress();
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/#projets');
+    const gallery = page.getByRole('group', {
+      name: 'Liste des projets clients',
+    });
+    const hint = page.locator('.vitrine-projects-scroll-hint');
+    const readProgress = () =>
+      hint.evaluate(
+        (element) => getComputedStyle(element, '::after').transform,
+      );
+    const initialProgress = await readProgress();
 
-  await gallery.evaluate((element) => element.scrollBy(0, 240));
-  await expect
-    .poll(() => photo.evaluate((image) => getComputedStyle(image).translate))
-    .not.toBe(photoPosition);
-  await expect.poll(progress).not.toBe(initialProgress);
+    for (const { name, direction } of [
+      { name: 'Le Conseil', direction: width > 700 ? 1 : -1 },
+      { name: 'Deux Main', direction: -1 },
+    ]) {
+      const row = gallery.getByRole('figure', { name, exact: true });
+      const caption = row.locator('.vitrine-project-names');
+      const geometry = await row.evaluate((element) => {
+        const scroller = element.parentElement!;
+        const row = element.getBoundingClientRect();
+        const viewport = scroller.getBoundingClientRect();
+        return {
+          top: row.top - viewport.top + scroller.scrollTop,
+          height: row.height,
+          viewHeight: scroller.clientHeight,
+        };
+      });
+      const { top, height, viewHeight } = geometry;
+      const scrollTo = (offset: number) =>
+        gallery.evaluate(async (element, y) => {
+          element.scrollTop = y;
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
+        }, offset);
+      const readCaption = () =>
+        caption.evaluate((element) => {
+          const { translate, opacity } = getComputedStyle(element);
+          const [x, y = 0] = translate.split(' ').map(Number.parseFloat);
+          return {
+            x: Math.round(x!),
+            y: Math.round(y),
+            opacity: Number(opacity),
+          };
+        });
 
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(photo).toHaveCSS('translate', 'none');
-  await expect(photo).toHaveCSS('scale', 'none');
-  await expect.poll(progress).toBe('none');
+      await scrollTo(top - viewHeight + height * 0.44);
+      const entry = await readCaption();
+      expect(entry.x * direction).toBeGreaterThan(0);
+      expect(entry.y).toBeGreaterThan(0);
+      expect(entry.opacity).toBeGreaterThan(0);
+      expect(entry.opacity).toBeLessThan(1);
+
+      const aligned = top - (viewHeight - height) / 2;
+      await scrollTo(aligned);
+      expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
+
+      await scrollTo(top + height * 0.44);
+      const exit = await readCaption();
+      expect(exit.x * direction).toBeGreaterThan(0);
+      expect(exit.y).toBeLessThan(0);
+      expect(exit.opacity).toBeGreaterThan(0);
+      expect(exit.opacity).toBeLessThan(entry.opacity);
+
+      await scrollTo(top + height * 0.69);
+      await expect(caption).toHaveCSS('opacity', '0');
+
+      await scrollTo(aligned);
+      expect(await readCaption()).toEqual({ x: 0, y: 0, opacity: 1 });
+
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await expect(caption).toHaveCSS('translate', 'none');
+      await expect(caption).toHaveCSS('opacity', '1');
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+    }
+
+    if (width > 700) {
+      await expect.poll(readProgress).not.toBe(initialProgress);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect.poll(readProgress).toBe('none');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+  }
 });
 
 test('les fiches clients affichent leur aperçu au survol et au clavier', async ({
@@ -242,7 +299,10 @@ for (const javaScriptEnabled of [false, true]) {
   test(`clients sur une ligne avec deux photos maximum, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }, testInfo) => {
-    const context = await browser.newContext({ javaScriptEnabled });
+    const context = await browser.newContext({
+      javaScriptEnabled,
+      reducedMotion: 'reduce',
+    });
     try {
       const page = await context.newPage();
       await page.goto('/');

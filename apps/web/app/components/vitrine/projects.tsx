@@ -21,12 +21,6 @@ export function Projects({ basePath }: { basePath: string }) {
         className={piece.mirror ? 'vitrine-project-mirror' : ''}
       />
     );
-    const visual =
-      piece.role === 'photo' ? (
-        <span className="vitrine-project-photo-frame">{artwork}</span>
-      ) : (
-        artwork
-      );
     return (
       <div
         key={piece.file}
@@ -36,10 +30,10 @@ export function Projects({ basePath }: { basePath: string }) {
       >
         {href ? (
           <a href={href} aria-label={`${name} — découvrir l’identité visuelle`}>
-            {visual}
+            {artwork}
           </a>
         ) : (
-          visual
+          artwork
         )}
       </div>
     );
@@ -120,22 +114,18 @@ export function Projects({ basePath }: { basePath: string }) {
               <h3>Fitness by Leslie</h3>
             </figcaption>
             <div className="vitrine-project-photos">
-              <span className="vitrine-project-photo-frame">
-                <Artwork
-                  file="Fitness1.png"
-                  width={338}
-                  height={425}
-                  alt="Séance de renforcement avec haltères, Fitness by Leslie."
-                />
-              </span>
-              <span className="vitrine-project-photo-frame">
-                <Artwork
-                  file="Fitness2.png"
-                  width={352}
-                  height={441}
-                  alt="Séance de fitness avec ballon, Fitness by Leslie."
-                />
-              </span>
+              <Artwork
+                file="Fitness1.png"
+                width={338}
+                height={425}
+                alt="Séance de renforcement avec haltères, Fitness by Leslie."
+              />
+              <Artwork
+                file="Fitness2.png"
+                width={352}
+                height={441}
+                alt="Séance de fitness avec ballon, Fitness by Leslie."
+              />
             </div>
           </figure>
         </div>

@@ -652,41 +652,73 @@ body:has(.vitrine) {
   height: 100%;
   scroll-margin-block: 18px;
 }
-.vitrine-project-name > a,
+.vitrine-project-names:has(a),
 .vitrine-project-photos > * {
   position: relative;
   z-index: 2;
 }
-.vitrine-project-photo-frame {
-  display: block;
-  height: 100%;
-  overflow: clip;
+@property --vitrine-name-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
-@supports (animation-timeline: --vitrine-photo) and
-  (view-timeline-name: --vitrine-photo) {
+@supports (animation-timeline: --vitrine-project-row) and
+  (animation-range: entry 0% exit 100%) and (translate: calc(1px * sin(1deg))) {
   @media (prefers-reduced-motion: no-preference) {
-    .vitrine-project-photo-frame {
-      view-timeline-name: --vitrine-photo;
+    .vitrine-project {
+      view-timeline-name: --vitrine-project-row;
     }
-    .vitrine-project-photo-frame img {
-      scale: 1.065;
-      animation: vitrine-project-parallax auto linear both;
-      animation-timeline: --vitrine-photo;
+    .vitrine-project-names {
+      --name-arc-width: clamp(22px, 4cqw, 64px);
+      --name-arc-height: clamp(8px, 1.6cqw, 22px);
+      --name-arc-side: -1;
+      translate: calc(
+          var(--name-arc-side) * var(--name-arc-width) *
+            (1 - cos(var(--vitrine-name-angle)))
+        )
+        calc(var(--name-arc-height) * sin(var(--vitrine-name-angle)));
+      animation:
+        vitrine-name-enter auto linear both,
+        vitrine-name-exit auto linear forwards;
+      animation-timeline: --vitrine-project-row;
+      animation-range:
+        entry 16% entry 72%,
+        exit 8% exit 56%;
     }
-    .vitrine-project-photos > :first-child {
-      --project-photo-drift: 2.5%;
+    .vitrine-project-names:focus-within {
+      animation: none;
     }
-    .vitrine-project-photos > :nth-child(2) {
-      --project-photo-drift: 1.5%;
+    @media (min-width: 701px) {
+      .vitrine-project[data-side='right'] .vitrine-project-names {
+        --name-arc-side: 1;
+      }
+    }
+    @media (max-width: 700px) {
+      .vitrine-project-names {
+        --name-arc-width: 10px;
+        --name-arc-height: clamp(8px, 2.5cqw, 14px);
+      }
     }
   }
 }
-@keyframes vitrine-project-parallax {
+@keyframes vitrine-name-enter {
   from {
-    translate: 0 calc(-1 * var(--project-photo-drift));
+    --vitrine-name-angle: 90deg;
+    opacity: 0;
   }
   to {
-    translate: 0 var(--project-photo-drift);
+    --vitrine-name-angle: 0deg;
+    opacity: 1;
+  }
+}
+@keyframes vitrine-name-exit {
+  from {
+    --vitrine-name-angle: 0deg;
+    opacity: 1;
+  }
+  to {
+    --vitrine-name-angle: -90deg;
+    opacity: 0;
   }
 }
 @supports (timeline-scope: --vitrine-projects-scroll) {
