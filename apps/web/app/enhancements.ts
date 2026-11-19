@@ -1,6 +1,7 @@
 const pointerLogo = document.querySelector<HTMLElement>('.epicc-pointer-logo');
 if (pointerLogo) {
   const hidePointerLogo = () => pointerLogo.removeAttribute('data-visible');
+  const edgeMargin = 56;
 
   window.addEventListener('pointermove', (event) => {
     if (event.pointerType !== 'mouse') {
@@ -10,8 +11,14 @@ if (pointerLogo) {
 
     const { clientX, clientY } = event;
     pointerLogo.style.transform = `translate(${clientX}px, ${clientY}px)`;
-    pointerLogo.toggleAttribute('data-flip-x', clientX > innerWidth - 56);
-    pointerLogo.toggleAttribute('data-flip-y', clientY > innerHeight - 50);
+    pointerLogo.toggleAttribute(
+      'data-flip-x',
+      clientX > innerWidth - edgeMargin,
+    );
+    pointerLogo.toggleAttribute(
+      'data-flip-y',
+      clientY > innerHeight - edgeMargin,
+    );
     pointerLogo.setAttribute('data-visible', '');
   });
   window.addEventListener('pointerdown', (event) => {
