@@ -50,6 +50,49 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
 });
 
 for (const javaScriptEnabled of [false, true]) {
+  test(`la marge et le lien Contact permettent de poursuivre la page, JavaScript ${javaScriptEnabled}`, async ({
+    browser,
+  }) => {
+    const page = await browser.newPage({
+      javaScriptEnabled,
+      reducedMotion: 'reduce',
+    });
+    try {
+      for (const width of [1440, 320]) {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto('/#projets');
+        const section = page.getByRole('region', {
+          name: 'Les projets clients',
+        });
+        const gallery = section.getByRole('group', {
+          name: 'Liste des projets clients',
+        });
+        const contact = page.getByRole('region', { name: 'Contact' });
+        const start = await page.evaluate(() => scrollY);
+        const galleryBox = (await gallery.boundingBox())!;
+
+        await page.mouse.move(galleryBox.x / 2, galleryBox.y + 120);
+        await page.mouse.wheel(0, 360);
+        await expect.poll(() => page.evaluate(() => scrollY)).toBe(start + 360);
+        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
+        await expect(contact).toBeInViewport();
+
+        await page.evaluate((y) => window.scrollTo(0, y), start);
+        const link = section.getByRole('link', { name: 'Contact' });
+        await expect(link).toBeInViewport({ ratio: 1 });
+        await link.press('Enter');
+        await expect(page).toHaveURL('/#contact');
+        await expect(contact).toBeInViewport();
+        await expect(contact).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(page.getByLabel('Nom', { exact: true })).toBeFocused();
+        expect(await gallery.evaluate((element) => element.scrollTop)).toBe(0);
+      }
+    } finally {
+      await page.close();
+    }
+  });
+
   test(`la galerie défile sous son titre puis laisse place au contact, JavaScript ${javaScriptEnabled}`, async ({
     browser,
   }) => {

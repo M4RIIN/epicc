@@ -439,6 +439,7 @@ body:has(.vitrine) {
   scroll-behavior: auto;
 }
 .vitrine-projects {
+  --projects-gutter: clamp(12px, 3cqw, 32px);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   max-block-size: 100svh;
@@ -448,16 +449,49 @@ body:has(.vitrine) {
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
-  padding-block: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-block-size: calc(var(--vitrine-heading) * 1.333333 + 24px);
+  padding-inline: var(--projects-gutter);
   background: var(--vitrine-paper);
   text-align: center;
+}
+.vitrine-projects-header h2 {
+  grid-column: 2;
+}
+.vitrine-projects-contact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+  min-block-size: 44px;
+  padding-inline: 6px;
+  font-size: clamp(11px, 0.833333cqw, 16px);
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.vitrine-projects-contact:hover {
+  text-decoration-thickness: 2px;
+}
+@media (max-width: 480px) {
+  .vitrine-projects-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    text-align: start;
+  }
+  .vitrine-projects-header h2 {
+    grid-column: 1;
+  }
 }
 .vitrine-projects-collage {
   /* Contient les titres masqués positionnés dans les projets. */
   position: relative;
   display: grid;
   gap: 2cqw;
-  padding: clamp(12px, 1.25cqw, 24px) clamp(12px, 3cqw, 32px);
+  padding-block: clamp(12px, 1.25cqw, 24px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #767676 var(--vitrine-paper);
@@ -505,12 +539,13 @@ body:has(.vitrine) {
   position: relative;
   display: grid;
   grid-template-rows: minmax(0, 1fr);
+  padding-inline: var(--projects-gutter);
 }
 .vitrine-projects-viewport::before,
 .vitrine-projects-viewport::after {
   position: absolute;
   z-index: 1;
-  inset-inline: 16px;
+  inset-inline: calc(var(--projects-gutter) + 16px);
   block-size: 18px;
   content: '';
   pointer-events: none;

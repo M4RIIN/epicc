@@ -137,7 +137,10 @@ for (const javaScriptEnabled of [false, true]) {
       await page.getByRole('link', { name: 'Tous les projets' }).click();
       await expect(page).toHaveURL('/#projets');
       await page.getByText('Menu', { exact: true }).click();
-      await page.getByRole('link', { name: 'Contact', exact: true }).click();
+      await page
+        .getByRole('navigation', { name: 'Navigation principale' })
+        .getByRole('link', { name: 'Contact', exact: true })
+        .click();
       await page.getByLabel('Nom', { exact: true }).fill('Exemple');
       await page.getByLabel('Prénom', { exact: true }).fill('Camille');
       await page

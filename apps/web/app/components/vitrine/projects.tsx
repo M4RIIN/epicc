@@ -82,6 +82,9 @@ export function Projects({ basePath }: { basePath: string }) {
     >
       <header className="vitrine-projects-header">
         <h2 id="projects-title">Les projets clients</h2>
+        <a className="vitrine-projects-contact" href="#contact">
+          Contact <span aria-hidden="true">↓</span>
+        </a>
       </header>
       <div className="vitrine-projects-viewport">
         <div
