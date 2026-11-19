@@ -47,22 +47,37 @@ if (
   observer.observe(manifesto);
 }
 
-const projectCatalogue = document.querySelector<HTMLElement>(
-  '.vitrine-projects-catalogue',
+const projects = document.querySelector('#projets');
+const gallery = projects?.querySelector<HTMLElement>(
+  '.vitrine-projects-collage',
 );
-if (projectCatalogue) {
-  projectCatalogue.addEventListener(
+if (projects && gallery) {
+  gallery.addEventListener(
     'pointermove',
     ({ clientX, clientY, pointerType }) => {
       if (pointerType !== 'mouse') return;
-      projectCatalogue.style.setProperty('--preview-x', `${clientX}px`);
-      projectCatalogue.style.setProperty('--preview-y', `${clientY}px`);
-      projectCatalogue.setAttribute(
+      gallery.style.setProperty('--preview-x', `${clientX}px`);
+      gallery.style.setProperty('--preview-y', `${clientY}px`);
+      gallery.setAttribute(
         'data-preview-pointer',
         clientY < 216 ? 'below' : 'above',
       );
     },
   );
+
+  const updateProjectsEdges = () => {
+    const { scrollTop, scrollHeight, clientHeight } = gallery;
+    projects.toggleAttribute('data-projects-above', scrollTop > 1);
+    projects.toggleAttribute(
+      'data-projects-below',
+      scrollHeight - clientHeight - scrollTop > 1,
+    );
+  };
+  gallery.addEventListener('scroll', updateProjectsEdges, { passive: true });
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(updateProjectsEdges).observe(gallery);
+  }
+  updateProjectsEdges();
 }
 
 const contact = document.querySelector<HTMLFormElement>(

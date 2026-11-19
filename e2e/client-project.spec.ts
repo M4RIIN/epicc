@@ -9,11 +9,13 @@ test.describe('fiche Amafolia', () => {
     const route = '/clients/amafolia/';
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
-    await expect(page.getByRole('radio', { name: 'Amafolia' })).toBeChecked();
-    const link = page.getByRole('link', {
-      name: 'Voir la fiche — Amafolia',
+    const firstProject = page.locator('.vitrine-project').first();
+    await expect(firstProject).toHaveAttribute('data-project', 'Amafolia');
+    const links = firstProject.getByRole('link', {
+      name: 'Amafolia — découvrir l’identité visuelle',
     });
-    await link.click();
+    await expect(links).toHaveCount(3);
+    await links.first().click();
     await expect(page).toHaveURL(route);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Amafolia',
@@ -150,11 +152,10 @@ for (const javaScriptEnabled of [false, true]) {
       await menu.getByRole('link', { name: 'Les projets clients' }).click();
       await expect(page).toHaveURL('/#projets');
       await page
-        .locator('.vitrine-project-index label')
-        .filter({ hasText: 'Viandes des Sommets' })
-        .click();
-      await page
-        .getByRole('link', { name: 'Voir la fiche — Viandes des Sommets' })
+        .getByRole('link', {
+          name: 'Viandes des Sommets — découvrir l’identité visuelle',
+        })
+        .first()
         .click();
       await expect(page).toHaveURL('/clients/viandes-des-sommets/');
       const sitemap = await page.request.get('/sitemap.xml');

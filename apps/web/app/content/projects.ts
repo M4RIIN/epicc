@@ -4,8 +4,9 @@ import {
   type ClientProjectMetadata,
 } from '../site';
 
-type ProjectArtwork = {
+export type Piece = {
   file: string;
+  role: 'name' | 'photo';
   width: number;
   height: number;
   alt?: string;
@@ -17,16 +18,17 @@ const photo = (
   width: number,
   height: number,
   alt: string,
-): ProjectArtwork => ({ file: `projets-${file}`, width, height, alt });
+): Piece => ({ file, width, height, alt, role: 'photo' });
 export const projects: Project[] = [
   {
     name: 'Amafolia',
     side: 'right',
     page: amafolia,
     lettering: {
-      file: 'projets-CaptureDecran20261029A15334241.png',
+      file: 'CaptureDecran20261029A15334241.png',
       width: 248,
       height: 123,
+      role: 'name',
     },
     photos: [
       {
@@ -41,9 +43,10 @@ export const projects: Project[] = [
     side: 'left',
     page: viandesDesSommets,
     lettering: {
-      file: 'projets-CaptureDecran20261029A15334231.png',
+      file: 'CaptureDecran20261029A15334231.png',
       width: 599,
       height: 176,
+      role: 'name',
     },
     photos: [
       photo(
@@ -59,9 +62,10 @@ export const projects: Project[] = [
     name: 'Casamatta',
     side: 'right',
     lettering: {
-      file: 'projets-IllustrationSansTitre521.png',
+      file: 'IllustrationSansTitre521.png',
       width: 423,
       height: 101,
+      role: 'name',
     },
     photos: [
       photo('Dsc19081.jpg', 192, 288, 'Intérieur du restaurant Casamatta.'),
@@ -72,9 +76,10 @@ export const projects: Project[] = [
     name: 'Origin',
     side: 'right',
     lettering: {
-      file: 'projets-IllustrationSansTitre491.png',
+      file: 'IllustrationSansTitre491.png',
       width: 189,
       height: 110,
+      role: 'name',
     },
     photos: [
       photo(
@@ -90,9 +95,10 @@ export const projects: Project[] = [
     name: 'Les Trois Sœurs',
     side: 'left',
     lettering: {
-      file: 'projets-CaptureDecran20261029A153342521.png',
+      file: 'CaptureDecran20261029A153342521.png',
       width: 474,
       height: 102,
+      role: 'name',
     },
     photos: [
       photo('TroisSoeurs.png', 280, 354, 'Pancakes des Trois Sœurs.'),
@@ -103,9 +109,10 @@ export const projects: Project[] = [
     name: 'Le Conseil',
     side: 'right',
     lettering: {
-      file: 'projets-CaptureDecran20261029A1533426.png',
+      file: 'CaptureDecran20261029A1533426.png',
       width: 340,
       height: 124,
+      role: 'name',
     },
     photos: [
       photo(
@@ -126,9 +133,10 @@ export const projects: Project[] = [
     name: 'Deux Main',
     side: 'left',
     lettering: {
-      file: 'projets-CaptureDecran20261029A15334261.png',
+      file: 'CaptureDecran20261029A15334261.png',
       width: 293,
       height: 107,
+      role: 'name',
     },
     photos: [
       photo('Dsc08681.png', 262, 393, 'Préparation d’un menu, Deux Main.'),
@@ -139,9 +147,10 @@ export const projects: Project[] = [
     name: 'Le Carré Vert',
     side: 'right',
     lettering: {
-      file: 'projets-CaptureDecran20261029A15334271.png',
+      file: 'CaptureDecran20261029A15334271.png',
       width: 489,
       height: 178,
+      role: 'name',
     },
     photos: [
       photo('Dsc23481.png', 315, 472, 'Assiette du Carré Vert.'),
@@ -152,9 +161,10 @@ export const projects: Project[] = [
     name: 'Allegria',
     side: 'left',
     lettering: {
-      file: 'projets-CaptureDecran20261029A15334291.png',
+      file: 'CaptureDecran20261029A15334291.png',
       width: 265,
       height: 123,
+      role: 'name',
     },
     photos: [
       photo(
@@ -170,9 +180,10 @@ export const projects: Project[] = [
     name: 'L’Écluse Douze',
     side: 'right',
     lettering: {
-      file: 'projets-CaptureDecran20261029A153342121.png',
+      file: 'CaptureDecran20261029A153342121.png',
       width: 260,
       height: 115,
+      role: 'name',
     },
     photos: [
       photo('Ecluse1.png', 302, 393, 'Plat au fromage de L’Écluse Douze.'),
@@ -183,9 +194,10 @@ export const projects: Project[] = [
     name: 'La Grinta',
     side: 'left',
     lettering: {
-      file: 'projets-CaptureDecran20261029A153342101.png',
+      file: 'CaptureDecran20261029A153342101.png',
       width: 306,
       height: 128,
+      role: 'name',
     },
     photos: [
       photo(
@@ -197,30 +209,12 @@ export const projects: Project[] = [
       photo('Grinta2.png', 328, 492, 'Portrait pour La Grinta.'),
     ],
   },
-  {
-    name: 'Fitness by Leslie',
-    side: 'left',
-    photos: [
-      {
-        file: 'Fitness1.png',
-        width: 338,
-        height: 425,
-        alt: 'Séance de renforcement avec haltères, Fitness by Leslie.',
-      },
-      {
-        file: 'Fitness2.png',
-        width: 352,
-        height: 441,
-        alt: 'Séance de fitness avec ballon, Fitness by Leslie.',
-      },
-    ],
-  },
 ];
 
 export type Project = {
   name: string;
   side: 'left' | 'right';
   page?: ClientProjectMetadata;
-  lettering?: ProjectArtwork;
-  photos: [ProjectArtwork] | [ProjectArtwork, ProjectArtwork];
+  lettering: Piece;
+  photos: [Piece] | [Piece, Piece];
 };
