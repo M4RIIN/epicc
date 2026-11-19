@@ -579,6 +579,49 @@ body:has(.vitrine) {
 .vitrine-project-mirror {
   transform: scaleX(-1);
 }
+.vitrine-project:has(> .vitrine-project-preview) {
+  position: relative;
+}
+.vitrine-project-preview {
+  position: absolute;
+  z-index: 1;
+  inset-inline-end: 0;
+  inset-block-start: 50%;
+  inline-size: min(26cqw, 300px);
+  aspect-ratio: 5 / 3;
+  transform: translateY(-50%);
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 6px 18px #0003;
+  background: var(--vitrine-paper);
+  pointer-events: none;
+  opacity: var(--project-preview-opacity, 0);
+}
+.vitrine-project-preview img {
+  position: absolute;
+  height: 100%;
+}
+@media (min-width: 701px) {
+  .vitrine-project[data-side='right'] > .vitrine-project-preview {
+    inset-inline: 0 auto;
+  }
+}
+.vitrine-project:has(a:focus-visible) {
+  --project-preview-opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .vitrine-project:has(a:hover) {
+    --project-preview-opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vitrine-project-preview {
+    translate: 0 calc(6px * (1 - var(--project-preview-opacity, 0)));
+    transition:
+      opacity 180ms ease-out,
+      translate 180ms ease-out;
+  }
+}
 .vitrine-project-fitness-row h3 {
   font-size: var(--vitrine-heading);
   font-weight: 400;

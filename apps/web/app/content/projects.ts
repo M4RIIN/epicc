@@ -1,4 +1,8 @@
-import { amafolia, viandesDesSommets } from '../site';
+import {
+  amafolia,
+  viandesDesSommets,
+  type ClientProjectMetadata,
+} from '../site';
 
 export type Piece = {
   file: string;
@@ -19,7 +23,7 @@ export const projects: Project[] = [
   {
     name: 'Amafolia',
     side: 'right',
-    href: amafolia.path,
+    page: amafolia,
     lettering: {
       file: 'CaptureDecran20261029A15334241.png',
       width: 248,
@@ -37,7 +41,7 @@ export const projects: Project[] = [
   {
     name: 'Viandes des Sommets',
     side: 'left',
-    href: viandesDesSommets.path,
+    page: viandesDesSommets,
     lettering: {
       file: 'CaptureDecran20261029A15334231.png',
       width: 599,
@@ -210,7 +214,7 @@ export const projects: Project[] = [
 export type Project = {
   name: string;
   side: 'left' | 'right';
-  href?: string;
+  page?: ClientProjectMetadata;
   lettering: Piece;
   photos: [Piece] | [Piece, Piece];
 };
