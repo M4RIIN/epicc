@@ -24,7 +24,7 @@ for (const service of document.querySelectorAll<HTMLElement>(
 
   service.addEventListener('pointermove', (event) => {
     if (event.pointerType !== 'mouse') return;
-    tooltip.hidden = false;
+    tooltip.setAttribute('data-pointer-visible', '');
     const x = besidePointer(event.clientX, tooltip.offsetWidth, innerWidth, 56);
     const y = besidePointer(
       event.clientY,
@@ -32,10 +32,10 @@ for (const service of document.querySelectorAll<HTMLElement>(
       innerHeight,
       14,
     );
-    tooltip.style.translate = `${x}px ${y}px`;
+    tooltip.style.setProperty('--tooltip-position', `${x}px ${y}px`);
   });
   service.addEventListener('pointerleave', () => {
-    tooltip.hidden = true;
+    tooltip.removeAttribute('data-pointer-visible');
   });
 }
 

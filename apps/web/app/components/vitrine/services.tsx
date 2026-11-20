@@ -1,5 +1,9 @@
 import { Artwork } from './artwork';
 import { offers } from '../../content/offers';
+import {
+  serviceTooltips,
+  type TooltipArtwork,
+} from '../../content/service-tooltips';
 
 const titles: Record<string, string[]> = {
   'creation-de-marque': ['ServiceLancement1.png', 'ServiceLancement2.png'],
@@ -25,6 +29,50 @@ const letteringDimensions: Record<string, [number, number]> = {
   'ServiceScenographie.png': [348, 211],
 };
 
+function TooltipImage({
+  artwork: [name, width, height],
+  className,
+}: {
+  artwork: TooltipArtwork;
+  className?: string;
+}) {
+  return (
+    <Artwork
+      file={`infobulles/infobulle-${name}.png`}
+      width={width}
+      height={height}
+      sizes="(max-width: 650px) 90vw, 625px"
+      {...(className && { className })}
+    />
+  );
+}
+
+function ServiceTooltip({ slug }: { slug: keyof typeof serviceTooltips }) {
+  const { title, subtitle, details, description } = serviceTooltips[slug];
+  return (
+    <span
+      className="vitrine-service-tooltip"
+      id={`infobulle-${slug}`}
+      role="tooltip"
+    >
+      <span className="vitrine-sr-only">{description}</span>
+      <TooltipImage
+        artwork={['cadre', 1249, 342]}
+        className="vitrine-service-tooltip-frame"
+      />
+      <span className="vitrine-service-tooltip-title">
+        {title.map((artwork) => (
+          <TooltipImage key={artwork[0]} artwork={artwork} />
+        ))}
+      </span>
+      <span className="vitrine-service-tooltip-details">
+        {subtitle && <TooltipImage artwork={subtitle} />}
+        <TooltipImage artwork={details} />
+      </span>
+    </span>
+  );
+}
+
 export function Services() {
   return (
     <section
@@ -38,7 +86,7 @@ export function Services() {
       <dl>
         {offers.map(({ slug, name, description }) => (
           <div className="vitrine-service" key={slug} data-offer={slug}>
-            <dt>
+            <dt tabIndex={0} aria-describedby={`infobulle-${slug}`}>
               <span className="vitrine-service-name vitrine-sr-only">
                 {name}
               </span>
@@ -55,13 +103,7 @@ export function Services() {
             </dt>
             <dd className="vitrine-service-description">
               {description}
-              <span
-                className="vitrine-service-tooltip"
-                aria-hidden="true"
-                hidden
-              >
-                {description}
-              </span>
+              <ServiceTooltip slug={slug} />
             </dd>
           </div>
         ))}

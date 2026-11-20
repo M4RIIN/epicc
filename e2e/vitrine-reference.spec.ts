@@ -1,4 +1,5 @@
 import { devices, expect, test } from '@playwright/test';
+import { serviceTooltips } from '../apps/web/app/content/service-tooltips';
 
 test('le manifeste alterne ses phrases avec un glitch et anime le collage en boucle', async ({
   page,
@@ -167,15 +168,33 @@ test('les infobulles des prestations suivent la souris', async ({ page }) => {
   await expect(tooltips).toHaveCount(6);
   await expect(tooltips.filter({ visible: true })).toHaveCount(0);
 
-  for (const service of await services.all()) {
+  for (const [slug, design] of Object.entries(serviceTooltips)) {
+    const service = page.locator(`.vitrine-service[data-offer="${slug}"]`);
     const tooltip = service.locator('.vitrine-service-tooltip');
     await service.hover();
     await expect(tooltips.filter({ visible: true })).toHaveCount(1);
     await expect(tooltip).toBeVisible();
-    const description = await service
-      .locator('dd')
-      .evaluate((element) => element.firstChild!.textContent!.trim());
-    await expect(tooltip).toHaveText(description);
+    await expect(tooltip).toHaveText(design.description);
+    await expect(service.locator('dt')).toHaveAccessibleDescription(
+      design.description,
+    );
+    const files = [
+      'cadre',
+      ...design.title.map(([name]) => name),
+      ...(design.subtitle ? [design.subtitle[0]] : []),
+      design.details[0],
+    ];
+    const images = tooltip.locator('img');
+    await expect(images).toHaveCount(files.length);
+    for (const [index, file] of files.entries()) {
+      const image = images.nth(index);
+      await expect(image).toHaveAttribute(
+        'src',
+        new RegExp(`/infobulle-${file}-.*\\.webp$`),
+      );
+      await image.evaluate((element: HTMLImageElement) => element.decode());
+      await expect(image).toBeInViewport({ ratio: 0.999 });
+    }
 
     const before = (await tooltip.boundingBox())!;
     const row = (await service.boundingBox())!;
@@ -188,6 +207,13 @@ test('les infobulles des prestations suivent la souris', async ({ page }) => {
 
   await page.mouse.move(0, 0);
   await expect(tooltips.filter({ visible: true })).toHaveCount(0);
+
+  const terms = services.locator('dt');
+  await terms.first().focus();
+  await page.keyboard.press('Tab');
+  await expect(terms.nth(1)).toBeFocused();
+  await expect(tooltips.nth(1)).toBeInViewport({ ratio: 0.999 });
+  await expect(tooltips.filter({ visible: true })).toHaveCount(1);
 });
 
 for (const javaScriptEnabled of [false, true]) {

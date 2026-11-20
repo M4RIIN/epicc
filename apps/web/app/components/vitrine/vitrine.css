@@ -180,19 +180,60 @@ body:has(.vitrine) {
 .vitrine-service-tooltip {
   position: fixed;
   z-index: 10;
-  inset: 0 auto auto 0;
-  inline-size: min(20rem, calc(100vw - 24px));
-  padding: 12px 16px;
-  border: 1px solid var(--vitrine-ink);
-  background: var(--vitrine-paper);
-  color: var(--vitrine-ink);
-  font:
-    400 14px / 1.4 'Roboto Mono',
-    monospace;
-  letter-spacing: normal;
-  text-align: start;
-  text-transform: none;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  display: grid;
+  grid-template-rows: minmax(0, 54fr) minmax(0, 46fr);
+  inline-size: min(624.5px, calc(100vw - 24px), 270svh);
+  aspect-ratio: 1249 / 342;
+  padding: 0.5% 1%;
+  visibility: hidden;
   pointer-events: none;
+}
+.vitrine-service-tooltip[data-pointer-visible] {
+  inset: 0 auto auto 0;
+  translate: var(--tooltip-position);
+  visibility: visible;
+}
+.vitrine-service:has(dt:focus-visible) .vitrine-service-tooltip {
+  visibility: visible;
+}
+.vitrine img.vitrine-service-tooltip-frame {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+.vitrine-service-tooltip-title,
+.vitrine-service-tooltip-details {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vitrine-service-tooltip-title {
+  gap: 1%;
+}
+.vitrine-service-tooltip-details {
+  flex-direction: column;
+  gap: 5%;
+}
+.vitrine .vitrine-service-tooltip-title img {
+  inline-size: auto;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.vitrine .vitrine-service-tooltip-details img {
+  inline-size: auto;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  max-block-size: 72%;
+  object-fit: contain;
+}
+.vitrine .vitrine-service-tooltip-details img:nth-last-child(2) {
+  max-block-size: 23%;
 }
 .vitrine-service:nth-child(even) dt {
   grid-column: 2;
