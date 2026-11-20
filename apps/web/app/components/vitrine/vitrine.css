@@ -183,10 +183,11 @@ body:has(.vitrine) {
   inset: 50% auto auto 50%;
   translate: -50% -50%;
   display: grid;
-  grid-template-rows: minmax(0, 54fr) minmax(0, 46fr);
+  gap: 6px;
   inline-size: min(624.5px, calc(100vw - 24px), 270svh);
-  aspect-ratio: 1249 / 342;
-  padding: 0.5% 1%;
+  padding: 10px clamp(12px, 2vw, 26px) 16px;
+  border: 1px solid var(--vitrine-ink);
+  background: #fffefe;
   visibility: hidden;
   pointer-events: none;
 }
@@ -198,25 +199,12 @@ body:has(.vitrine) {
 .vitrine-service:has(dt:focus-visible) .vitrine-service-tooltip {
   visibility: visible;
 }
-.vitrine img.vitrine-service-tooltip-frame {
-  position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
-}
-.vitrine-service-tooltip-title,
-.vitrine-service-tooltip-details {
-  position: relative;
+.vitrine-service-tooltip-title {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.vitrine-service-tooltip-title {
   gap: 1%;
-}
-.vitrine-service-tooltip-details {
-  flex-direction: column;
-  gap: 5%;
+  block-size: clamp(52px, 12svh, 88px);
 }
 .vitrine .vitrine-service-tooltip-title img {
   inline-size: auto;
@@ -225,15 +213,30 @@ body:has(.vitrine) {
   block-size: 100%;
   object-fit: contain;
 }
-.vitrine .vitrine-service-tooltip-details img {
-  inline-size: auto;
-  max-inline-size: 100%;
-  min-block-size: 0;
-  max-block-size: 72%;
-  object-fit: contain;
+.vitrine-service-tooltip-details {
+  font:
+    400 clamp(22px, 2.5vw, 30px) / 1.1 Caveat,
+    cursive;
+  letter-spacing: normal;
+  text-transform: none;
+  overflow-wrap: anywhere;
 }
-.vitrine .vitrine-service-tooltip-details img:nth-last-child(2) {
-  max-block-size: 23%;
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .vitrine-service-tooltip[data-pointer-visible],
+      .vitrine-service:has(dt:focus-visible) .vitrine-service-tooltip
+    )
+    .vitrine-service-tooltip-letter {
+    animation: vitrine-tooltip-write 80ms linear both;
+  }
+}
+@keyframes vitrine-tooltip-write {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .vitrine-service:nth-child(even) dt {
   grid-column: 2;

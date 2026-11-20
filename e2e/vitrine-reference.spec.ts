@@ -174,16 +174,21 @@ test('les infobulles des prestations suivent la souris', async ({ page }) => {
     await service.hover();
     await expect(tooltips.filter({ visible: true })).toHaveCount(1);
     await expect(tooltip).toBeVisible();
-    await expect(tooltip).toHaveText(design.description);
+    const details = tooltip.locator('.vitrine-service-tooltip-details');
+    await expect(details).toHaveText(design.description);
+    await expect(details).toHaveCSS('font-family', /Caveat/);
+    await expect(details).toHaveCSS('font-size', '30px');
+    const lastLetter = details
+      .locator('.vitrine-service-tooltip-letter')
+      .last();
+    await expect(lastLetter).toHaveCSS(
+      'animation-name',
+      'vitrine-tooltip-write',
+    );
     await expect(service.locator('dt')).toHaveAccessibleDescription(
       design.description,
     );
-    const files = [
-      'cadre',
-      ...design.title.map(([name]) => name),
-      ...(design.subtitle ? [design.subtitle[0]] : []),
-      design.details[0],
-    ];
+    const files = design.title.map(([name]) => name);
     const images = tooltip.locator('img');
     await expect(images).toHaveCount(files.length);
     for (const [index, file] of files.entries()) {
@@ -214,6 +219,10 @@ test('les infobulles des prestations suivent la souris', async ({ page }) => {
   await expect(terms.nth(1)).toBeFocused();
   await expect(tooltips.nth(1)).toBeInViewport({ ratio: 0.999 });
   await expect(tooltips.filter({ visible: true })).toHaveCount(1);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const letters = tooltips.nth(1).locator('.vitrine-service-tooltip-letter');
+  await expect(letters.last()).toHaveCSS('animation-name', 'none');
+  await expect(letters.last()).toHaveCSS('opacity', '1');
 });
 
 for (const javaScriptEnabled of [false, true]) {

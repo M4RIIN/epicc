@@ -1,9 +1,6 @@
 import { Artwork } from './artwork';
 import { offers } from '../../content/offers';
-import {
-  serviceTooltips,
-  type TooltipArtwork,
-} from '../../content/service-tooltips';
+import { serviceTooltips } from '../../content/service-tooltips';
 
 const titles: Record<string, string[]> = {
   'creation-de-marque': ['ServiceLancement1.png', 'ServiceLancement2.png'],
@@ -29,26 +26,12 @@ const letteringDimensions: Record<string, [number, number]> = {
   'ServiceScenographie.png': [348, 211],
 };
 
-function TooltipImage({
-  artwork: [name, width, height],
-  className,
-}: {
-  artwork: TooltipArtwork;
-  className?: string;
-}) {
-  return (
-    <Artwork
-      file={`infobulles/infobulle-${name}.png`}
-      width={width}
-      height={height}
-      sizes="(max-width: 650px) 90vw, 625px"
-      {...(className && { className })}
-    />
-  );
-}
+const handwritingSegmenter = new Intl.Segmenter('fr');
 
 function ServiceTooltip({ slug }: { slug: keyof typeof serviceTooltips }) {
-  const { title, subtitle, details, description } = serviceTooltips[slug];
+  const { title, description } = serviceTooltips[slug];
+  const letters = Array.from(handwritingSegmenter.segment(description));
+  const letterDelay = Math.min(18, 1050 / letters.length);
   return (
     <span
       className="vitrine-service-tooltip"
@@ -56,18 +39,31 @@ function ServiceTooltip({ slug }: { slug: keyof typeof serviceTooltips }) {
       role="tooltip"
     >
       <span className="vitrine-sr-only">{description}</span>
-      <TooltipImage
-        artwork={['cadre', 1249, 342]}
-        className="vitrine-service-tooltip-frame"
-      />
       <span className="vitrine-service-tooltip-title">
-        {title.map((artwork) => (
-          <TooltipImage key={artwork[0]} artwork={artwork} />
+        {title.map(([name, width, height]) => (
+          <Artwork
+            key={name}
+            file={`infobulles/infobulle-${name}.png`}
+            width={width}
+            height={height}
+            sizes="(max-width: 650px) 90vw, 625px"
+          />
         ))}
       </span>
-      <span className="vitrine-service-tooltip-details">
-        {subtitle && <TooltipImage artwork={subtitle} />}
-        <TooltipImage artwork={details} />
+      <span className="vitrine-service-tooltip-details" aria-hidden="true">
+        {letters.map(({ segment, index }, order) =>
+          segment.trim() ? (
+            <span
+              key={index}
+              className="vitrine-service-tooltip-letter"
+              style={{ animationDelay: `${order * letterDelay}ms` }}
+            >
+              {segment}
+            </span>
+          ) : (
+            segment
+          ),
+        )}
       </span>
     </span>
   );
