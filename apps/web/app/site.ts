@@ -5,7 +5,7 @@ export type ClientProjectMetadata = {
   workTitle: string;
   description: string;
   cover: { file: string; alt: string };
-  previewFile: string;
+  preview: { still: string; animation: string };
 };
 
 export const amafolia: ClientProjectMetadata = {
@@ -19,7 +19,10 @@ export const amafolia: ClientProjectMetadata = {
     file: 'amafolia/amafolia-motif.webp',
     alt: 'Motif des logos Amafolia en bleu et vert',
   },
-  previewFile: 'amafolia/apercu-amafolia.webp',
+  preview: {
+    still: 'amafolia/apercu-amafolia.webp',
+    animation: 'amafolia/apercu-amafolia.gif',
+  },
 };
 
 export const viandesDesSommets: ClientProjectMetadata = {
@@ -33,7 +36,10 @@ export const viandesDesSommets: ClientProjectMetadata = {
     file: 'viandes-des-sommets/vds-ouverture.webp',
     alt: 'Pièce de viande suspendue au-dessus d’une assiette, dans l’univers Viandes des Sommets',
   },
-  previewFile: 'viandes-des-sommets/apercu-viandes-des-sommets.webp',
+  preview: {
+    still: 'viandes-des-sommets/apercu-viandes-des-sommets.webp',
+    animation: 'viandes-des-sommets/apercu-viandes-des-sommets.gif',
+  },
 };
 
 export function getPublicSiteUrl() {

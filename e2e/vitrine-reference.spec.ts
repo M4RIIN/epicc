@@ -1,4 +1,5 @@
 import { devices, expect, test } from '@playwright/test';
+import { serviceTooltips } from '../apps/web/app/content/service-tooltips';
 
 test('le manifeste alterne ses phrases avec un glitch et anime le collage en boucle', async ({
   page,
@@ -155,6 +156,75 @@ test.describe('manifeste sur mobile', () => {
       )
       .toBe(2);
   });
+});
+
+test('les infobulles des prestations suivent la souris', async ({ page }) => {
+  const viewport = { width: 1440, height: 900 };
+  await page.setViewportSize(viewport);
+  await page.goto('/#prestations');
+
+  const services = page.locator('.vitrine-service');
+  const tooltips = services.locator('.vitrine-service-tooltip');
+  await expect(tooltips).toHaveCount(6);
+  await expect(tooltips.filter({ visible: true })).toHaveCount(0);
+
+  for (const [slug, design] of Object.entries(serviceTooltips)) {
+    const service = page.locator(`.vitrine-service[data-offer="${slug}"]`);
+    const tooltip = service.locator('.vitrine-service-tooltip');
+    await service.hover();
+    await expect(tooltips.filter({ visible: true })).toHaveCount(1);
+    await expect(tooltip).toBeVisible();
+    const details = tooltip.locator('.vitrine-service-tooltip-details');
+    await expect(details).toHaveText(design.description);
+    await expect(details).toContainText('|');
+    await expect(details).not.toContainText(',');
+    await expect(details).toHaveCSS('font-family', /Roboto Mono/);
+    await expect(details).toHaveCSS('font-size', '30px');
+    const lastLetter = details
+      .locator('.vitrine-service-tooltip-letter')
+      .last();
+    await expect(lastLetter).toHaveCSS(
+      'animation-name',
+      'vitrine-tooltip-write',
+    );
+    await expect(service.locator('dt')).toHaveAccessibleDescription(
+      design.description,
+    );
+    const files = design.title.map(([name]) => name);
+    const images = tooltip.locator('img');
+    await expect(images).toHaveCount(files.length);
+    for (const [index, file] of files.entries()) {
+      const image = images.nth(index);
+      await expect(image).toHaveAttribute(
+        'src',
+        new RegExp(`/infobulle-${file}-.*\\.webp$`),
+      );
+      await image.evaluate((element: HTMLImageElement) => element.decode());
+      await expect(image).toBeInViewport({ ratio: 0.999 });
+    }
+
+    const before = (await tooltip.boundingBox())!;
+    const row = (await service.boundingBox())!;
+    await page.mouse.move(row.x + row.width / 2 + 12, row.y + row.height / 2);
+    await expect
+      .poll(async () => (await tooltip.boundingBox())!.x)
+      .toBeCloseTo(before.x + 12, 0);
+    await expect(tooltip).toBeInViewport({ ratio: 0.999 });
+  }
+
+  await page.mouse.move(0, 0);
+  await expect(tooltips.filter({ visible: true })).toHaveCount(0);
+
+  const terms = services.locator('dt');
+  await terms.first().focus();
+  await page.keyboard.press('Tab');
+  await expect(terms.nth(1)).toBeFocused();
+  await expect(tooltips.nth(1)).toBeInViewport({ ratio: 0.999 });
+  await expect(tooltips.filter({ visible: true })).toHaveCount(1);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const letters = tooltips.nth(1).locator('.vitrine-service-tooltip-letter');
+  await expect(letters.last()).toHaveCSS('animation-name', 'none');
+  await expect(letters.last()).toHaveCSS('opacity', '1');
 });
 
 for (const javaScriptEnabled of [false, true]) {

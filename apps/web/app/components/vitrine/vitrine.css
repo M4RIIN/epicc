@@ -177,6 +177,68 @@ body:has(.vitrine) {
   font-style: italic;
   line-height: 1.25;
 }
+.vitrine-service-tooltip {
+  position: fixed;
+  z-index: 10;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+  display: grid;
+  gap: 6px;
+  inline-size: min(624.5px, calc(100vw - 24px), 270svh);
+  padding: 10px clamp(12px, 2vw, 26px) 16px;
+  border: 1px solid var(--vitrine-ink);
+  background: #fffefe;
+  visibility: hidden;
+  pointer-events: none;
+}
+.vitrine-service-tooltip[data-pointer-visible] {
+  inset: 0 auto auto 0;
+  translate: var(--tooltip-position);
+  visibility: visible;
+}
+.vitrine-service:has(dt:focus-visible) .vitrine-service-tooltip {
+  visibility: visible;
+}
+.vitrine-service-tooltip-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1%;
+  block-size: clamp(52px, 12svh, 88px);
+}
+.vitrine .vitrine-service-tooltip-title img {
+  inline-size: auto;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+.vitrine-service-tooltip-details {
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.1;
+  letter-spacing: normal;
+  text-transform: none;
+  overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+      .vitrine-service-tooltip[data-pointer-visible],
+      .vitrine-service:has(dt:focus-visible) .vitrine-service-tooltip
+    )
+    .vitrine-service-tooltip-letter {
+    animation: vitrine-tooltip-write 80ms linear both;
+  }
+}
+@keyframes vitrine-tooltip-write {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .vitrine-service:nth-child(even) dt {
   grid-column: 2;
 }
@@ -579,73 +641,66 @@ body:has(.vitrine) {
 .vitrine-project-mirror {
   transform: scaleX(-1);
 }
-.vitrine-project:has(> .vitrine-project-preview) {
+.vitrine-project-with-preview {
   position: relative;
 }
 .vitrine-project-preview {
-  --preview-width: min(26cqw, 300px);
-  --preview-height: calc(var(--preview-width) * 3 / 5);
+  --preview-width: min(100%, 620px, 88svh);
+  --preview-border: calc(var(--preview-width) * 0.05);
   position: absolute;
-  z-index: 1;
-  inset-inline-end: 0;
+  z-index: calc(1 + var(--preview-opacity, 0));
   inset-block-start: 50%;
+  inset-inline-start: 50%;
   inline-size: var(--preview-width);
-  aspect-ratio: 5 / 3;
-  transform: translateY(-50%);
-  overflow: hidden;
-  border-radius: 4px;
-  box-shadow: 0 6px 18px #0003;
-  background: var(--vitrine-paper);
+  padding: var(--preview-border) var(--preview-border)
+    calc(var(--preview-width) * 0.21);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 6px #0002,
+    0 10px 25px #0003;
+  background: #fffdf7;
   pointer-events: none;
-  visibility: var(--project-preview-visibility, hidden);
-  opacity: var(--project-preview-opacity, 0);
+  translate: -50% -50%;
+  scale: calc(0.96 + 0.04 * var(--preview-opacity, 0));
+  opacity: var(--preview-opacity, 0);
 }
-.vitrine-project-preview img {
-  position: absolute;
-  height: 100%;
+.vitrine-project-with-preview:first-child > .vitrine-project-preview {
+  inset-block-start: 0;
+  translate: -50% 0;
+  transform-origin: center top;
 }
-@media (min-width: 701px) {
-  .vitrine-project[data-side='right'] > .vitrine-project-preview {
-    inset-inline: 0 auto;
-  }
+.vitrine-project-preview-image {
+  position: relative;
+  display: block;
 }
-.vitrine-project:has(a:focus-visible) {
-  --project-preview-visibility: visible;
-  --project-preview-opacity: 1;
+.vitrine-project-with-preview .vitrine-project-photo img {
+  opacity: calc(1 - var(--preview-opacity, 0));
+}
+.vitrine-project-with-preview:has(.vitrine-project-photos a:focus-visible) {
+  --preview-opacity: 1;
+  --preview-animation-display: block;
 }
 @media (hover: hover) and (pointer: fine) {
-  .vitrine-project:has(a:hover) {
-    --project-preview-visibility: visible;
-    --project-preview-opacity: 1;
-  }
-
-  .vitrine-projects-collage[data-preview-pointer='below'] {
-    --preview-top: calc(var(--preview-y) + 56px);
-  }
-  .vitrine-projects-collage[data-preview-pointer]
-    .vitrine-project:has(a:hover)
-    > .vitrine-project-preview {
-    position: fixed;
-    inset: auto;
-    left: clamp(
-      12px,
-      calc(var(--preview-x) - var(--preview-width) / 2),
-      calc(100% - var(--preview-width) - 12px)
-    );
-    top: clamp(
-      12px,
-      var(--preview-top, calc(var(--preview-y) - var(--preview-height) - 24px)),
-      calc(100% - var(--preview-height) - 12px)
-    );
-    transform: none;
+  .vitrine-project-with-preview:has(> .vitrine-project-photos:hover) {
+    --preview-opacity: 1;
+    --preview-animation-display: block;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
+  .vitrine-project-preview-image::after {
+    content: '';
+    display: var(--preview-animation-display, none);
+    position: absolute;
+    inset: 0;
+    background: var(--preview-scroll-image) center / cover;
+  }
+  .vitrine-project-with-preview .vitrine-project-photo img {
+    transition: opacity 160ms ease-out;
+  }
   .vitrine-project-preview {
-    translate: 0 calc(6px * (1 - var(--project-preview-opacity, 0)));
     transition:
-      opacity 180ms ease-out,
-      translate 180ms ease-out;
+      opacity 160ms ease-out,
+      scale 180ms ease-out;
   }
 }
 .vitrine-project-fitness-row h3 {
@@ -1091,6 +1146,28 @@ body:has(.vitrine) {
   }
   .vitrine-project-photos {
     display: contents;
+  }
+  .vitrine-project-with-preview {
+    --project-photos-width: calc(
+      var(--first-photo-width) + var(--second-photo-width) + 1.25cqw
+    );
+    --project-photos-offset: calc(
+      (var(--second-photo-width) - var(--first-photo-width)) / 2
+    );
+  }
+  .vitrine-project-with-preview > .vitrine-project-photos {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-self: center;
+    inline-size: var(--project-photos-width);
+    margin-inline-start: calc(2 * var(--project-photos-offset));
+    grid-template-columns: var(--first-photo-width) var(--second-photo-width);
+    gap: 1.25cqw;
+  }
+  .vitrine-project-with-preview > .vitrine-project-preview {
+    --preview-width: min(calc(1.5 * var(--project-photos-width)), 620px, 88svh);
+    inset-inline-start: calc(50% + var(--project-photos-offset));
   }
   .vitrine-project-photos > :first-child {
     grid-column: 1;

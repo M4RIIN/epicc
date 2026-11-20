@@ -1,5 +1,6 @@
 import { Artwork } from './artwork';
 import { offers } from '../../content/offers';
+import { serviceTooltips } from '../../content/service-tooltips';
 
 const titles: Record<string, string[]> = {
   'creation-de-marque': ['ServiceLancement1.png', 'ServiceLancement2.png'],
@@ -25,6 +26,49 @@ const letteringDimensions: Record<string, [number, number]> = {
   'ServiceScenographie.png': [348, 211],
 };
 
+const handwritingSegmenter = new Intl.Segmenter('fr');
+
+function ServiceTooltip({ slug }: { slug: keyof typeof serviceTooltips }) {
+  const { title, description } = serviceTooltips[slug];
+  const letters = Array.from(handwritingSegmenter.segment(description));
+  const letterDelay = Math.min(18, 1050 / letters.length);
+  return (
+    <span
+      className="vitrine-service-tooltip"
+      id={`infobulle-${slug}`}
+      role="tooltip"
+    >
+      <span className="vitrine-sr-only">{description}</span>
+      <span className="vitrine-service-tooltip-title">
+        {title.map(([name, width, height]) => (
+          <Artwork
+            key={name}
+            file={`infobulles/infobulle-${name}.png`}
+            width={width}
+            height={height}
+            sizes="(max-width: 650px) 90vw, 625px"
+          />
+        ))}
+      </span>
+      <span className="vitrine-service-tooltip-details" aria-hidden="true">
+        {letters.map(({ segment, index }, order) =>
+          segment.trim() ? (
+            <span
+              key={index}
+              className="vitrine-service-tooltip-letter"
+              style={{ animationDelay: `${order * letterDelay}ms` }}
+            >
+              {segment}
+            </span>
+          ) : (
+            segment
+          ),
+        )}
+      </span>
+    </span>
+  );
+}
+
 export function Services() {
   return (
     <section
@@ -38,7 +82,7 @@ export function Services() {
       <dl>
         {offers.map(({ slug, name, description }) => (
           <div className="vitrine-service" key={slug} data-offer={slug}>
-            <dt>
+            <dt tabIndex={0} aria-describedby={`infobulle-${slug}`}>
               <span className="vitrine-service-name vitrine-sr-only">
                 {name}
               </span>
@@ -53,7 +97,10 @@ export function Services() {
                 ))}
               </span>
             </dt>
-            <dd className="vitrine-service-description">{description}</dd>
+            <dd className="vitrine-service-description">
+              {description}
+              <ServiceTooltip slug={slug} />
+            </dd>
           </div>
         ))}
       </dl>

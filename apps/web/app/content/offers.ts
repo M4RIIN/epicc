@@ -34,4 +34,4 @@ export const offers = [
     name: 'Événementiel & scénographie',
     description: 'Imagination et organisation d’événements sur mesure.',
   },
-];
+] as const;

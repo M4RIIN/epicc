@@ -1,3 +1,44 @@
+import { revealParagraphs } from './paragraph-reveal';
+
+revealParagraphs();
+
+function besidePointer(
+  pointer: number,
+  size: number,
+  edge: number,
+  gap: number,
+) {
+  const margin = 12;
+  return pointer + gap + size <= edge - margin
+    ? pointer + gap
+    : Math.max(margin, pointer - size - gap);
+}
+
+for (const service of document.querySelectorAll<HTMLElement>(
+  '.vitrine-service',
+)) {
+  const tooltip = service.querySelector<HTMLElement>(
+    '.vitrine-service-tooltip',
+  );
+  if (!tooltip) continue;
+
+  service.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    tooltip.setAttribute('data-pointer-visible', '');
+    const x = besidePointer(event.clientX, tooltip.offsetWidth, innerWidth, 56);
+    const y = besidePointer(
+      event.clientY,
+      tooltip.offsetHeight,
+      innerHeight,
+      14,
+    );
+    tooltip.style.setProperty('--tooltip-position', `${x}px ${y}px`);
+  });
+  service.addEventListener('pointerleave', () => {
+    tooltip.removeAttribute('data-pointer-visible');
+  });
+}
+
 const pointerLogo = document.querySelector<HTMLElement>('.epicc-pointer-logo');
 if (pointerLogo) {
   const hidePointerLogo = () => pointerLogo.removeAttribute('data-visible');
@@ -58,19 +99,6 @@ const gallery = projects?.querySelector<HTMLElement>(
   '.vitrine-projects-collage',
 );
 if (projects && gallery) {
-  gallery.addEventListener(
-    'pointermove',
-    ({ clientX, clientY, pointerType }) => {
-      if (pointerType !== 'mouse') return;
-      gallery.style.setProperty('--preview-x', `${clientX}px`);
-      gallery.style.setProperty('--preview-y', `${clientY}px`);
-      gallery.setAttribute(
-        'data-preview-pointer',
-        clientY < 216 ? 'below' : 'above',
-      );
-    },
-  );
-
   const updateProjectsEdges = () => {
     const { scrollTop, scrollHeight, clientHeight } = gallery;
     projects.toggleAttribute('data-projects-above', scrollTop > 1);
