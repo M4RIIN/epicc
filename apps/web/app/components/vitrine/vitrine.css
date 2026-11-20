@@ -906,6 +906,9 @@ body:has(.vitrine) {
 .vitrine-manifesto-definition > span {
   display: block;
 }
+.vitrine-glitch-band {
+  display: none;
+}
 @media (prefers-reduced-motion: no-preference) {
   .vitrine-manifesto-animated
     :is(.vitrine-collage-beau, .vitrine-collage-bon, .vitrine-collage-bien) {
@@ -917,11 +920,11 @@ body:has(.vitrine) {
   .vitrine-manifesto-animated .vitrine-collage-bien {
     animation-delay: 2.8s;
   }
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition {
+  .vitrine-manifesto-rotation {
     --vitrine-phrase-duration: 1.8s;
     display: grid;
   }
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span {
+  .vitrine-manifesto-rotation > span {
     position: relative;
     grid-area: 1 / 1;
     justify-self: start;
@@ -929,44 +932,30 @@ body:has(.vitrine) {
     animation: vitrine-type calc(4 * var(--vitrine-phrase-duration))
       steps(1, end) infinite both paused;
   }
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::before,
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::after {
-    content: attr(data-text) / '';
+  .vitrine-manifesto-rotation .vitrine-glitch-band {
+    display: block;
     position: absolute;
     inset-block: 0;
     inset-inline: -0.85em;
     padding-inline: 0.85em;
     background: var(--vitrine-paper);
-    clip-path: var(--glitch-cut);
-    text-indent: calc(var(--glitch-shift, 0em) * var(--glitch-direction));
     pointer-events: none;
     animation: inherit;
-    animation-name: vitrine-glitch;
+    animation-name: vitrine-glitch-upper;
   }
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::before {
-    --glitch-cut: var(--glitch-upper-cut);
-    --glitch-direction: 1;
+  .vitrine-manifesto-rotation .vitrine-glitch-band + .vitrine-glitch-band {
+    animation-name: vitrine-glitch-lower;
   }
-  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::after {
-    --glitch-cut: var(--glitch-lower-cut);
-    --glitch-direction: -1;
-  }
-  .vitrine-manifesto-animated .vitrine-manifesto-definition > span {
+  .vitrine-manifesto-rotating > span {
     animation-play-state: running;
   }
-  .vitrine-manifesto-rotation
-    .vitrine-manifesto-definition
-    > span:nth-child(2) {
+  .vitrine-manifesto-rotation > span:nth-child(2) {
     animation-delay: var(--vitrine-phrase-duration);
   }
-  .vitrine-manifesto-rotation
-    .vitrine-manifesto-definition
-    > span:nth-child(3) {
+  .vitrine-manifesto-rotation > span:nth-child(3) {
     animation-delay: calc(2 * var(--vitrine-phrase-duration));
   }
-  .vitrine-manifesto-rotation
-    .vitrine-manifesto-definition
-    > span:nth-child(4) {
+  .vitrine-manifesto-rotation > span:nth-child(4) {
     animation-delay: calc(3 * var(--vitrine-phrase-duration));
   }
 }
@@ -992,7 +981,7 @@ body:has(.vitrine) {
   }
 }
 
-@keyframes vitrine-glitch {
+@keyframes vitrine-glitch-upper {
   0%,
   25%,
   100% {
@@ -1000,27 +989,51 @@ body:has(.vitrine) {
   }
   20% {
     visibility: visible;
-    --glitch-upper-cut: inset(18% 0 54%);
-    --glitch-lower-cut: inset(60% 0 17%);
-    --glitch-shift: 0.55em;
+    clip-path: inset(18% 0 54%);
+    text-indent: 0.55em;
   }
   21.25% {
     visibility: visible;
-    --glitch-upper-cut: inset(24% 0 55%);
-    --glitch-lower-cut: inset(48% 0 27%);
-    --glitch-shift: -0.35em;
+    clip-path: inset(24% 0 55%);
+    text-indent: -0.35em;
   }
   22.5% {
     visibility: visible;
-    --glitch-upper-cut: inset(14% 0 53%);
-    --glitch-lower-cut: inset(52% 0 15%);
-    --glitch-shift: 0.8em;
+    clip-path: inset(14% 0 53%);
+    text-indent: 0.8em;
   }
   23.75% {
     visibility: visible;
-    --glitch-upper-cut: inset(31% 0 51%);
-    --glitch-lower-cut: inset(54% 0 24%);
-    --glitch-shift: -0.6em;
+    clip-path: inset(31% 0 51%);
+    text-indent: -0.6em;
+  }
+}
+
+@keyframes vitrine-glitch-lower {
+  0%,
+  25%,
+  100% {
+    visibility: hidden;
+  }
+  20% {
+    visibility: visible;
+    clip-path: inset(60% 0 17%);
+    text-indent: -0.55em;
+  }
+  21.25% {
+    visibility: visible;
+    clip-path: inset(48% 0 27%);
+    text-indent: 0.35em;
+  }
+  22.5% {
+    visibility: visible;
+    clip-path: inset(52% 0 15%);
+    text-indent: -0.8em;
+  }
+  23.75% {
+    visibility: visible;
+    clip-path: inset(54% 0 24%);
+    text-indent: 0.6em;
   }
 }
 

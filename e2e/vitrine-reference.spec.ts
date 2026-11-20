@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { devices, expect, test } from '@playwright/test';
 
 test('le manifeste alterne ses phrases avec un glitch et espace les apparitions du collage', async ({
   page,
@@ -9,6 +9,7 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
   await page.evaluate(() => document.fonts.ready);
 
   const definition = manifesto.locator('.vitrine-manifesto-definition');
+  await expect(definition).toHaveClass(/vitrine-manifesto-rotating/);
   for (const width of [1440, 768, 320]) {
     await page.setViewportSize({ width, height: 900 });
     const { positions, activePhrases, glitchShifts } =
@@ -19,7 +20,7 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
 
         const positions = phrases.map((phrase) => {
           const range = document.createRange();
-          range.selectNodeContents(phrase);
+          range.selectNode(phrase.firstChild!);
           const { x, y, right } = range.getBoundingClientRect();
           return { x, y, right, lines: range.getClientRects().length };
         });
@@ -35,11 +36,9 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
         const glitchShifts = phrases.map((phrase, index) =>
           [1400, 1480, 1570, 1660, 1750, 1810].map((offset) => {
             seekAnimation(index * 1800 + offset);
-            return ['::before', '::after'].map((band) => {
-              const { visibility, clipPath, textIndent } = getComputedStyle(
-                phrase,
-                band,
-              );
+            return [...phrase.children].map((band) => {
+              const { visibility, clipPath, textIndent } =
+                getComputedStyle(band);
               return visibility === 'visible' && clipPath.startsWith('inset(')
                 ? parseFloat(textIndent)
                 : 0;
@@ -82,9 +81,7 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
   const staticPhrases = await definition.evaluate((element) =>
     [...element.children].map((phrase) => ({
       clip: getComputedStyle(phrase).clipPath,
-      bands: ['::before', '::after'].map(
-        (band) => getComputedStyle(phrase, band).content,
-      ),
+      bands: [...phrase.children].map((band) => getComputedStyle(band).display),
     })),
   );
   expect(staticPhrases).toEqual(
@@ -93,6 +90,48 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
       bands: ['none', 'none'],
     })),
   );
+});
+
+test.describe('manifeste sur mobile', () => {
+  const { viewport, userAgent, deviceScaleFactor, isMobile, hasTouch } =
+    devices['Pixel 7'];
+  test.use({ viewport, userAgent, deviceScaleFactor, isMobile, hasTouch });
+
+  test('le glitch se lance quand la ligne entre à l’écran', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const manifesto = page.locator('#epicc');
+    const definition = manifesto.locator('.vitrine-manifesto-definition');
+
+    await manifesto.evaluate((section) => {
+      window.scrollTo({
+        top: scrollY + section.getBoundingClientRect().top - innerHeight + 150,
+        behavior: 'instant',
+      });
+    });
+    await expect(manifesto).toHaveClass(/vitrine-manifesto-animated/);
+    await expect(definition).not.toBeInViewport();
+    await expect(definition).not.toHaveClass(/vitrine-manifesto-rotating/);
+
+    await definition.scrollIntoViewIfNeeded();
+    await expect(definition).toBeInViewport({ ratio: 1 });
+    await expect
+      .poll(
+        () =>
+          definition.locator('.vitrine-glitch-band').evaluateAll(
+            (bands) =>
+              bands.filter((band) => {
+                const { visibility, clipPath } = getComputedStyle(band);
+                return (
+                  visibility === 'visible' && clipPath.startsWith('inset(')
+                );
+              }).length,
+          ),
+        { intervals: [50], timeout: 3000 },
+      )
+      .toBe(2);
+  });
 });
 
 for (const javaScriptEnabled of [false, true]) {
