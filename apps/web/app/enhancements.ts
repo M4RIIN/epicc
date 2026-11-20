@@ -30,21 +30,27 @@ if (pointerLogo) {
 }
 
 const manifesto = document.querySelector('#epicc');
-if (
-  manifesto &&
-  'IntersectionObserver' in window &&
-  !matchMedia('(prefers-reduced-motion: reduce)').matches
-) {
-  manifesto.classList.add('vitrine-manifesto-rotation');
+const manifestoDefinition = manifesto?.querySelector(
+  '.vitrine-manifesto-definition',
+);
+if (manifesto && manifestoDefinition && 'IntersectionObserver' in window) {
+  manifestoDefinition.classList.add('vitrine-manifesto-rotation');
   const observer = new IntersectionObserver(
-    ([entry]) => {
-      if (!entry?.isIntersecting) return;
-      manifesto.classList.add('vitrine-manifesto-animated');
-      observer.disconnect();
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) continue;
+        target.classList.add(
+          target === manifestoDefinition
+            ? 'vitrine-manifesto-rotating'
+            : 'vitrine-manifesto-animated',
+        );
+        observer.unobserve(target);
+      }
     },
     { threshold: 0.25 },
   );
   observer.observe(manifesto);
+  observer.observe(manifestoDefinition);
 }
 
 const projects = document.querySelector('#projets');

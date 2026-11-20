@@ -18,8 +18,14 @@ export function Manifesto() {
             'CC, pour Chloé Catala.',
             'CC, pour conseil et communication.',
           ].map((phrase) => (
-            <span key={phrase} data-text={phrase}>
+            <span key={phrase}>
               {phrase}
+              <span aria-hidden="true" className="vitrine-glitch-band">
+                {phrase}
+              </span>
+              <span aria-hidden="true" className="vitrine-glitch-band">
+                {phrase}
+              </span>
             </span>
           ))}
         </p>
