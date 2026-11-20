@@ -29,7 +29,7 @@ function ProjectPreview({
           file={still}
           width={420}
           height={280}
-          sizes="(max-width: 700px) 27vw, (max-width: 1920px) 11vw, 210px"
+          sizes="(max-width: 700px) 54vw, (max-width: 1920px) 22vw, 420px"
         />
       </span>
     </span>

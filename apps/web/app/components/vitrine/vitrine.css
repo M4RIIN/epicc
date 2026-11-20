@@ -581,7 +581,7 @@ body:has(.vitrine) {
 }
 .vitrine-project-preview {
   position: absolute;
-  z-index: 1;
+  z-index: calc(1 + var(--preview-opacity, 0));
   inset: 50% 0 auto;
   padding: 5% 5% 21%;
   border-radius: 2px;
@@ -591,8 +591,13 @@ body:has(.vitrine) {
   background: #fffdf7;
   pointer-events: none;
   translate: 0 -50%;
+  transform-origin: var(--preview-origin-x, 50%) var(--preview-origin-y, 50%);
   rotate: calc(-4deg * var(--preview-opacity, 0));
+  scale: calc(1 + var(--preview-opacity, 0));
   opacity: var(--preview-opacity, 0);
+}
+.vitrine-project:first-child .vitrine-project-preview {
+  --preview-origin-y: 42%;
 }
 .vitrine-project-preview-image {
   position: relative;
@@ -628,7 +633,8 @@ body:has(.vitrine) {
   .vitrine-project-preview {
     transition:
       opacity 160ms ease-out,
-      rotate 180ms ease-out;
+      rotate 180ms ease-out,
+      scale 180ms ease-out;
   }
 }
 .vitrine-project-fitness-row h3 {
@@ -853,6 +859,9 @@ body:has(.vitrine) {
   }
   .vitrine-project-photo {
     width: 100%;
+  }
+  .vitrine-project-photo:nth-child(2) .vitrine-project-preview {
+    --preview-origin-x: 85%;
   }
   .vitrine-project-fitness-row h3 {
     font-size: 12px;

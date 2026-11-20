@@ -38,20 +38,25 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
     expect(await animationDisplay()).toBe('block');
     await expect(firstPreview).toHaveCSS('opacity', '1');
     await expect(firstPreview).toHaveCSS('rotate', '-4deg');
+    await expect(firstPreview).toHaveCSS('scale', '2');
     await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '0');
     await expect(secondPhoto.locator('> img')).toHaveCSS('opacity', '1');
     await expect(firstPreview).toBeInViewport({ ratio: 0.999 });
 
     const photoBox = (await firstPhoto.boundingBox())!;
     const previewBox = (await firstPreview.boundingBox())!;
-    expect(previewBox.x + previewBox.width / 2).toBeCloseTo(
-      photoBox.x + photoBox.width / 2,
-      0,
-    );
-    expect(previewBox.y + previewBox.height / 2).toBeCloseTo(
-      photoBox.y + photoBox.height / 2,
-      0,
-    );
+    expect(
+      Math.abs(
+        previewBox.x + previewBox.width / 2 - (photoBox.x + photoBox.width / 2),
+      ),
+    ).toBeLessThan(3);
+    expect(
+      Math.abs(
+        previewBox.y +
+          previewBox.height / 2 -
+          (photoBox.y + photoBox.height / 2),
+      ),
+    ).toBeLessThan(photoBox.height * 0.1);
     await page.mouse.move(
       photoBox.x + photoBox.width * 0.75,
       photoBox.y + photoBox.height * 0.75,
@@ -76,14 +81,17 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 375, height: 667 });
   const amafolia = page.getByRole('figure', { name: 'Amafolia', exact: true });
   const photo = amafolia
     .locator('.vitrine-project-photos')
     .getByRole('link')
-    .first();
+    .last();
   await photo.hover();
   const preview = photo.locator('.vitrine-project-preview');
   await expect(preview).toHaveCSS('opacity', '1');
+  await expect(preview).toHaveCSS('scale', '2');
+  await expect(preview).toBeInViewport({ ratio: 0.999 });
   await expect(preview).toHaveCSS('transition-duration', '0s');
   const still = preview.locator('img');
   await expect(still).toHaveAttribute('src', /apercu-amafolia-.*\.webp$/);
