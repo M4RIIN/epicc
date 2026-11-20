@@ -33,24 +33,34 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
           );
         });
         const glitchShifts = phrases.map((phrase, index) =>
-          [1500, 1630, 1700, 1750, 1810].map((offset) => {
+          [1400, 1480, 1570, 1660, 1750, 1810].map((offset) => {
             seekAnimation(index * 1800 + offset);
-            const { visibility, transform } = getComputedStyle(
-              phrase,
-              '::after',
-            );
-            return visibility === 'visible'
-              ? Math.sign(new DOMMatrixReadOnly(transform).m41)
-              : 0;
+            return ['::before', '::after'].map((band) => {
+              const { visibility, clipPath, textIndent } = getComputedStyle(
+                phrase,
+                band,
+              );
+              return visibility === 'visible' && clipPath.startsWith('inset(')
+                ? parseFloat(textIndent)
+                : 0;
+            });
           }),
         );
         return { positions, activePhrases, glitchShifts };
       });
 
     expect(activePhrases).toEqual([[0], [1], [2], [3], [0]]);
-    expect(glitchShifts).toEqual(
-      Array.from({ length: 4 }, () => [0, 1, -1, 1, 0]),
-    );
+    for (const shifts of glitchShifts) {
+      expect(shifts.map((bands) => bands.map(Math.sign))).toEqual([
+        [0, 0],
+        [1, -1],
+        [-1, 1],
+        [1, -1],
+        [-1, 1],
+        [0, 0],
+      ]);
+      expect(shifts[3]![0]).toBeGreaterThanOrEqual(8);
+    }
     for (const position of positions) {
       expect(position.lines).toBe(1);
       expect(position.x).toBe(positions[0]!.x);
@@ -72,11 +82,16 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
   const staticPhrases = await definition.evaluate((element) =>
     [...element.children].map((phrase) => ({
       clip: getComputedStyle(phrase).clipPath,
-      glitch: getComputedStyle(phrase, '::after').content,
+      bands: ['::before', '::after'].map(
+        (band) => getComputedStyle(phrase, band).content,
+      ),
     })),
   );
   expect(staticPhrases).toEqual(
-    Array.from({ length: 4 }, () => ({ clip: 'none', glitch: 'none' })),
+    Array.from({ length: 4 }, () => ({
+      clip: 'none',
+      bands: ['none', 'none'],
+    })),
   );
 });
 

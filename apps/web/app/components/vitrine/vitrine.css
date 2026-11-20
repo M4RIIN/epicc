@@ -929,14 +929,27 @@ body:has(.vitrine) {
     animation: vitrine-type calc(4 * var(--vitrine-phrase-duration))
       steps(1, end) infinite both paused;
   }
+  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::before,
   .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::after {
     content: attr(data-text) / '';
     position: absolute;
-    inset: 0;
+    inset-block: 0;
+    inset-inline: -0.85em;
+    padding-inline: 0.85em;
     background: var(--vitrine-paper);
+    clip-path: var(--glitch-cut);
+    text-indent: calc(var(--glitch-shift, 0em) * var(--glitch-direction));
     pointer-events: none;
     animation: inherit;
     animation-name: vitrine-glitch;
+  }
+  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::before {
+    --glitch-cut: var(--glitch-upper-cut);
+    --glitch-direction: 1;
+  }
+  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::after {
+    --glitch-cut: var(--glitch-lower-cut);
+    --glitch-direction: -1;
   }
   .vitrine-manifesto-animated .vitrine-manifesto-definition > span {
     animation-play-state: running;
@@ -971,7 +984,7 @@ body:has(.vitrine) {
     animation-timing-function: steps(24, end);
   }
   5% {
-    clip-path: inset(0 -0.3em);
+    clip-path: inset(0 -0.85em);
   }
   25%,
   100% {
@@ -985,20 +998,29 @@ body:has(.vitrine) {
   100% {
     visibility: hidden;
   }
+  20% {
+    visibility: visible;
+    --glitch-upper-cut: inset(18% 0 54%);
+    --glitch-lower-cut: inset(60% 0 17%);
+    --glitch-shift: 0.55em;
+  }
+  21.25% {
+    visibility: visible;
+    --glitch-upper-cut: inset(24% 0 55%);
+    --glitch-lower-cut: inset(48% 0 27%);
+    --glitch-shift: -0.35em;
+  }
   22.5% {
     visibility: visible;
-    clip-path: inset(18% 0 59%);
-    transform: translateX(0.24em);
+    --glitch-upper-cut: inset(14% 0 53%);
+    --glitch-lower-cut: inset(52% 0 15%);
+    --glitch-shift: 0.8em;
   }
-  23.25% {
+  23.75% {
     visibility: visible;
-    clip-path: inset(57% 0 22%);
-    transform: translateX(-0.28em);
-  }
-  24% {
-    visibility: visible;
-    clip-path: inset(35% 0 47%);
-    transform: translateX(0.16em);
+    --glitch-upper-cut: inset(31% 0 51%);
+    --glitch-lower-cut: inset(54% 0 24%);
+    --glitch-shift: -0.6em;
   }
 }
 
