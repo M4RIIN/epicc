@@ -89,6 +89,13 @@ p {
   visibility: visible;
 }
 
+@media screen and (prefers-reduced-motion: no-preference) {
+  ::highlight(paragraph-reveal) {
+    color: transparent;
+    text-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     scroll-behavior: auto;

@@ -64,9 +64,60 @@ test('le mobile charge une image WebP adaptée et aucun code React', async ({
   await expect(scripts).toHaveCount(1);
   const scriptPath = (await scripts.getAttribute('src'))!;
   const script = await page.request.get(scriptPath);
-  expect((await script.body()).byteLength).toBeLessThan(2048);
+  expect((await script.body()).byteLength).toBeLessThan(3 * 1024);
   await page.goto('/clients/viandes-des-sommets/');
   await expect(scripts).toHaveAttribute('src', scriptPath);
+});
+
+test('les paragraphes se révèlent une fois en entrant à l’écran', async ({
+  page,
+}) => {
+  for (const { path, selector } of [
+    { path: '/', selector: '.vitrine-biography-question' },
+    {
+      path: '/clients/viandes-des-sommets/',
+      selector: '.vds-construction p',
+    },
+  ]) {
+    await page.goto(path);
+    const paragraph = page.locator(selector);
+    const markup = await paragraph.innerHTML();
+    const textLength = (await paragraph.textContent())!.length;
+    const remaining = () =>
+      paragraph.evaluate((element) => {
+        const hidden = CSS.highlights.get('paragraph-reveal');
+        const range = Array.from(hidden ?? []).find(
+          ({ endContainer }) => endContainer === element,
+        );
+        return range?.toString().length ?? 0;
+      });
+
+    await expect(paragraph).not.toBeInViewport();
+    await expect.poll(remaining).toBe(textLength);
+    await paragraph.scrollIntoViewIfNeeded();
+    await expect
+      .poll(async () => {
+        const length = await remaining();
+        return length > 0 && length < textLength;
+      })
+      .toBe(true);
+    await expect.poll(remaining).toBe(0);
+    expect(await paragraph.innerHTML()).toBe(markup);
+
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(paragraph).not.toBeInViewport();
+    await paragraph.scrollIntoViewIfNeeded();
+    expect(await remaining()).toBe(0);
+  }
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/clients/amafolia/');
+  await expect(page.locator('.amafolia-presentation')).toContainText(
+    'un restaurant italien',
+  );
+  expect(
+    await page.evaluate(() => CSS.highlights.has('paragraph-reveal')),
+  ).toBe(false);
 });
 
 test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async ({

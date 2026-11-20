@@ -1,3 +1,7 @@
+import { revealParagraphs } from './paragraph-reveal';
+
+revealParagraphs();
+
 const pointerLogo = document.querySelector<HTMLElement>('.epicc-pointer-logo');
 if (pointerLogo) {
   const hidePointerLogo = () => pointerLogo.removeAttribute('data-visible');
