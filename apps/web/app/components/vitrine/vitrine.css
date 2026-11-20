@@ -177,6 +177,23 @@ body:has(.vitrine) {
   font-style: italic;
   line-height: 1.25;
 }
+.vitrine-service-tooltip {
+  position: fixed;
+  z-index: 10;
+  inset: 0 auto auto 0;
+  inline-size: min(20rem, calc(100vw - 24px));
+  padding: 12px 16px;
+  border: 1px solid var(--vitrine-ink);
+  background: var(--vitrine-paper);
+  color: var(--vitrine-ink);
+  font:
+    400 14px / 1.4 'Roboto Mono',
+    monospace;
+  letter-spacing: normal;
+  text-align: start;
+  text-transform: none;
+  pointer-events: none;
+}
 .vitrine-service:nth-child(even) dt {
   grid-column: 2;
 }

@@ -157,6 +157,39 @@ test.describe('manifeste sur mobile', () => {
   });
 });
 
+test('les infobulles des prestations suivent la souris', async ({ page }) => {
+  const viewport = { width: 1440, height: 900 };
+  await page.setViewportSize(viewport);
+  await page.goto('/#prestations');
+
+  const services = page.locator('.vitrine-service');
+  const tooltips = services.locator('.vitrine-service-tooltip');
+  await expect(tooltips).toHaveCount(6);
+  await expect(tooltips.filter({ visible: true })).toHaveCount(0);
+
+  for (const service of await services.all()) {
+    const tooltip = service.locator('.vitrine-service-tooltip');
+    await service.hover();
+    await expect(tooltips.filter({ visible: true })).toHaveCount(1);
+    await expect(tooltip).toBeVisible();
+    const description = await service
+      .locator('dd')
+      .evaluate((element) => element.firstChild!.textContent!.trim());
+    await expect(tooltip).toHaveText(description);
+
+    const before = (await tooltip.boundingBox())!;
+    const row = (await service.boundingBox())!;
+    await page.mouse.move(row.x + row.width / 2 + 12, row.y + row.height / 2);
+    await expect
+      .poll(async () => (await tooltip.boundingBox())!.x)
+      .toBeCloseTo(before.x + 12, 0);
+    await expect(tooltip).toBeInViewport({ ratio: 0.999 });
+  }
+
+  await page.mouse.move(0, 0);
+  await expect(tooltips.filter({ visible: true })).toHaveCount(0);
+});
+
 for (const javaScriptEnabled of [false, true]) {
   test(`la vitrine actualisée conserve ses contenus et son parcours, JavaScript ${javaScriptEnabled}`, async ({
     browser,

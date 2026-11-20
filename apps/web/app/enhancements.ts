@@ -2,6 +2,43 @@ import { revealParagraphs } from './paragraph-reveal';
 
 revealParagraphs();
 
+function besidePointer(
+  pointer: number,
+  size: number,
+  edge: number,
+  gap: number,
+) {
+  const margin = 12;
+  return pointer + gap + size <= edge - margin
+    ? pointer + gap
+    : Math.max(margin, pointer - size - gap);
+}
+
+for (const service of document.querySelectorAll<HTMLElement>(
+  '.vitrine-service',
+)) {
+  const tooltip = service.querySelector<HTMLElement>(
+    '.vitrine-service-tooltip',
+  );
+  if (!tooltip) continue;
+
+  service.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'mouse') return;
+    tooltip.hidden = false;
+    const x = besidePointer(event.clientX, tooltip.offsetWidth, innerWidth, 56);
+    const y = besidePointer(
+      event.clientY,
+      tooltip.offsetHeight,
+      innerHeight,
+      14,
+    );
+    tooltip.style.translate = `${x}px ${y}px`;
+  });
+  service.addEventListener('pointerleave', () => {
+    tooltip.hidden = true;
+  });
+}
+
 const pointerLogo = document.querySelector<HTMLElement>('.epicc-pointer-logo');
 if (pointerLogo) {
   const hidePointerLogo = () => pointerLogo.removeAttribute('data-visible');

@@ -64,7 +64,7 @@ test('le mobile charge une image WebP adaptée et aucun code React', async ({
   await expect(scripts).toHaveCount(1);
   const scriptPath = (await scripts.getAttribute('src'))!;
   const script = await page.request.get(scriptPath);
-  expect((await script.body()).byteLength).toBeLessThan(3.5 * 1024);
+  expect((await script.body()).byteLength).toBeLessThan(4 * 1024);
   await page.goto('/clients/viandes-des-sommets/');
   await expect(scripts).toHaveAttribute('src', scriptPath);
 });

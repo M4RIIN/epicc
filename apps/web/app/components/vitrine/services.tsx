@@ -53,7 +53,16 @@ export function Services() {
                 ))}
               </span>
             </dt>
-            <dd className="vitrine-service-description">{description}</dd>
+            <dd className="vitrine-service-description">
+              {description}
+              <span
+                className="vitrine-service-tooltip"
+                aria-hidden="true"
+                hidden
+              >
+                {description}
+              </span>
+            </dd>
           </div>
         ))}
       </dl>
