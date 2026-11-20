@@ -67,7 +67,7 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
     await expect(firstPreview).toHaveCSS('opacity', '0');
     await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '1');
     await expect(secondPreview).toHaveCSS('opacity', '1');
-    await expect(secondPreview).toHaveCSS('rotate', '-4deg');
+    await expect(secondPreview).toHaveCSS('rotate', '4deg');
 
     await page.mouse.move(0, 0);
     await expect(secondPreview).toHaveCSS('opacity', '0');
@@ -90,6 +90,7 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
   await photo.hover();
   const preview = photo.locator('.vitrine-project-preview');
   await expect(preview).toHaveCSS('opacity', '1');
+  await expect(preview).toHaveCSS('rotate', '4deg');
   await expect(preview).toHaveCSS('scale', '2');
   await expect(preview).toBeInViewport({ ratio: 0.999 });
   await expect(preview).toHaveCSS('transition-duration', '0s');

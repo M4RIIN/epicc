@@ -592,12 +592,15 @@ body:has(.vitrine) {
   pointer-events: none;
   translate: 0 -50%;
   transform-origin: var(--preview-origin-x, 50%) var(--preview-origin-y, 50%);
-  rotate: calc(-4deg * var(--preview-opacity, 0));
+  rotate: calc(var(--preview-angle, -4deg) * var(--preview-opacity, 0));
   scale: calc(1 + var(--preview-opacity, 0));
   opacity: var(--preview-opacity, 0);
 }
 .vitrine-project:first-child .vitrine-project-preview {
   --preview-origin-y: 42%;
+}
+.vitrine-project-photo:nth-child(2) .vitrine-project-preview {
+  --preview-angle: 4deg;
 }
 .vitrine-project-preview-image {
   position: relative;
@@ -862,6 +865,11 @@ body:has(.vitrine) {
   }
   .vitrine-project-photo:nth-child(2) .vitrine-project-preview {
     --preview-origin-x: 85%;
+  }
+  .vitrine-project:first-child
+    .vitrine-project-photo:nth-child(2)
+    .vitrine-project-preview {
+    --preview-origin-y: 35%;
   }
   .vitrine-project-fitness-row h3 {
     font-size: 12px;
