@@ -1,6 +1,6 @@
 import { devices, expect, test } from '@playwright/test';
 
-test('le manifeste alterne ses phrases avec un glitch et espace les apparitions du collage', async ({
+test('le manifeste alterne ses phrases avec un glitch et anime le collage en boucle', async ({
   page,
 }) => {
   await page.goto('/#epicc');
@@ -69,15 +69,38 @@ test('le manifeste alterne ses phrases avec un glitch et espace les apparitions 
   }
 
   const collage = manifesto.locator('.vitrine-manifesto-collage');
-  const revealDelays = await collage.evaluate((element) =>
-    ['beau', 'bon', 'bien'].map((word) => {
-      const piece = element.querySelector(`.vitrine-collage-${word}`)!;
-      return piece.getAnimations()[0]!.effect!.getTiming().delay;
-    }),
-  );
-  expect(revealDelays).toEqual([0, 1400, 2800]);
+  const collageFrames = await collage.evaluate((element) => {
+    const pieces = ['beau', 'bon', 'bien'].map((word) =>
+      element.querySelector(`.vitrine-collage-${word}`)!,
+    );
+    const animations = pieces.map((piece) => piece.getAnimations()[0]!);
+    for (const animation of animations) animation.pause();
+
+    return [1300, 2700, 4100, 7300, 8700, 10100, 11300, 12700, 14100].map(
+      (time) => {
+        for (const animation of animations) animation.currentTime = time;
+        return pieces.map((piece) => getComputedStyle(piece).opacity);
+      },
+    );
+  });
+  expect(collageFrames).toEqual([
+    ['1', '0', '0'],
+    ['1', '1', '0'],
+    ['1', '1', '1'],
+    ['0', '1', '1'],
+    ['0', '0', '1'],
+    [expect.stringMatching(/^0\./), '0', '0'],
+    ['1', '0', '0'],
+    ['1', '1', '0'],
+    ['1', '1', '1'],
+  ]);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(
+    await collage.evaluate(
+      (element) => element.getAnimations({ subtree: true }).length,
+    ),
+  ).toBe(0);
   const staticPhrases = await definition.evaluate((element) =>
     [...element.children].map((phrase) => ({
       clip: getComputedStyle(phrase).clipPath,
