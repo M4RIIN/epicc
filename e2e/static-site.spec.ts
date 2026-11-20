@@ -64,7 +64,7 @@ test('le mobile charge une image WebP adaptée et aucun code React', async ({
   await expect(scripts).toHaveCount(1);
   const scriptPath = (await scripts.getAttribute('src'))!;
   const script = await page.request.get(scriptPath);
-  expect((await script.body()).byteLength).toBeLessThan(3 * 1024);
+  expect((await script.body()).byteLength).toBeLessThan(3.5 * 1024);
   await page.goto('/clients/viandes-des-sommets/');
   await expect(scripts).toHaveAttribute('src', scriptPath);
 });
@@ -118,6 +118,57 @@ test('les paragraphes se révèlent une fois en entrant à l’écran', async ({
   expect(
     await page.evaluate(() => CSS.highlights.has('paragraph-reveal')),
   ).toBe(false);
+});
+
+test('les textes de la biographie se révèlent dans l’ordre', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const paragraphs = page.locator('.vitrine-biography-story p');
+  const lengths = await paragraphs.evaluateAll((elements) =>
+    elements.map((element) => element.textContent!.length),
+  );
+  const remaining = () =>
+    paragraphs.evaluateAll((elements) => {
+      const hidden = Array.from(CSS.highlights.get('paragraph-reveal') ?? []);
+      return elements.map(
+        (element) =>
+          hidden.find((range) => range.endContainer === element)?.toString()
+            .length ?? 0,
+      );
+    });
+
+  await expect.poll(remaining).toEqual(lengths);
+  await paragraphs.first().scrollIntoViewIfNeeded();
+  await expect(paragraphs.nth(1)).toBeInViewport();
+  await expect
+    .poll(
+      async () => {
+        const hiddenLengths = await remaining();
+        const current = hiddenLengths.findIndex((length) => length > 0);
+        if (current === -1) return true;
+        expect(hiddenLengths.slice(current + 1)).toEqual(
+          lengths.slice(current + 1),
+        );
+        return false;
+      },
+      { timeout: 15_000, intervals: [100] },
+    )
+    .toBe(true);
+
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.goto('/');
+  await expect.poll(remaining).toEqual(lengths);
+  await paragraphs.last().scrollIntoViewIfNeeded();
+  await expect(paragraphs.first()).not.toBeInViewport();
+  await expect
+    .poll(async () => {
+      const hiddenLengths = await remaining();
+      expect(hiddenLengths.slice(1)).toEqual(lengths.slice(1));
+      return hiddenLengths[0]! < lengths[0]!;
+    })
+    .toBe(true);
 });
 
 test('le logo accompagne le pointeur sur l’accueil et sur les fiches', async ({

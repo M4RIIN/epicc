@@ -27,7 +27,7 @@ export function Biography() {
         />
       </header>
       <div className="vitrine-biography-intro">
-        <div className="vitrine-biography-story">
+        <div className="vitrine-biography-story" data-paragraph-sequence>
           <p className="vitrine-biography-question">
             Petit, on vous demande souvent le métier que vous voudriez exercer
             plus tard,
