@@ -17,25 +17,32 @@ function ProjectPreview({
 }: ClientProjectMetadata['preview']) {
   const animationUrl = useVitrineImageUrl(animation);
   return (
-    <div
+    <span
       className="vitrine-project-preview"
       style={
         { '--preview-scroll-image': `url("${animationUrl}")` } as CSSProperties
       }
       aria-hidden="true"
     >
-      <Artwork
-        file={still}
-        width={420}
-        height={280}
-        sizes="(max-width: 835px) 33vw, 270px"
-      />
-    </div>
+      <span className="vitrine-project-preview-image">
+        <Artwork
+          file={still}
+          width={420}
+          height={280}
+          sizes="(max-width: 700px) 27vw, (max-width: 1920px) 11vw, 210px"
+        />
+      </span>
+    </span>
   );
 }
 
 export function Projects({ basePath }: { basePath: string }) {
-  function renderPiece(piece: Piece, name: string, href?: string) {
+  function renderPiece(
+    piece: Piece,
+    name: string,
+    page?: ClientProjectMetadata,
+  ) {
+    const preview = piece.role === 'photo' ? page?.preview : undefined;
     const artwork = (
       <Artwork
         sizes={`(max-width: 700px) ${piece.role === 'name' ? 29 : 23}vw, (max-width: 1920px) ${piece.width / 19.2}vw, ${piece.width}px`}
@@ -53,9 +60,14 @@ export function Projects({ basePath }: { basePath: string }) {
         className={`vitrine-project-piece ${piece.role === 'name' ? 'vitrine-project-name' : 'vitrine-project-photo'}`}
         style={pieceStyle(piece)}
       >
-        {href ? (
-          <a href={href} aria-label={`${name} — découvrir l’identité visuelle`}>
+        {page ? (
+          <a
+            href={basePath + page.path}
+            className={preview ? 'vitrine-project-preview-link' : undefined}
+            aria-label={`${name} — découvrir l’identité visuelle`}
+          >
             {artwork}
+            {preview && <ProjectPreview {...preview} />}
           </a>
         ) : (
           artwork
@@ -64,7 +76,6 @@ export function Projects({ basePath }: { basePath: string }) {
     );
   }
   function renderProject({ name, lettering, photos, side, page }: Project) {
-    const href = page && basePath + page.path;
     const style = {
       '--first-photo-width': `${(photos[0]?.width ?? 0) / 19.2}cqw`,
       '--second-photo-width': `${(photos[1]?.width ?? 0) / 19.2}cqw`,
@@ -81,12 +92,11 @@ export function Projects({ basePath }: { basePath: string }) {
       >
         <figcaption className="vitrine-project-names">
           <h3 className="vitrine-sr-only">{name}</h3>
-          {renderPiece(lettering, name, href)}
+          {renderPiece(lettering, name, page)}
         </figcaption>
         <div className="vitrine-project-photos">
-          {photos.map((piece) => renderPiece(piece, name, href))}
+          {photos.map((piece) => renderPiece(piece, name, page))}
         </div>
-        {page && <ProjectPreview {...page.preview} />}
       </figure>
     );
   }

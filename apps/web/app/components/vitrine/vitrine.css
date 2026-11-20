@@ -579,84 +579,56 @@ body:has(.vitrine) {
 .vitrine-project-mirror {
   transform: scaleX(-1);
 }
-.vitrine-project:has(> .vitrine-project-preview) {
-  position: relative;
-}
 .vitrine-project-preview {
-  --preview-width: min(36cqw, 300px, 48vh);
-  --preview-height: calc(var(--preview-width) * 7 / 8);
-  --preview-border: calc(var(--preview-width) / 20);
   position: absolute;
   z-index: 1;
-  inset-inline-end: 0;
-  inset-block-start: 50%;
-  inline-size: var(--preview-width);
-  block-size: var(--preview-height);
-  padding: var(--preview-border);
-  transform: translateY(-50%);
+  inset: 50% 0 auto;
+  padding: 5% 5% 21%;
   border-radius: 2px;
   box-shadow:
     0 2px 6px #0002,
     0 10px 25px #0003;
   background: #fffdf7;
   pointer-events: none;
-  visibility: var(--project-preview-visibility, hidden);
-  opacity: var(--project-preview-opacity, 0);
+  translate: 0 -50%;
+  rotate: calc(-4deg * var(--preview-opacity, 0));
+  opacity: var(--preview-opacity, 0);
+}
+.vitrine-project-preview-image {
+  position: relative;
+  display: block;
 }
 .vitrine-project-preview img {
   height: auto;
 }
-@media (min-width: 701px) {
-  .vitrine-project[data-side='right'] > .vitrine-project-preview {
-    inset-inline: 0 auto;
-  }
+.vitrine-project-preview-link > img {
+  opacity: calc(1 - var(--preview-opacity, 0));
 }
-.vitrine-project:has(a:focus-visible) > .vitrine-project-preview {
-  --project-preview-visibility: visible;
-  --project-preview-opacity: 1;
-  --project-preview-animation: var(--preview-scroll-image);
+.vitrine-project-preview-link:focus-visible {
+  --preview-opacity: 1;
+  --preview-animation-display: block;
 }
 @media (hover: hover) and (pointer: fine) {
-  .vitrine-project:has(a:hover) > .vitrine-project-preview {
-    --project-preview-visibility: visible;
-    --project-preview-opacity: 1;
-    --project-preview-animation: var(--preview-scroll-image);
-  }
-
-  .vitrine-projects-collage[data-preview-pointer='below'] {
-    --preview-top: calc(var(--preview-y) + 56px);
-  }
-  .vitrine-projects-collage[data-preview-pointer]
-    .vitrine-project:has(a:hover)
-    > .vitrine-project-preview {
-    position: fixed;
-    inset: auto;
-    left: clamp(
-      12px,
-      calc(var(--preview-x) - var(--preview-width) / 2),
-      calc(100% - var(--preview-width) - 12px)
-    );
-    top: clamp(
-      12px,
-      var(--preview-top, calc(var(--preview-y) - var(--preview-height) - 24px)),
-      calc(100% - var(--preview-height) - 12px)
-    );
-    transform: none;
+  .vitrine-project-preview-link:hover {
+    --preview-opacity: 1;
+    --preview-animation-display: block;
   }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .vitrine-project-preview::after {
+  .vitrine-project-preview-image::after {
     content: '';
+    display: var(--preview-animation-display, none);
     position: absolute;
-    inset: var(--preview-border) var(--preview-border) auto;
-    aspect-ratio: 3 / 2;
-    background: var(--project-preview-animation, none) center / cover;
+    inset: 0;
+    background: var(--preview-scroll-image) center / cover;
+  }
+  .vitrine-project-preview-link > img {
+    transition: opacity 160ms ease-out;
   }
   .vitrine-project-preview {
-    translate: 0 calc(6px * (1 - var(--project-preview-opacity, 0)));
     transition:
-      opacity 180ms ease-out,
-      translate 180ms ease-out;
+      opacity 160ms ease-out,
+      rotate 180ms ease-out;
   }
 }
 .vitrine-project-fitness-row h3 {

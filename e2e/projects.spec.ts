@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('les fiches clients affichent leur aperçu au survol et au clavier', async ({
+test('la photo ciblée devient un Polaroid incliné au survol et au clavier', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -11,69 +11,92 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     { name: 'Viandes des Sommets', slug: 'viandes-des-sommets' },
   ]) {
     const project = page.getByRole('figure', { name, exact: true });
-    const link = project.getByRole('link').first();
-    const preview = project.locator('.vitrine-project-preview');
-    const animation = new RegExp(`/apercu-${slug}-[a-f0-9]+\\.gif$`);
-    const previewBackground = () =>
-      preview.evaluate(
-        (element) => getComputedStyle(element, '::after').backgroundImage,
+    const lettering = project.getByRole('link').first();
+    const photos = project.locator('.vitrine-project-photos').getByRole('link');
+    const firstPhoto = photos.nth(0);
+    const secondPhoto = photos.nth(1);
+    const firstPreview = firstPhoto.locator('.vitrine-project-preview');
+    const secondPreview = secondPhoto.locator('.vitrine-project-preview');
+    const previewImage = firstPreview.locator('.vitrine-project-preview-image');
+    const animationDisplay = () =>
+      previewImage.evaluate(
+        (element) => getComputedStyle(element, '::after').display,
       );
-    await expect(preview).toHaveCSS('opacity', '0');
-    expect(await previewBackground()).toBe('none');
-    const animationResponse = page.waitForResponse((response) =>
-      animation.test(response.url()),
-    );
-    await link.hover();
-    const response = await animationResponse;
-    expect(response.ok()).toBe(true);
-    expect(response.headers()['content-type']).toBe('image/gif');
-    await expect.poll(previewBackground).toContain(response.url());
-    await expect(preview).toHaveCSS('opacity', '1');
-    await expect(preview).toBeInViewport({ ratio: 1 });
-    const linkBox = (await link.boundingBox())!;
-    const mouseX = Math.round(linkBox.x + linkBox.width / 2) + 16;
-    const mouseY = Math.round(linkBox.y + linkBox.height / 2);
-    await page.mouse.move(mouseX, mouseY);
-    const previewBox = (await preview.boundingBox())!;
-    expect(previewBox.x + previewBox.width / 2).toBeCloseTo(mouseX, 0);
-    expect(
-      mouseY < previewBox.y
-        ? previewBox.y - mouseY
-        : mouseY - (previewBox.y + previewBox.height),
-    ).toBeLessThanOrEqual(56);
-    const image = preview.locator('img');
-    await expect(image).toHaveAttribute(
-      'src',
-      new RegExp(`/apercu-${slug}-.*\\.webp$`),
-    );
-    await image.evaluate((element) => (element as HTMLImageElement).decode());
-    const imageBox = (await image.boundingBox())!;
-    expect(
-      previewBox.y + previewBox.height - imageBox.y - imageBox.height,
-    ).toBeGreaterThan(imageBox.y - previewBox.y);
-    await page.mouse.move(0, 0);
-    await expect(preview).toHaveCSS('opacity', '0');
 
+    await lettering.hover();
+    await expect(firstPreview).toHaveCSS('opacity', '0');
+    await expect(secondPreview).toHaveCSS('opacity', '0');
+    expect(await animationDisplay()).toBe('none');
+
+    const animation = new RegExp(`/apercu-${slug}-[a-f0-9]+\\.gif$`);
+    const [animationResponse] = await Promise.all([
+      page.waitForResponse((response) => animation.test(response.url())),
+      firstPhoto.hover(),
+    ]);
+    expect(animationResponse.ok()).toBe(true);
+    expect(animationResponse.headers()['content-type']).toBe('image/gif');
+    expect(await animationDisplay()).toBe('block');
+    await expect(firstPreview).toHaveCSS('opacity', '1');
+    await expect(firstPreview).toHaveCSS('rotate', '-4deg');
+    await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '0');
+    await expect(secondPhoto.locator('> img')).toHaveCSS('opacity', '1');
+    await expect(firstPreview).toBeInViewport({ ratio: 0.999 });
+
+    const photoBox = (await firstPhoto.boundingBox())!;
+    const previewBox = (await firstPreview.boundingBox())!;
+    expect(previewBox.x + previewBox.width / 2).toBeCloseTo(
+      photoBox.x + photoBox.width / 2,
+      0,
+    );
+    expect(previewBox.y + previewBox.height / 2).toBeCloseTo(
+      photoBox.y + photoBox.height / 2,
+      0,
+    );
+    await page.mouse.move(
+      photoBox.x + photoBox.width * 0.75,
+      photoBox.y + photoBox.height * 0.75,
+    );
+    expect(await firstPreview.boundingBox()).toEqual(previewBox);
+
+    await secondPhoto.hover();
+    await expect(firstPreview).toHaveCSS('opacity', '0');
+    await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '1');
+    await expect(secondPreview).toHaveCSS('opacity', '1');
+    await expect(secondPreview).toHaveCSS('rotate', '-4deg');
+
+    await page.mouse.move(0, 0);
+    await expect(secondPreview).toHaveCSS('opacity', '0');
+    await lettering.focus();
     await page.keyboard.press('Tab');
-    await link.focus();
-    await expect(preview).toHaveCSS('opacity', '1');
-    await expect(preview).toHaveCSS('position', 'absolute');
-    await expect.poll(previewBackground).toContain(response.url());
-    await link.blur();
-    await expect(preview).toHaveCSS('opacity', '0');
+    await expect(firstPhoto).toBeFocused();
+    await expect(firstPreview).toHaveCSS('opacity', '1');
+    expect(await animationDisplay()).toBe('block');
+    await firstPhoto.blur();
+    await expect(firstPreview).toHaveCSS('opacity', '0');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const amafolia = page.getByRole('figure', { name: 'Amafolia', exact: true });
-  await amafolia.getByRole('link').first().hover();
-  const preview = amafolia.locator('.vitrine-project-preview');
+  const photo = amafolia
+    .locator('.vitrine-project-photos')
+    .getByRole('link')
+    .first();
+  await photo.hover();
+  const preview = photo.locator('.vitrine-project-preview');
   await expect(preview).toHaveCSS('opacity', '1');
   await expect(preview).toHaveCSS('transition-duration', '0s');
+  const still = preview.locator('img');
+  await expect(still).toHaveAttribute('src', /apercu-amafolia-.*\.webp$/);
+  await still.evaluate((image) => (image as HTMLImageElement).decode());
   expect(
-    await preview.evaluate(
-      (element) => getComputedStyle(element, '::after').backgroundImage,
-    ),
+    await preview
+      .locator('.vitrine-project-preview-image')
+      .evaluate(
+        (element) => getComputedStyle(element, '::after').backgroundImage,
+      ),
   ).toBe('none');
+  await photo.click();
+  await expect(page).toHaveURL('/clients/amafolia/');
 });
 
 for (const javaScriptEnabled of [false, true]) {
