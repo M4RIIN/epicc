@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('la photo ciblée devient un Polaroid incliné au survol et au clavier', async ({
+test('les deux photos d’un projet partagent un grand Polaroid droit', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -15,17 +15,16 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
     const photos = project.locator('.vitrine-project-photos').getByRole('link');
     const firstPhoto = photos.nth(0);
     const secondPhoto = photos.nth(1);
-    const firstPreview = firstPhoto.locator('.vitrine-project-preview');
-    const secondPreview = secondPhoto.locator('.vitrine-project-preview');
-    const previewImage = firstPreview.locator('.vitrine-project-preview-image');
+    const preview = project.locator('.vitrine-project-preview');
+    const previewImage = preview.locator('.vitrine-project-preview-image');
     const animationDisplay = () =>
       previewImage.evaluate(
         (element) => getComputedStyle(element, '::after').display,
       );
 
+    await expect(preview).toHaveCount(1);
     await lettering.hover();
-    await expect(firstPreview).toHaveCSS('opacity', '0');
-    await expect(secondPreview).toHaveCSS('opacity', '0');
+    await expect(preview).toHaveCSS('opacity', '0');
     expect(await animationDisplay()).toBe('none');
 
     const animation = new RegExp(`/apercu-${slug}-[a-f0-9]+\\.gif$`);
@@ -36,48 +35,46 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
     expect(animationResponse.ok()).toBe(true);
     expect(animationResponse.headers()['content-type']).toBe('image/gif');
     expect(await animationDisplay()).toBe('block');
-    await expect(firstPreview).toHaveCSS('opacity', '1');
-    await expect(firstPreview).toHaveCSS('rotate', '-4deg');
-    await expect(firstPreview).toHaveCSS('scale', '2');
+    await expect(preview).toHaveCSS('opacity', '1');
+    await expect(preview).toHaveCSS('rotate', 'none');
+    await expect(preview).toHaveCSS('scale', '1');
+    await expect(preview).toBeInViewport({ ratio: 0.999 });
     await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '0');
-    await expect(secondPhoto.locator('> img')).toHaveCSS('opacity', '1');
-    await expect(firstPreview).toBeInViewport({ ratio: 0.999 });
+    await expect(secondPhoto.locator('> img')).toHaveCSS('opacity', '0');
 
-    const photoBox = (await firstPhoto.boundingBox())!;
-    const previewBox = (await firstPreview.boundingBox())!;
-    expect(
-      Math.abs(
-        previewBox.x + previewBox.width / 2 - (photoBox.x + photoBox.width / 2),
-      ),
-    ).toBeLessThan(3);
-    expect(
-      Math.abs(
-        previewBox.y +
-          previewBox.height / 2 -
-          (photoBox.y + photoBox.height / 2),
-      ),
-    ).toBeLessThan(photoBox.height * 0.1);
-    await page.mouse.move(
-      photoBox.x + photoBox.width * 0.75,
-      photoBox.y + photoBox.height * 0.75,
+    const left = (await firstPhoto.boundingBox())!;
+    const right = (await secondPhoto.boundingBox())!;
+    const previewBox = (await preview.boundingBox())!;
+    const photosWidth = right.x + right.width - left.x;
+    expect(previewBox.width).toBeCloseTo(photosWidth * 1.5, 0);
+    expect(previewBox.x + previewBox.width / 2).toBeCloseTo(
+      left.x + photosWidth / 2,
+      0,
     );
-    expect(await firstPreview.boundingBox()).toEqual(previewBox);
 
+    await page.mouse.move(
+      (left.x + left.width + right.x) / 2,
+      left.y + left.height / 2,
+    );
+    expect(await animationDisplay()).toBe('block');
     await secondPhoto.hover();
-    await expect(firstPreview).toHaveCSS('opacity', '0');
-    await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '1');
-    await expect(secondPreview).toHaveCSS('opacity', '1');
-    await expect(secondPreview).toHaveCSS('rotate', '4deg');
+    expect(await animationDisplay()).toBe('block');
+    expect(await preview.boundingBox()).toEqual(previewBox);
 
     await page.mouse.move(0, 0);
-    await expect(secondPreview).toHaveCSS('opacity', '0');
+    await expect(preview).toHaveCSS('opacity', '0');
+    await expect(firstPhoto.locator('> img')).toHaveCSS('opacity', '1');
+    await expect(secondPhoto.locator('> img')).toHaveCSS('opacity', '1');
     await lettering.focus();
     await page.keyboard.press('Tab');
     await expect(firstPhoto).toBeFocused();
-    await expect(firstPreview).toHaveCSS('opacity', '1');
+    await expect(preview).toHaveCSS('opacity', '1');
     expect(await animationDisplay()).toBe('block');
-    await firstPhoto.blur();
-    await expect(firstPreview).toHaveCSS('opacity', '0');
+    await page.keyboard.press('Tab');
+    await expect(secondPhoto).toBeFocused();
+    expect(await animationDisplay()).toBe('block');
+    await secondPhoto.blur();
+    await expect(preview).toHaveCSS('opacity', '0');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -88,10 +85,8 @@ test('la photo ciblée devient un Polaroid incliné au survol et au clavier', as
     .getByRole('link')
     .last();
   await photo.hover();
-  const preview = photo.locator('.vitrine-project-preview');
+  const preview = amafolia.locator('.vitrine-project-preview');
   await expect(preview).toHaveCSS('opacity', '1');
-  await expect(preview).toHaveCSS('rotate', '4deg');
-  await expect(preview).toHaveCSS('scale', '2');
   await expect(preview).toBeInViewport({ ratio: 0.999 });
   await expect(preview).toHaveCSS('transition-duration', '0s');
   const still = preview.locator('img');

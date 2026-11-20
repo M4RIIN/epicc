@@ -29,7 +29,7 @@ function ProjectPreview({
           file={still}
           width={420}
           height={280}
-          sizes="(max-width: 700px) 54vw, (max-width: 1920px) 22vw, 420px"
+          sizes="(max-width: 700px) 90vw, 560px"
         />
       </span>
     </span>
@@ -42,7 +42,6 @@ export function Projects({ basePath }: { basePath: string }) {
     name: string,
     page?: ClientProjectMetadata,
   ) {
-    const preview = piece.role === 'photo' ? page?.preview : undefined;
     const artwork = (
       <Artwork
         sizes={`(max-width: 700px) ${piece.role === 'name' ? 29 : 23}vw, (max-width: 1920px) ${piece.width / 19.2}vw, ${piece.width}px`}
@@ -63,11 +62,9 @@ export function Projects({ basePath }: { basePath: string }) {
         {page ? (
           <a
             href={basePath + page.path}
-            className={preview ? 'vitrine-project-preview-link' : undefined}
             aria-label={`${name} — découvrir l’identité visuelle`}
           >
             {artwork}
-            {preview && <ProjectPreview {...preview} />}
           </a>
         ) : (
           artwork
@@ -83,7 +80,11 @@ export function Projects({ basePath }: { basePath: string }) {
     } as CSSProperties;
     return (
       <figure
-        className="vitrine-project"
+        className={
+          page
+            ? 'vitrine-project vitrine-project-with-preview'
+            : 'vitrine-project'
+        }
         key={name}
         data-project={name}
         data-side={side}
@@ -97,6 +98,7 @@ export function Projects({ basePath }: { basePath: string }) {
         <div className="vitrine-project-photos">
           {photos.map((piece) => renderPiece(piece, name, page))}
         </div>
+        {page && <ProjectPreview {...page.preview} />}
       </figure>
     );
   }
