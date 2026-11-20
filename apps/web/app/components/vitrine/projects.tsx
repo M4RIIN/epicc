@@ -1,12 +1,37 @@
 import type { CSSProperties } from 'react';
 import { Artwork } from './artwork';
+import { useVitrineImageUrl } from './media';
 import { projects, type Piece, type Project } from '../../content/projects';
+import type { ClientProjectMetadata } from '../../site';
 
 function pieceStyle(piece: Piece): CSSProperties {
   return {
     '--piece-width': `${piece.width / 19.2}cqw`,
     '--piece-ratio': piece.width / piece.height,
   } as CSSProperties;
+}
+
+function ProjectPreview({
+  still,
+  animation,
+}: ClientProjectMetadata['preview']) {
+  const animationUrl = useVitrineImageUrl(animation);
+  return (
+    <div
+      className="vitrine-project-preview"
+      style={
+        { '--preview-scroll-image': `url("${animationUrl}")` } as CSSProperties
+      }
+      aria-hidden="true"
+    >
+      <Artwork
+        file={still}
+        width={420}
+        height={280}
+        sizes="(max-width: 835px) 33vw, 270px"
+      />
+    </div>
+  );
 }
 
 export function Projects({ basePath }: { basePath: string }) {
@@ -61,16 +86,7 @@ export function Projects({ basePath }: { basePath: string }) {
         <div className="vitrine-project-photos">
           {photos.map((piece) => renderPiece(piece, name, href))}
         </div>
-        {page && (
-          <div className="vitrine-project-preview" aria-hidden="true">
-            <Artwork
-              file={page.previewFile}
-              width={300}
-              height={180}
-              sizes="(max-width: 1154px) 26vw, 300px"
-            />
-          </div>
-        )}
+        {page && <ProjectPreview {...page.preview} />}
       </figure>
     );
   }

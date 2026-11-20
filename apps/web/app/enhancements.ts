@@ -66,7 +66,7 @@ if (projects && gallery) {
       gallery.style.setProperty('--preview-y', `${clientY}px`);
       gallery.setAttribute(
         'data-preview-pointer',
-        clientY < 216 ? 'below' : 'above',
+        clientY < Math.min(300, innerHeight / 2) ? 'below' : 'above',
       );
     },
   );

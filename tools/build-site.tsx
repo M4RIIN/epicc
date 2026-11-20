@@ -136,6 +136,9 @@ async function optimizeImage(
   if (file.endsWith('.svg')) {
     return { image: await writeAsset(name, 'svg', await readFile(source)) };
   }
+  if (file.endsWith('.gif')) {
+    return { image: await writeAsset(name, 'gif', await readFile(source)) };
+  }
   const image = sharp(source);
   const metadata = await image.metadata();
   const maximum = Math.min(

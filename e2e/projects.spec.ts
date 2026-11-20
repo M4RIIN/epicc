@@ -6,15 +6,28 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/#projets');
 
-  for (const { name, screenshot } of [
-    { name: 'Amafolia', screenshot: /apercu-amafolia/ },
-    { name: 'Viandes des Sommets', screenshot: /apercu-viandes-des-sommets/ },
+  for (const { name, slug } of [
+    { name: 'Amafolia', slug: 'amafolia' },
+    { name: 'Viandes des Sommets', slug: 'viandes-des-sommets' },
   ]) {
     const project = page.getByRole('figure', { name, exact: true });
     const link = project.getByRole('link').first();
     const preview = project.locator('.vitrine-project-preview');
+    const animation = new RegExp(`/apercu-${slug}-[a-f0-9]+\\.gif$`);
+    const previewBackground = () =>
+      preview.evaluate(
+        (element) => getComputedStyle(element, '::after').backgroundImage,
+      );
     await expect(preview).toHaveCSS('opacity', '0');
+    expect(await previewBackground()).toBe('none');
+    const animationResponse = page.waitForResponse((response) =>
+      animation.test(response.url()),
+    );
     await link.hover();
+    const response = await animationResponse;
+    expect(response.ok()).toBe(true);
+    expect(response.headers()['content-type']).toBe('image/gif');
+    await expect.poll(previewBackground).toContain(response.url());
     await expect(preview).toHaveCSS('opacity', '1');
     await expect(preview).toBeInViewport({ ratio: 1 });
     const linkBox = (await link.boundingBox())!;
@@ -29,8 +42,15 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
         : mouseY - (previewBox.y + previewBox.height),
     ).toBeLessThanOrEqual(56);
     const image = preview.locator('img');
-    await expect(image).toHaveAttribute('src', screenshot);
+    await expect(image).toHaveAttribute(
+      'src',
+      new RegExp(`/apercu-${slug}-.*\\.webp$`),
+    );
     await image.evaluate((element) => (element as HTMLImageElement).decode());
+    const imageBox = (await image.boundingBox())!;
+    expect(
+      previewBox.y + previewBox.height - imageBox.y - imageBox.height,
+    ).toBeGreaterThan(imageBox.y - previewBox.y);
     await page.mouse.move(0, 0);
     await expect(preview).toHaveCSS('opacity', '0');
 
@@ -38,15 +58,22 @@ test('les fiches clients affichent leur aperçu au survol et au clavier', async 
     await link.focus();
     await expect(preview).toHaveCSS('opacity', '1');
     await expect(preview).toHaveCSS('position', 'absolute');
+    await expect.poll(previewBackground).toContain(response.url());
     await link.blur();
     await expect(preview).toHaveCSS('opacity', '0');
   }
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(page.locator('.vitrine-project-preview').first()).toHaveCSS(
-    'transition-duration',
-    '0s',
-  );
+  const amafolia = page.getByRole('figure', { name: 'Amafolia', exact: true });
+  await amafolia.getByRole('link').first().hover();
+  const preview = amafolia.locator('.vitrine-project-preview');
+  await expect(preview).toHaveCSS('opacity', '1');
+  await expect(preview).toHaveCSS('transition-duration', '0s');
+  expect(
+    await preview.evaluate(
+      (element) => getComputedStyle(element, '::after').backgroundImage,
+    ),
+  ).toBe('none');
 });
 
 for (const javaScriptEnabled of [false, true]) {

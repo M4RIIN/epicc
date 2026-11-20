@@ -583,40 +583,44 @@ body:has(.vitrine) {
   position: relative;
 }
 .vitrine-project-preview {
-  --preview-width: min(26cqw, 300px);
-  --preview-height: calc(var(--preview-width) * 3 / 5);
+  --preview-width: min(36cqw, 300px, 48vh);
+  --preview-height: calc(var(--preview-width) * 7 / 8);
+  --preview-border: calc(var(--preview-width) / 20);
   position: absolute;
   z-index: 1;
   inset-inline-end: 0;
   inset-block-start: 50%;
   inline-size: var(--preview-width);
-  aspect-ratio: 5 / 3;
+  block-size: var(--preview-height);
+  padding: var(--preview-border);
   transform: translateY(-50%);
-  overflow: hidden;
-  border-radius: 4px;
-  box-shadow: 0 6px 18px #0003;
-  background: var(--vitrine-paper);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 6px #0002,
+    0 10px 25px #0003;
+  background: #fffdf7;
   pointer-events: none;
   visibility: var(--project-preview-visibility, hidden);
   opacity: var(--project-preview-opacity, 0);
 }
 .vitrine-project-preview img {
-  position: absolute;
-  height: 100%;
+  height: auto;
 }
 @media (min-width: 701px) {
   .vitrine-project[data-side='right'] > .vitrine-project-preview {
     inset-inline: 0 auto;
   }
 }
-.vitrine-project:has(a:focus-visible) {
+.vitrine-project:has(a:focus-visible) > .vitrine-project-preview {
   --project-preview-visibility: visible;
   --project-preview-opacity: 1;
+  --project-preview-animation: var(--preview-scroll-image);
 }
 @media (hover: hover) and (pointer: fine) {
-  .vitrine-project:has(a:hover) {
+  .vitrine-project:has(a:hover) > .vitrine-project-preview {
     --project-preview-visibility: visible;
     --project-preview-opacity: 1;
+    --project-preview-animation: var(--preview-scroll-image);
   }
 
   .vitrine-projects-collage[data-preview-pointer='below'] {
@@ -641,6 +645,13 @@ body:has(.vitrine) {
   }
 }
 @media (prefers-reduced-motion: no-preference) {
+  .vitrine-project-preview::after {
+    content: '';
+    position: absolute;
+    inset: var(--preview-border) var(--preview-border) auto;
+    aspect-ratio: 3 / 2;
+    background: var(--project-preview-animation, none) center / cover;
+  }
   .vitrine-project-preview {
     translate: 0 calc(6px * (1 - var(--project-preview-opacity, 0)));
     transition:
