@@ -746,7 +746,6 @@ body:has(.vitrine) {
 }
 .vitrine-footer-content > img {
   width: calc(0.1335 * var(--footer-layout-width));
-  opacity: 0.43;
   transform: rotate(2.16deg);
 }
 .vitrine-footer a:hover {
