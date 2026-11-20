@@ -918,15 +918,25 @@ body:has(.vitrine) {
     animation-delay: 2.8s;
   }
   .vitrine-manifesto-rotation .vitrine-manifesto-definition {
-    --vitrine-phrase-duration: 2.5s;
+    --vitrine-phrase-duration: 1.8s;
     display: grid;
   }
   .vitrine-manifesto-rotation .vitrine-manifesto-definition > span {
+    position: relative;
     grid-area: 1 / 1;
     justify-self: start;
     white-space: nowrap;
     animation: vitrine-type calc(4 * var(--vitrine-phrase-duration))
       steps(1, end) infinite both paused;
+  }
+  .vitrine-manifesto-rotation .vitrine-manifesto-definition > span::after {
+    content: attr(data-text) / '';
+    position: absolute;
+    inset: 0;
+    background: var(--vitrine-paper);
+    pointer-events: none;
+    animation: inherit;
+    animation-name: vitrine-glitch;
   }
   .vitrine-manifesto-animated .vitrine-manifesto-definition > span {
     animation-play-state: running;
@@ -961,11 +971,34 @@ body:has(.vitrine) {
     animation-timing-function: steps(24, end);
   }
   5% {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(0 -0.3em);
   }
   25%,
   100% {
     clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes vitrine-glitch {
+  0%,
+  25%,
+  100% {
+    visibility: hidden;
+  }
+  22.5% {
+    visibility: visible;
+    clip-path: inset(18% 0 59%);
+    transform: translateX(0.24em);
+  }
+  23.25% {
+    visibility: visible;
+    clip-path: inset(57% 0 22%);
+    transform: translateX(-0.28em);
+  }
+  24% {
+    visibility: visible;
+    clip-path: inset(35% 0 47%);
+    transform: translateX(0.16em);
   }
 }
 

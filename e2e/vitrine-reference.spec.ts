@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('le manifeste alterne ses phrases sur la même ligne et espace les apparitions du collage', async ({
+test('le manifeste alterne ses phrases avec un glitch et espace les apparitions du collage', async ({
   page,
 }) => {
   await page.goto('/#epicc');
@@ -11,10 +11,10 @@ test('le manifeste alterne ses phrases sur la même ligne et espace les appariti
   const definition = manifesto.locator('.vitrine-manifesto-definition');
   for (const width of [1440, 768, 320]) {
     await page.setViewportSize({ width, height: 900 });
-    const { positions, activePhrases } = await definition.evaluate(
-      (element) => {
+    const { positions, activePhrases, glitchShifts } =
+      await definition.evaluate((element) => {
         const phrases = [...element.children];
-        const animations = phrases.flatMap((phrase) => phrase.getAnimations());
+        const animations = element.getAnimations({ subtree: true });
         for (const animation of animations) animation.pause();
 
         const positions = phrases.map((phrase) => {
@@ -23,17 +23,34 @@ test('le manifeste alterne ses phrases sur la même ligne et espace les appariti
           const { x, y, right } = range.getBoundingClientRect();
           return { x, y, right, lines: range.getClientRects().length };
         });
-        const activePhrases = [1000, 3500, 6000, 8500, 11000].map((time) => {
+        const seekAnimation = (time: number) => {
           for (const animation of animations) animation.currentTime = time;
+        };
+        const activePhrases = [600, 2400, 4200, 6000, 7800].map((time) => {
+          seekAnimation(time);
           return phrases.flatMap((phrase, index) =>
             getComputedStyle(phrase).clipPath.includes('100%') ? [] : [index],
           );
         });
-        return { positions, activePhrases };
-      },
-    );
+        const glitchShifts = phrases.map((phrase, index) =>
+          [1500, 1630, 1700, 1750, 1810].map((offset) => {
+            seekAnimation(index * 1800 + offset);
+            const { visibility, transform } = getComputedStyle(
+              phrase,
+              '::after',
+            );
+            return visibility === 'visible'
+              ? Math.sign(new DOMMatrixReadOnly(transform).m41)
+              : 0;
+          }),
+        );
+        return { positions, activePhrases, glitchShifts };
+      });
 
     expect(activePhrases).toEqual([[0], [1], [2], [3], [0]]);
+    expect(glitchShifts).toEqual(
+      Array.from({ length: 4 }, () => [0, 1, -1, 1, 0]),
+    );
     for (const position of positions) {
       expect(position.lines).toBe(1);
       expect(position.x).toBe(positions[0]!.x);
@@ -50,6 +67,17 @@ test('le manifeste alterne ses phrases sur la même ligne et espace les appariti
     }),
   );
   expect(revealDelays).toEqual([0, 1400, 2800]);
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const staticPhrases = await definition.evaluate((element) =>
+    [...element.children].map((phrase) => ({
+      clip: getComputedStyle(phrase).clipPath,
+      glitch: getComputedStyle(phrase, '::after').content,
+    })),
+  );
+  expect(staticPhrases).toEqual(
+    Array.from({ length: 4 }, () => ({ clip: 'none', glitch: 'none' })),
+  );
 });
 
 for (const javaScriptEnabled of [false, true]) {

@@ -18,7 +18,9 @@ export function Manifesto() {
             'CC, pour Chloé Catala.',
             'CC, pour conseil et communication.',
           ].map((phrase) => (
-            <span key={phrase}>{phrase}</span>
+            <span key={phrase} data-text={phrase}>
+              {phrase}
+            </span>
           ))}
         </p>
         <p>
