@@ -911,7 +911,7 @@ body:has(.vitrine) {
 @media (prefers-reduced-motion: no-preference) {
   .vitrine-manifesto-animated
     :is(.vitrine-collage-beau, .vitrine-collage-bon, .vitrine-collage-bien) {
-    animation: vitrine-reveal 1.2s both;
+    animation: vitrine-collage-reveal 10s ease infinite both;
   }
   .vitrine-manifesto-animated .vitrine-collage-bon {
     animation-delay: 1.4s;
@@ -958,11 +958,14 @@ body:has(.vitrine) {
     animation-delay: calc(3 * var(--vitrine-phrase-duration));
   }
 }
-@keyframes vitrine-reveal {
-  from {
+@keyframes vitrine-collage-reveal {
+  0%,
+  72%,
+  100% {
     opacity: 0;
   }
-  to {
+  12%,
+  60% {
     opacity: 1;
   }
 }
