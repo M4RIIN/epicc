@@ -18,8 +18,13 @@ function letterEnds(paragraph: Node, segmenter: Intl.Segmenter) {
   return letters;
 }
 
-function typeParagraph(range: Range, letters: LetterEnd[], hidden: Highlight) {
-  const duration = Math.min(letters.length * 28, 2400);
+function typeParagraph(
+  range: Range,
+  letters: LetterEnd[],
+  hidden: Highlight,
+  durationScale: number,
+) {
+  const duration = Math.min(letters.length * 28, 2400) * durationScale;
   const startedAt = performance.now();
 
   return new Promise<void>((finish) => {
@@ -58,9 +63,15 @@ export function revealParagraphs() {
   const waiting = new Map<Element, Paragraph[]>();
 
   async function typeSequence(sequence: Paragraph[]) {
+    const durationScale = sequence.length > 1 ? 0.8 : 1;
     for (const { element, range } of sequence) {
       if (!hidden.has(range)) break;
-      await typeParagraph(range, letterEnds(element, segmenter), hidden);
+      await typeParagraph(
+        range,
+        letterEnds(element, segmenter),
+        hidden,
+        durationScale,
+      );
     }
   }
 
