@@ -214,9 +214,10 @@ body:has(.vitrine) {
   object-fit: contain;
 }
 .vitrine-service-tooltip-details {
-  font:
-    400 clamp(22px, 2.5vw, 30px) / 1.1 Caveat,
-    cursive;
+  font-size: clamp(22px, 2.5vw, 30px);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.1;
   letter-spacing: normal;
   text-transform: none;
   overflow-wrap: anywhere;

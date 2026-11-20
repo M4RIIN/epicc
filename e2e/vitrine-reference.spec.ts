@@ -176,7 +176,9 @@ test('les infobulles des prestations suivent la souris', async ({ page }) => {
     await expect(tooltip).toBeVisible();
     const details = tooltip.locator('.vitrine-service-tooltip-details');
     await expect(details).toHaveText(design.description);
-    await expect(details).toHaveCSS('font-family', /Caveat/);
+    await expect(details).toContainText('|');
+    await expect(details).not.toContainText(',');
+    await expect(details).toHaveCSS('font-family', /Roboto Mono/);
     await expect(details).toHaveCSS('font-size', '30px');
     const lastLetter = details
       .locator('.vitrine-service-tooltip-letter')
