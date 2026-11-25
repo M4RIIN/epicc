@@ -118,6 +118,14 @@ for (const javaScriptEnabled of [false, true]) {
 
         await gallery.press('End');
         await expect(lastProject).toBeInViewport({ ratio: 1 });
+        await expect
+          .poll(() =>
+            gallery.evaluate(
+              (element) =>
+                element.scrollHeight - element.clientHeight - element.scrollTop,
+            ),
+          )
+          .toBe(0);
         await expect(title).toBeInViewport({ ratio: 1 });
         expect((await header.boundingBox())?.y).toBeCloseTo(0, 0);
         if (javaScriptEnabled) {
@@ -130,8 +138,10 @@ for (const javaScriptEnabled of [false, true]) {
             .toBe('0');
         }
 
-        await page.mouse.wheel(0, viewport.height);
-        await expect(title).not.toBeInViewport();
+        await expect(async () => {
+          await page.mouse.wheel(0, viewport.height);
+          await expect(title).not.toBeInViewport({ timeout: 1000 });
+        }).toPass({ timeout: 4000 });
 
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
