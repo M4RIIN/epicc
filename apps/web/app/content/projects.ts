@@ -6,11 +6,22 @@ import {
 
 export type Piece = {
   file: string;
-  role: 'name' | 'photo';
   width: number;
   height: number;
   alt?: string;
-  mirror?: boolean;
+};
+
+export type ProjectLabel = {
+  tags: [string, string];
+  lettering: Piece;
+};
+
+export type Project = {
+  name: string;
+  side: 'left' | 'right';
+  page?: ClientProjectMetadata;
+  label?: ProjectLabel;
+  photos: [Piece] | [Piece, Piece];
 };
 
 const photo = (
@@ -18,113 +29,131 @@ const photo = (
   width: number,
   height: number,
   alt: string,
-): Piece => ({ file, width, height, alt, role: 'photo' });
+): Piece => ({ file: `projets-${file}`, width, height, alt });
+
+const label = (
+  tags: [string, string],
+  file: string,
+  width: number,
+  height: number,
+): ProjectLabel => ({
+  tags,
+  lettering: { file: `projets-${file}`, width, height },
+});
+
 export const projects: Project[] = [
   {
     name: 'Amafolia',
     side: 'right',
     page: amafolia,
-    lettering: {
-      file: 'CaptureDecran20261029A15334241.png',
-      width: 248,
-      height: 123,
-      role: 'name',
-    },
+    label: label(
+      ['Restructuration', 'Octobre 2026'],
+      'CaptureDecran20261029A15334241.png',
+      184,
+      65,
+    ),
     photos: [
-      {
-        ...photo('Dsc067761.jpg', 181, 272, 'Plat dressé pour Amafolia.'),
-        mirror: true,
-      },
-      photo('Dsc23991.png', 160, 240, 'Assiettes à partager chez Amafolia.'),
+      photo('Burrata.jpg', 202, 304, 'Burrata et tomates cerises, Amafolia.'),
+      photo('Pates.jpg', 242, 338, 'Assiette de pâtes fraîches, Amafolia.'),
     ],
   },
   {
     name: 'Viandes des Sommets',
     side: 'left',
     page: viandesDesSommets,
-    lettering: {
-      file: 'CaptureDecran20261029A15334231.png',
-      width: 599,
-      height: 176,
-      role: 'name',
-    },
+    label: label(
+      ['Lancement de marque', 'Décembre 2025'],
+      'ViandesDesSommets.png',
+      220,
+      78,
+    ),
     photos: [
       photo(
-        'Rectangle6.png',
-        230,
-        405,
-        'Viandes des Sommets, repas face aux montagnes.',
+        'Troupeau.jpg',
+        214,
+        320,
+        'Éleveur au milieu de son troupeau, Viandes des Sommets.',
       ),
-      photo('Rectangle4.png', 222, 350, 'Viande grillée, Viandes des Sommets.'),
+      photo('Rectangle4.png', 264, 412, 'Viande grillée, Viandes des Sommets.'),
     ],
   },
   {
     name: 'Casamatta',
     side: 'right',
-    lettering: {
-      file: 'IllustrationSansTitre521.png',
-      width: 423,
-      height: 101,
-      role: 'name',
-    },
+    label: label(
+      ['Lancement de marque', 'Septembre 2026'],
+      'IllustrationSansTitre521.png',
+      256,
+      66,
+    ),
     photos: [
-      photo('Dsc19081.jpg', 192, 288, 'Intérieur du restaurant Casamatta.'),
-      photo('Dsc10951.jpg', 240, 360, 'Texture bleue de Casamatta.'),
+      photo('Dsc19081.jpg', 218, 328, 'Intérieur du restaurant Casamatta.'),
+      photo('PannaCotta.jpg', 240, 360, 'Panna cotta aux fruits rouges.'),
     ],
+  },
+  {
+    name: 'Des Biches',
+    side: 'left',
+    label: label(
+      ['Événementiel | Réseaux sociaux', 'Décembre 2025'],
+      'DesBiches.png',
+      185,
+      50,
+    ),
+    photos: [photo('Golf.jpg', 206, 300, 'Balles de golf, Des Biches.')],
   },
   {
     name: 'Origin',
     side: 'right',
-    lettering: {
-      file: 'IllustrationSansTitre491.png',
-      width: 189,
-      height: 110,
-      role: 'name',
-    },
+    label: label(
+      ['Lancement de marque', 'Décembre 2025'],
+      'IllustrationSansTitre491.png',
+      170,
+      90,
+    ),
     photos: [
       photo(
-        'Rectangle8.jpg',
-        288,
-        432,
-        'Table garnie de plats à partager chez Origin.',
+        'OriginVin.jpg',
+        248,
+        372,
+        'Verre de vin blanc servi par l’équipe d’Origin.',
       ),
-      photo('Dsc13161.png', 280, 412, 'Terrasse du restaurant Origin.'),
     ],
   },
   {
     name: 'Les Trois Sœurs',
     side: 'left',
-    lettering: {
-      file: 'CaptureDecran20261029A153342521.png',
-      width: 474,
-      height: 102,
-      role: 'name',
-    },
+    label: label(
+      ['Réseaux sociaux', 'Juin 2025'],
+      'CaptureDecran20261029A153342521.png',
+      300,
+      59,
+    ),
     photos: [
       photo('TroisSoeurs.png', 280, 354, 'Pancakes des Trois Sœurs.'),
-      photo('Dsc18591.jpg', 307, 312, 'Cookies au chocolat des Trois Sœurs.'),
+      photo('Cafe.jpg', 228, 340, 'Grains de café torréfiés.'),
     ],
   },
   {
     name: 'Le Conseil',
     side: 'right',
-    lettering: {
-      file: 'CaptureDecran20261029A1533426.png',
-      width: 340,
-      height: 124,
-      role: 'name',
-    },
+    label: label(
+      ['Graphisme', 'Mars 2026'],
+      'CaptureDecran20261029A1533426.png',
+      213,
+      56,
+    ),
     photos: [
       photo(
         'CopieDeLeConseil31.png',
         218,
-        273,
+        272,
         'Identité visuelle du Conseil, carte de visite.',
       ),
       photo(
         '171.png',
-        231,
-        289,
+        228,
+        290,
         'Identité visuelle du Conseil, porte-documents.',
       ),
     ],
@@ -132,89 +161,88 @@ export const projects: Project[] = [
   {
     name: 'Deux Main',
     side: 'left',
-    lettering: {
-      file: 'CaptureDecran20261029A15334261.png',
-      width: 293,
-      height: 107,
-      role: 'name',
-    },
+    label: label(
+      ['Restructuration', 'Juillet 2026'],
+      'CaptureDecran20261029A15334261.png',
+      175,
+      54,
+    ),
     photos: [
-      photo('Dsc08681.png', 262, 393, 'Préparation d’un menu, Deux Main.'),
-      photo('Dsc08481.png', 289, 434, 'Travail en cuisine chez Deux Main.'),
+      photo('Dsc08681.png', 262, 392, 'Préparation d’un menu, Deux Main.'),
+      photo('Dsc08481.png', 288, 434, 'Atelier autour de la carte, Deux Main.'),
     ],
   },
   {
     name: 'Le Carré Vert',
     side: 'right',
-    lettering: {
-      file: 'CaptureDecran20261029A15334271.png',
-      width: 489,
-      height: 178,
-      role: 'name',
-    },
+    label: label(
+      ['Restructuration', 'Octobre 2026'],
+      'CaptureDecran20261029A15334271.png',
+      318,
+      84,
+    ),
     photos: [
-      photo('Dsc23481.png', 315, 472, 'Assiette du Carré Vert.'),
-      photo('Dsc23871.png', 249, 458, 'Portrait au Carré Vert.'),
+      photo('Gateau.jpg', 316, 472, 'Dessert aux groseilles du Carré Vert.'),
+      photo('Dsc23871.png', 248, 458, 'Portrait du chef du Carré Vert.'),
     ],
   },
   {
     name: 'Allegria',
     side: 'left',
-    lettering: {
-      file: 'CaptureDecran20261029A15334291.png',
-      width: 265,
-      height: 123,
-      role: 'name',
-    },
+    label: label(
+      ['Restructuration', 'Janvier 2026'],
+      'CaptureDecran20261029A15334291.png',
+      216,
+      83,
+    ),
     photos: [
-      photo(
-        'Allegria1.png',
-        256,
-        320,
-        'Bouteille de vin dans les vignes, Allegria.',
-      ),
-      photo('Allegria2.png', 253, 366, 'Salle du restaurant Allegria.'),
+      photo('Raisin.jpg', 268, 336, 'Grappe de raisin dans les vignes.'),
+      photo('Futs.jpg', 292, 366, 'Fûts de chêne du domaine Allegria.'),
     ],
   },
   {
     name: 'L’Écluse Douze',
     side: 'right',
-    lettering: {
-      file: 'CaptureDecran20261029A153342121.png',
-      width: 260,
-      height: 115,
-      role: 'name',
-    },
     photos: [
-      photo('Ecluse1.png', 302, 393, 'Plat au fromage de L’Écluse Douze.'),
-      photo('Ecluse2.png', 316, 365, 'Dégustation à L’Écluse Douze.'),
+      photo('Ecluse1.png', 302, 392, 'Plat au fromage de L’Écluse Douze.'),
+      photo('Ecluse2.png', 316, 362, 'Dégustation à L’Écluse Douze.'),
     ],
   },
   {
     name: 'La Grinta',
     side: 'left',
-    lettering: {
-      file: 'CaptureDecran20261029A153342101.png',
-      width: 306,
-      height: 128,
-      role: 'name',
-    },
+    label: label(
+      ['Lancement de marque', 'Janvier 2026'],
+      'CaptureDecran20261029A153342101.png',
+      267,
+      84,
+    ),
     photos: [
       photo(
         'Grinta1.png',
         274,
-        411,
+        410,
         'Microphone, création de contenu pour La Grinta.',
       ),
       photo('Grinta2.png', 328, 492, 'Portrait pour La Grinta.'),
     ],
   },
+  {
+    name: 'Fitness by Leslie',
+    side: 'left',
+    photos: [
+      photo(
+        'Fitness1.png',
+        338,
+        424,
+        'Séance de renforcement avec haltères, Fitness by Leslie.',
+      ),
+      photo(
+        'Fitness2.png',
+        352,
+        441,
+        'Séance de fitness avec ballon, Fitness by Leslie.',
+      ),
+    ],
+  },
 ];
-
-export type Project = {
-  name: string;
-  side: 'left' | 'right';
-  page?: ClientProjectMetadata;
-  lettering: Piece;
-  photos: [Piece] | [Piece, Piece];
-};

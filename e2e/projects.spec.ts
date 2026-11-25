@@ -117,6 +117,13 @@ for (const javaScriptEnabled of [false, true]) {
           .toBeCloseTo(0, 0);
 
         await gallery.press('End');
+        await expect
+          .poll(() =>
+            gallery.evaluate(
+              (el) => el.scrollHeight - el.clientHeight - el.scrollTop,
+            ),
+          )
+          .toBeLessThan(1);
         await expect(lastProject).toBeInViewport({ ratio: 1 });
         await expect(title).toBeInViewport({ ratio: 1 });
         expect((await header.boundingBox())?.y).toBeCloseTo(0, 0);
@@ -130,8 +137,10 @@ for (const javaScriptEnabled of [false, true]) {
             .toBe('0');
         }
 
-        await page.mouse.wheel(0, viewport.height);
-        await expect(title).not.toBeInViewport();
+        await expect(async () => {
+          await page.mouse.wheel(0, viewport.height);
+          await expect(title).not.toBeInViewport({ timeout: 1000 });
+        }).toPass();
 
         await page.evaluate(() =>
           window.scrollTo(0, document.documentElement.scrollHeight),
@@ -163,7 +172,7 @@ for (const javaScriptEnabled of [false, true]) {
     try {
       const page = await context.newPage();
       await page.goto('/');
-      await expect(page.locator('.vitrine-project')).toHaveCount(12);
+      await expect(page.locator('.vitrine-project')).toHaveCount(13);
       await expect(page.locator('.vitrine-opening-number')).toHaveCount(0);
       await expect(
         page.getByRole('figure', { name: 'Amafolia', exact: true }),
@@ -181,16 +190,17 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(viande.locator('.vitrine-project-photo')).toHaveCount(2);
       await expect(
         viande.locator('.vitrine-project-photo').first(),
-      ).toHaveAttribute('data-file', 'Rectangle6.png');
+      ).toHaveAttribute('data-file', 'projets-Troupeau.jpg');
       for (const width of [1920, 1440, 768, 375, 320]) {
         await page.setViewportSize({ width, height: 1000 });
         const rows = await page
           .locator('.vitrine-project')
           .evaluateAll((projects) =>
             projects.map((project) => {
-              const title = project
-                .querySelector('.vitrine-project-names')!
-                .getBoundingClientRect();
+              const tags = project.querySelector('.vitrine-tags');
+              const title = (
+                tags ?? project.querySelector('.vitrine-project-names')!
+              ).getBoundingClientRect();
               const photos = Array.from(
                 project.querySelector('.vitrine-project-photos')!.children,
               ).map((photo) => {
@@ -210,41 +220,37 @@ for (const javaScriptEnabled of [false, true]) {
                   bottom: title.bottom,
                 },
                 side: project.getAttribute('data-side'),
+                labelled: tags !== null,
                 photos,
               };
             }),
           );
-        for (const { title, photos, side } of rows) {
+        const middle = ({ y, bottom }: { y: number; bottom: number }) =>
+          (y + bottom) / 2;
+        for (const { title, photos, side, labelled } of rows) {
           expect(photos.length).toBeLessThanOrEqual(2);
+          if (photos[1]) {
+            expect(photos[1].x).toBeGreaterThan(photos[0]!.right);
+            expect(
+              Math.abs(middle(photos[1]) - middle(photos[0]!)),
+            ).toBeLessThan(1);
+          }
+          if (!labelled) continue;
+          expect(Math.abs(middle(title) - middle(photos[0]!))).toBeLessThan(1);
           if (width > 700 && side === 'right') {
             expect(title.x).toBeGreaterThan(photos.at(-1)!.right);
             expect(title.x - photos.at(-1)!.right).toBeLessThan(width * 0.02);
           } else {
             expect(photos[0]!.x).toBeGreaterThan(title.right);
-            if (width > 700)
-              expect(photos[0]!.x - title.right).toBeLessThan(width * 0.02);
-          }
-          expect(
-            Math.abs(
-              (title.y + title.bottom) / 2 -
-                (photos[0]!.y + photos[0]!.bottom) / 2,
-            ),
-          ).toBeLessThan(1);
-          if (photos[1]) {
-            expect(photos[1].x).toBeGreaterThan(photos[0]!.right);
-            expect(
-              Math.abs(
-                (photos[1].y + photos[1].bottom) / 2 -
-                  (photos[0]!.y + photos[0]!.bottom) / 2,
-              ),
-            ).toBeLessThan(1);
           }
         }
         if (width > 700) {
           const seam = rows[0]!.photos[0]!.right;
           for (const { photos } of rows) {
-            expect(Math.abs(photos[0]!.right - seam)).toBeLessThan(1);
-            expect(photos[1]!.x - photos[0]!.right).toBeLessThan(width * 0.02);
+            const [left, right] = photos[1] ? photos : [undefined, photos[0]!];
+            if (left) expect(Math.abs(left.right - seam)).toBeLessThan(1);
+            expect(right!.x - seam).toBeGreaterThan(0);
+            expect(right!.x - seam).toBeLessThan(width * 0.02);
             for (const photo of photos)
               expect(photo.right - photo.x).toBeLessThan(width * 0.19);
           }
