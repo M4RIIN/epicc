@@ -20,29 +20,29 @@ test('les paragraphes de la biographie démarrent ensemble lettre par lettre', a
   );
 
   const frames = await chapters.evaluateAll(async ([first, second]) => {
-    const firstLetter = first!.getAnimations({ subtree: true })[0]!;
-    const nextLetter = first!.getAnimations({ subtree: true })[1]!;
-    const secondChapter = second!.getAnimations({ subtree: true })[0]!;
-    await Promise.all([firstLetter.ready, secondChapter.ready]);
-    const startTogether = firstLetter.startTime === secondChapter.startTime;
-    const letters = [firstLetter, nextLetter];
-
-    const opacities = [8, 110].map((time) =>
-      letters.map((letter) => {
-        letter.pause();
-        letter.currentTime = time;
-        return Number(
-          getComputedStyle((letter.effect as KeyframeEffect).target!).opacity,
-        );
-      }),
-    );
-    return { startTogether, opacities };
+    const highlight = CSS.highlights.get('biography-writing')!;
+    const frames: number[][] = [];
+    for (let frame = 0; frame < 12 && frames.length < 2; frame++) {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+      const ranges = [...highlight];
+      const lengths = [first, second].map(
+        (chapter) =>
+          ranges
+            .find((range) => chapter!.contains(range.startContainer))
+            ?.toString().length ?? 0,
+      );
+      if (lengths.every(Boolean) && lengths[0] !== frames.at(-1)?.[0]) {
+        frames.push(lengths);
+      }
+    }
+    return frames;
   });
 
-  expect(frames.startTogether).toBe(true);
-  expect(frames.opacities[0]![0]).toBeGreaterThan(0);
-  expect(frames.opacities[0]![1]).toBe(0);
-  expect(frames.opacities[1]).toEqual([1, 1]);
+  expect(frames).toHaveLength(2);
+  for (const [first, second] of frames) expect(first).toBe(second);
+  expect(frames[1]![0]).toBeGreaterThan(frames[0]![0]!);
 });
 
 test('sur mobile, le récit sous la photo attend son arrivée à l’écran', async ({
@@ -64,11 +64,10 @@ test('sur mobile, le récit sous la photo attend son arrivée à l’écran', as
     'data-biography-writing',
     'pending',
   );
-  const letter = firstChapter.locator('.vitrine-biography-letter').first();
-  await expect(letter).toHaveCSS('opacity', '0');
+  await expect(firstChapter).toHaveCSS('color', 'rgba(0, 0, 0, 0)');
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect(letter).toHaveCSS('opacity', '1');
+  await expect(firstChapter).toHaveCSS('color', 'rgb(0, 0, 0)');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
 
   await firstChapter.scrollIntoViewIfNeeded();
@@ -76,10 +75,17 @@ test('sur mobile, le récit sous la photo attend son arrivée à l’écran', as
     'data-biography-writing',
     'started',
   );
-  await expect(letter).toHaveCSS('opacity', '1');
+  await expect(firstChapter).toHaveAttribute(
+    'data-biography-writing',
+    'finished',
+  );
+  await expect(firstChapter).toHaveCSS('color', 'rgb(0, 0, 0)');
   await question.scrollIntoViewIfNeeded();
   await firstChapter.scrollIntoViewIfNeeded();
-  await expect(letter).toHaveCSS('opacity', '1');
+  await expect(firstChapter).toHaveAttribute(
+    'data-biography-writing',
+    'finished',
+  );
 });
 
 test('le manifeste alterne ses phrases avec un glitch et anime le collage en boucle', async ({

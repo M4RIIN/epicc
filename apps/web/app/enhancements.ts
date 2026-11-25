@@ -53,15 +53,65 @@ if (manifesto && manifestoDefinition && 'IntersectionObserver' in window) {
   observer.observe(manifestoDefinition);
 }
 
+function biographyTextRanges(paragraph: Element) {
+  const ranges = [];
+  const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const text = walker.currentNode as Text;
+    for (const { 0: line, index = 0 } of text.data.matchAll(/[^\n]+/g)) {
+      const range = new Range();
+      range.setStart(text, index);
+      range.collapse(true);
+      ranges.push({ range, length: line.length });
+    }
+  }
+  return ranges;
+}
+
+function writeBiographyParagraph(paragraph: HTMLElement, highlight: Highlight) {
+  const ranges = biographyTextRanges(paragraph);
+  for (const { range } of ranges) highlight.add(range);
+
+  let startedAt: number | undefined;
+  const letterIntervalMs = 16;
+  const writeLetters = (time: number) => {
+    startedAt ??= time;
+    const lettersWritten =
+      1 + Math.floor((time - startedAt) / letterIntervalMs);
+    for (const { range, length } of ranges) {
+      range.setEnd(
+        range.startContainer,
+        range.startOffset + Math.min(lettersWritten, length),
+      );
+    }
+    if (ranges.some(({ length }) => lettersWritten < length)) {
+      requestAnimationFrame(writeLetters);
+      return;
+    }
+    paragraph.dataset.biographyWriting = 'finished';
+    for (const { range } of ranges) highlight.delete(range);
+  };
+
+  paragraph.dataset.biographyWriting = 'started';
+  requestAnimationFrame(writeLetters);
+}
+
 const biographyParagraphs = document.querySelectorAll<HTMLElement>(
   '[data-biography-writing]',
 );
-if (biographyParagraphs.length && 'IntersectionObserver' in window) {
+if (
+  biographyParagraphs.length &&
+  'IntersectionObserver' in window &&
+  typeof Highlight === 'function' &&
+  CSS.highlights
+) {
+  const highlight = new Highlight();
+  CSS.highlights.set('biography-writing', highlight);
   const observer = new IntersectionObserver((entries) => {
     for (const { target, isIntersecting } of entries) {
       if (!isIntersecting) continue;
-      target.setAttribute('data-biography-writing', 'started');
       observer.unobserve(target);
+      writeBiographyParagraph(target as HTMLElement, highlight);
     }
   });
 
