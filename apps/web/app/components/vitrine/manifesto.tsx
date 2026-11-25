@@ -1,22 +1,31 @@
 import { Artwork } from './artwork';
-import { useVitrineImageUrl } from './media';
+import { VitrineFilm } from './film';
 
-export function Manifesto() {
-  const line = useVitrineImageUrl('Line8.svg');
+export function Manifesto({ film }: { film: string | undefined }) {
   return (
     <section
       className="vitrine-manifesto"
       id="epicc"
       aria-labelledby="manifesto-title"
     >
-      <h2 id="manifesto-title">EPICC, pourquoi ?</h2>
+      <h2 id="manifesto-title">Épicc, pourquoi ?</h2>
+      <div className="vitrine-manifesto-portrait">
+        <VitrineFilm
+          source={film}
+          file="portrait-manifeste.webp"
+          width={1219}
+          height={683}
+          alt="Chloé à vélo dans les rues de Toulouse."
+          floating
+        />
+      </div>
       <div className="vitrine-manifesto-intro">
         <p className="vitrine-manifesto-definition">
           {[
             'Épicc, pour épicurien.',
             'Épicc, pour épique.',
-            'CC, pour Chloé Catala.',
-            'CC, pour conseil et communication.',
+            'CC, pour Chloé Catala',
+            'CC, pour conseil et communication',
           ].map((phrase) => (
             <span key={phrase}>
               {phrase}
@@ -34,7 +43,7 @@ export function Manifesto() {
           l’agroalimentaire pour faire exister, développer et faire connaître
           leur marque.
           <span className="vitrine-manifesto-purpose">
-            La volonté d’aider des commerçants, des entrepreneurs qui ont des
+            Une ambition, aider des commerçants et des entrepreneurs qui ont des
             idées à les mettre en valeur au mieux.
             <br />
             Faire ressortir le beau, le bon, le bien de chaque projet que
@@ -75,24 +84,7 @@ export function Manifesto() {
         />
         <figcaption className="vitrine-colophon">
           <span>Marque EPICC</span>
-          <svg viewBox="0 0 1 33" aria-hidden="true">
-            <image
-              href={line}
-              width="33"
-              height="1"
-              transform="translate(1 0) rotate(90)"
-            />
-          </svg>
           <span>Créée le 7 déc. 2025</span>
-          <svg viewBox="0 0 1 33" aria-hidden="true">
-            <image
-              href={line}
-              width="33"
-              height="1"
-              transform="translate(1 0) rotate(90)"
-            />
-          </svg>
-          <span>Par</span>
           <Artwork
             file="IllustrationSansTitre81.png"
             width={1701}

@@ -9,9 +9,11 @@ import { Footer } from '../components/vitrine/footer';
 export default function Home({
   email,
   basePath,
+  films,
 }: {
   email: string | null;
   basePath: string;
+  films: { signature: string | undefined; portrait: string | undefined };
 }) {
   return (
     <div className="vitrine">
@@ -19,10 +21,10 @@ export default function Home({
         <h1 className="vitrine-sr-only">
           EPICC — Chloé Catala, communication et identité visuelle à Toulouse
         </h1>
-        <Opening />
-        <Services />
+        <Opening film={films.signature} />
         <Biography />
-        <Manifesto />
+        <Manifesto film={films.portrait} />
+        <Services />
         <Projects basePath={basePath} />
         <Contact email={email} />
       </main>

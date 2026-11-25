@@ -9,6 +9,7 @@ test('le manifeste alterne ses phrases avec un glitch et anime le collage en bou
   await page.evaluate(() => document.fonts.ready);
 
   const definition = manifesto.locator('.vitrine-manifesto-definition');
+  await definition.scrollIntoViewIfNeeded();
   await expect(definition).toHaveClass(/vitrine-manifesto-rotating/);
   for (const width of [1440, 768, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -172,6 +173,24 @@ for (const javaScriptEnabled of [false, true]) {
         document.documentElement.style.scrollBehavior = 'auto';
       });
       await expect(page.locator('.vitrine-service')).toHaveCount(6);
+      const sections = await page
+        .locator('.vitrine-content > section')
+        .evaluateAll((elements) => elements.map(({ id }) => id));
+      expect(sections).toEqual([
+        '',
+        'a-propos',
+        'epicc',
+        'prestations',
+        'projets',
+        'contact',
+      ]);
+      await expect(
+        page.getByText('Découvrez Épicc, mon univers et mes clients'),
+      ).toBeVisible();
+      await expect(page.getByText('Benchmark et audit')).toBeVisible();
+      await expect(
+        page.getByText(/vidéo 1, des signatures|animation aussi ici/i),
+      ).toHaveCount(0);
       for (const name of [
         'Lancement de marque',
         'Restructuration d’identité',
@@ -181,7 +200,7 @@ for (const javaScriptEnabled of [false, true]) {
         'Événementiel & scénographie',
       ]) {
         await expect(
-          page.locator('.vitrine-service').getByText(name, { exact: true }),
+          page.locator('.vitrine-service dt').getByText(name, { exact: true }),
         ).toBeVisible();
       }
       await expect(

@@ -76,21 +76,40 @@ const clientProjects = [
   },
 ];
 
-const [homeCss, projectCss, script] = await Promise.all([
-  stylesheet('accueil', 'vitrine'),
-  stylesheet('projet', 'client-project'),
-  build({
-    entryPoints: [join(root, 'apps/web/app/enhancements.ts')],
+async function browserScript(name: string, entry: string) {
+  const result = await build({
+    entryPoints: [join(root, 'apps/web/app', entry)],
     bundle: true,
     minify: true,
     target: 'es2022',
     write: false,
-  }).then((result) =>
-    writeAsset('vitrine', 'js', result.outputFiles[0]!.contents),
-  ),
+  });
+  return writeAsset(name, 'js', result.outputFiles[0]!.contents);
+}
+
+function filmUrl(value: string | undefined) {
+  if (!value?.trim()) return undefined;
+  const url = new URL(value.trim());
+  if (url.protocol !== 'https:' || url.username || url.password) {
+    throw new Error('Les vidéos de la vitrine exigent une URL HTTPS publique.');
+  }
+  return url.href;
+}
+
+const films = {
+  signature: filmUrl(process.env.VITRINE_SIGNATURE_VIDEO_URL),
+  portrait: filmUrl(process.env.VITRINE_PORTRAIT_VIDEO_URL),
+};
+const [homeCss, projectCss, script, filmScript] = await Promise.all([
+  stylesheet('accueil', 'vitrine'),
+  stylesheet('projet', 'client-project'),
+  browserScript('vitrine', 'enhancements.ts'),
+  films.signature || films.portrait
+    ? browserScript('films', 'vitrine-films.ts')
+    : undefined,
 ]);
 
-const home = <Home email={email} basePath={basePath} />;
+const home = <Home email={email} basePath={basePath} films={films} />;
 const icon = await writeAsset(
   'epicc-icone',
   'png',
@@ -105,7 +124,6 @@ const covers = [
   homeCover.file,
   ...clientProjects.map(({ metadata }) => metadata.cover.file),
 ];
-// Les composants déclarent les fichiers affichés sur chaque page.
 renderToStaticMarkup(
   <VitrineMedia
     resolve={(file, width = 0) => {
@@ -178,6 +196,7 @@ type Page = {
   title: string;
   description: string;
   css: string;
+  supplementaryScript?: string;
   cover?: { file: string; alt: string };
   structuredData?: object;
   content: ReactNode;
@@ -188,6 +207,7 @@ function renderPage({
   title,
   description,
   css,
+  supplementaryScript,
   cover,
   structuredData,
   content,
@@ -238,6 +258,9 @@ function renderPage({
           <link rel="icon" href={icon} type="image/png" sizes="64x64" />
           <link rel="stylesheet" href={css} />
           <script type="module" src={script} />
+          {supplementaryScript && (
+            <script type="module" src={supplementaryScript} />
+          )}
         </head>
         <body>
           <a className="skip-link" href="#contenu">
@@ -265,6 +288,7 @@ await writeFile(
     description: homeDescription,
     css: homeCss,
     content: home,
+    ...(filmScript && { supplementaryScript: filmScript }),
     cover: homeCover,
     ...(baseUrl && { structuredData: homeStructuredData(baseUrl) }),
   }),
@@ -320,7 +344,6 @@ if (baseUrl) {
 }
 
 await cp(join(root, 'tools/serve-site.mjs'), join(dist, 'serve.mjs'));
-// Entrée de compatibilité pour les aperçus déjà configurés.
 await mkdir(join(dist, 'apps/api'), { recursive: true });
 await writeFile(join(dist, 'apps/api/main.mjs'), "import '../../serve.mjs';\n");
 console.log(
