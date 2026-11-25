@@ -9,7 +9,15 @@ export function Manifesto() {
       id="epicc"
       aria-labelledby="manifesto-title"
     >
-      <h2 id="manifesto-title">EPICC, pourquoi ?</h2>
+      <h2 id="manifesto-title">Épicc, pourquoi{'\u00a0'}?</h2>
+      <Artwork
+        file="ManifestePortrait.jpg"
+        width={1218}
+        height={682}
+        alt="Chloé à vélo dans une rue de Toulouse, devant les terrasses."
+        className="vitrine-manifesto-portrait"
+        sizes="(max-width: 700px) 86vw, (max-width: 1920px) 63.4vw, 1218px"
+      />
       <div className="vitrine-manifesto-intro">
         <p className="vitrine-manifesto-definition">
           {[
@@ -92,13 +100,15 @@ export function Manifesto() {
               transform="translate(1 0) rotate(90)"
             />
           </svg>
-          <span>Par</span>
-          <Artwork
-            file="IllustrationSansTitre81.png"
-            width={1701}
-            height={398}
-            alt="Chloé Catala"
-          />
+          <span className="vitrine-colophon-signature">
+            <Artwork
+              file="IllustrationSansTitre81.png"
+              width={1701}
+              height={398}
+              alt="Par Chloé Catala"
+              sizes="(max-width: 700px) 18vw, (max-width: 1920px) 9vw, 171px"
+            />
+          </span>
         </figcaption>
       </figure>
     </section>

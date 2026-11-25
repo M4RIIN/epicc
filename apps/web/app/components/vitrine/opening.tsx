@@ -24,9 +24,9 @@ export function Opening() {
         <details className="vitrine-menu">
           <summary>Menu</summary>
           <div className="vitrine-menu-panel">
-            <a href="#prestations">Les expertises</a>
             <a href="#a-propos">À propos de Chloé</a>
             <a href="#epicc">L’esprit EPICC</a>
+            <a href="#prestations">Les expertises</a>
             <a href="#projets">Les projets clients</a>
             <a href="#contact">Contact</a>
           </div>
@@ -39,21 +39,9 @@ export function Opening() {
           </div>
         </div>
       </nav>
-      <div className="vitrine-introduction">
-        <Artwork
-          file="OpeningPortrait.png"
-          width={1378}
-          height={772}
-          alt="Chloé à la rencontre des restaurateurs, dans les rues de Toulouse."
-          sizes="72vw"
-        />
-        <Artwork
-          file="Rectangle6.png"
-          width={244}
-          height={133}
-          className="vitrine-introduction-caption"
-        />
-      </div>
+      <p className="vitrine-tagline">
+        Découvrez Épicc, mon univers et mes clients
+      </p>
     </section>
   );
 }

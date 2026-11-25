@@ -1,4 +1,5 @@
 import { Artwork } from './artwork';
+import { Tags } from './tags';
 import { offers } from '../../content/offers';
 
 const titles: Record<string, string[]> = {
@@ -36,7 +37,7 @@ export function Services() {
         Les expertises
       </h2>
       <dl>
-        {offers.map(({ slug, name, description }) => (
+        {offers.map(({ slug, name, skills, description }) => (
           <div className="vitrine-service" key={slug} data-offer={slug}>
             <dt>
               <span className="vitrine-service-name vitrine-sr-only">
@@ -53,6 +54,9 @@ export function Services() {
                 ))}
               </span>
             </dt>
+            <dd className="vitrine-service-skills">
+              <Tags labels={skills} />
+            </dd>
             <dd className="vitrine-service-description">{description}</dd>
           </div>
         ))}

@@ -20,9 +20,9 @@ export default function Home({
           EPICC — Chloé Catala, communication et identité visuelle à Toulouse
         </h1>
         <Opening />
-        <Services />
         <Biography />
         <Manifesto />
+        <Services />
         <Projects basePath={basePath} />
         <Contact email={email} />
       </main>

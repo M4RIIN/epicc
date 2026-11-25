@@ -76,11 +76,11 @@ body:has(.vitrine) {
 }
 .vitrine-opening {
   position: relative;
-  padding-top: 8.75cqw;
+  padding-top: 7.3cqw;
 }
 .vitrine-cover {
   position: relative;
-  margin: 0 2.3%;
+  margin: 0 3% 0 2.3%;
   aspect-ratio: 1819 / 1019;
   overflow: hidden;
 }
@@ -98,7 +98,7 @@ body:has(.vitrine) {
 }
 .vitrine-navigation {
   position: absolute;
-  inset: 2.5cqw 16% auto 7.1%;
+  inset: 2.5cqw 3.8% auto 2.3%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -134,35 +134,74 @@ body:has(.vitrine) {
   background: var(--vitrine-paper);
   font-size: 14px;
 }
-.vitrine-introduction {
-  width: 71.77%;
-  margin: 8.4cqw auto 0;
+.vitrine-tagline {
+  padding-top: 4.7cqw;
+  text-align: center;
+  color: #838383;
+  font-size: clamp(19px, 2.6cqw, 50px);
+  letter-spacing: -0.12em;
 }
-.vitrine-introduction img {
-  display: block;
-  width: 100%;
+.vitrine-tags {
+  display: flex;
+  width: max-content;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid;
+  font-size: clamp(8px, 0.6cqw, 12px);
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+}
+.vitrine-tags > li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7.45cqw;
+  min-height: clamp(22px, 1.72cqw, 33px);
+  padding-inline: 0.6cqw;
+  white-space: nowrap;
+}
+.vitrine-tags > li + li {
+  border-left: 1px solid;
+}
+.vitrine-tags > .vitrine-tags-lettering {
+  position: relative;
+  min-width: 6.8cqw;
+  padding: 0;
+}
+.vitrine-tags-lettering > .vitrine-project-name {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: var(--piece-width);
+  transform: translateY(-50%);
 }
 .vitrine-services {
-  margin: 10.8cqw 8% 0;
+  margin: 13cqw 0 0 16.5cqw;
   scroll-margin-top: 32px;
 }
 .vitrine-services dl {
   display: grid;
-  gap: 2.3cqw;
+  gap: 4.2cqw;
   margin: 0;
 }
 .vitrine-service {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr 1.3fr;
+  grid-template-columns: 31cqw 38cqw;
   align-items: center;
-  gap: 2cqw;
-  min-height: 10cqw;
+  column-gap: 1.5cqw;
+  row-gap: 0.8cqw;
 }
 .vitrine-service dt {
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
+}
+.vitrine-service .vitrine-service-skills {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: center;
 }
 .vitrine-service dd {
   margin: 0;
@@ -170,14 +209,17 @@ body:has(.vitrine) {
 }
 .vitrine-service-description {
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 1 / span 2;
   text-align: center;
-  font-size: clamp(16px, 1.875cqw, 36px);
+  text-wrap: balance;
+  font-size: clamp(16px, 2cqw, 38px);
   font-weight: 200;
   font-style: italic;
-  line-height: 1.25;
+  line-height: 1.24;
+  letter-spacing: -0.14em;
 }
-.vitrine-service:nth-child(even) dt {
+.vitrine-service:nth-child(even) dt,
+.vitrine-service:nth-child(even) .vitrine-service-skills {
   grid-column: 2;
 }
 .vitrine-service:nth-child(even) .vitrine-service-description {
@@ -191,7 +233,7 @@ body:has(.vitrine) {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 10cqw;
+  height: 7.5cqw;
 }
 .vitrine-service-lettering img {
   display: block;
@@ -202,7 +244,9 @@ body:has(.vitrine) {
 }
 .vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
   position: relative;
-  height: 14cqw;
+  width: 26cqw;
+  height: 9cqw;
+  margin-inline: auto;
 }
 .vitrine-service[data-offer='creation-de-marque']
   .vitrine-service-lettering
@@ -241,8 +285,8 @@ body:has(.vitrine) {
 .vitrine-service[data-offer='evenementiel']
   .vitrine-service-lettering
   img:nth-child(2) {
-  width: 6%;
-  height: 65%;
+  width: 7.5%;
+  height: 87%;
   object-fit: cover;
   object-position: right;
 }
@@ -252,30 +296,37 @@ body:has(.vitrine) {
   width: 43%;
 }
 .vitrine-biography {
-  margin: 15cqw 4.9% 0;
+  margin-top: 11.5cqw;
   scroll-margin-top: 32px;
 }
 .vitrine-biography-heading {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 2cqw;
-  margin-right: 7%;
+  position: relative;
+  text-align: center;
 }
-.vitrine-biography-heading h2 {
+.vitrine-biography h2,
+.vitrine-manifesto h2 {
   font-size: clamp(18px, 1.875cqw, 36px);
 }
 .vitrine-biography-heading > img {
-  width: 54%;
+  position: absolute;
+  z-index: 2;
+  top: 1.2cqw;
+  left: 52cqw;
+  width: 54.5cqw;
+  max-width: none;
 }
 .vitrine-biography-intro {
   display: grid;
-  grid-template-columns: 20% 1fr;
-  gap: 1.5cqw;
+  grid-template-columns: 18.3cqw 1.2cqw 3.3cqw 45.4cqw 9.5cqw;
   align-items: start;
-  margin-top: 1cqw;
+  margin: 4.8cqw 0 0 5.2cqw;
+}
+.vitrine-biography-story {
+  grid-column: 1;
+  grid-row: 1 / span 2;
 }
 .vitrine-biography-question {
+  width: 23cqw;
   font-size: clamp(14px, 1.04cqw, 20px);
 }
 .vitrine-biography-question span {
@@ -283,17 +334,29 @@ body:has(.vitrine) {
 }
 .vitrine-chapters {
   display: grid;
-  gap: 2.5cqw;
-  margin-top: 3cqw;
+  gap: 1.6cqw;
+  font-size: clamp(14px, 1.25cqw, 24px);
+}
+.vitrine-chapters-beginnings {
+  margin-top: 1.8cqw;
+}
+.vitrine-chapters-restaurants {
+  grid-column: 4;
+  grid-row: 2;
+  grid-template-columns: 21cqw 22cqw;
+  column-gap: 2.4cqw;
+  margin-top: 4.2cqw;
 }
 .vitrine-chapters p {
   white-space: pre-line;
 }
 .vitrine-childhood {
   position: relative;
-  width: 83%;
+  grid-column: 3 / -1;
+  grid-row: 1;
+  width: 100%;
   aspect-ratio: 1117.229 / 629;
-  margin: 0;
+  margin: 3.6cqw 0 0;
 }
 .vitrine-childhood > img:not(.vitrine-childhood-caption) {
   position: absolute;
@@ -344,15 +407,20 @@ body:has(.vitrine) {
   transform: rotate(-90deg);
 }
 .vitrine-manifesto {
-  margin: 4cqw 4.9% 0;
+  margin: 13cqw 4.9% 0;
   scroll-margin-top: 32px;
 }
 .vitrine-manifesto h2 {
   text-align: center;
 }
+.vitrine-manifesto-portrait {
+  display: block;
+  width: 63.4cqw;
+  margin: 4.4cqw auto 0;
+}
 .vitrine-manifesto-intro {
   position: relative;
-  margin: 3cqw 0 0 17%;
+  margin: 13.5cqw 0 0 17%;
 }
 .vitrine-manifesto-purpose {
   display: block;
@@ -360,15 +428,15 @@ body:has(.vitrine) {
 }
 .vitrine-manifesto-definition {
   position: absolute;
-  top: 14cqw;
-  right: 0;
+  top: 14.8cqw;
+  right: 5.2cqw;
   font-size: clamp(14px, 1.25cqw, 24px);
 }
 .vitrine-manifesto-collage {
   position: relative;
   width: 52cqw;
   height: 34cqw;
-  margin: 1cqw 0 0 20cqw;
+  margin: 1cqw 0 0 16.2cqw;
 }
 .vitrine-manifesto-collage > img,
 .vitrine-collage-photo {
@@ -427,11 +495,16 @@ body:has(.vitrine) {
   height: 100%;
   flex-shrink: 0;
 }
-.vitrine-colophon > img {
+.vitrine-colophon > .vitrine-colophon-signature {
+  position: relative;
+  align-self: stretch;
+  width: 4cqw;
+}
+.vitrine-colophon-signature > img {
   position: absolute;
   width: 8.9cqw;
   max-width: none;
-  left: 15.67cqw;
+  left: 0.9cqw;
   top: -1px;
 }
 :root:has(.vitrine-projects:target) {
@@ -576,9 +649,6 @@ body:has(.vitrine) {
   height: 100%;
   scroll-margin-block: 18px;
 }
-.vitrine-project-mirror {
-  transform: scaleX(-1);
-}
 .vitrine-project:has(> .vitrine-project-preview) {
   position: relative;
 }
@@ -647,14 +717,6 @@ body:has(.vitrine) {
       opacity 180ms ease-out,
       translate 180ms ease-out;
   }
-}
-.vitrine-project-fitness-row h3 {
-  font-size: var(--vitrine-heading);
-  font-weight: 400;
-}
-.vitrine-project-fitness-row img {
-  display: block;
-  width: 100%;
 }
 .vitrine-contact {
   position: relative;
@@ -737,19 +799,13 @@ body:has(.vitrine) {
 .vitrine-footer-content {
   --footer-layout-width: min(100cqw, var(--vitrine-max-width));
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  padding: calc(0.03 * var(--footer-layout-width))
-    calc(0.05 * var(--footer-layout-width));
-  min-height: calc(0.163 * var(--footer-layout-width));
+  align-items: flex-end;
+  padding: calc(0.025 * var(--footer-layout-width));
+  min-height: calc(0.125 * var(--footer-layout-width));
 }
 .vitrine-footer-content > img {
-  width: calc(0.1335 * var(--footer-layout-width));
+  width: calc(0.085 * var(--footer-layout-width));
   transform: rotate(2.16deg);
-}
-.vitrine-footer a:hover {
-  text-decoration: underline;
 }
 
 @media (max-width: 700px) {
@@ -759,8 +815,11 @@ body:has(.vitrine) {
   .vitrine-opening {
     padding-top: 80px;
   }
+  .vitrine-tagline {
+    padding: 32px 7% 0;
+  }
   .vitrine-navigation {
-    inset: 24px 15% auto 5%;
+    inset: 24px 5% auto 5%;
     font-size: 11px;
     gap: 12px;
   }
@@ -768,10 +827,6 @@ body:has(.vitrine) {
     gap: 12px;
     flex-wrap: wrap;
     justify-content: flex-end;
-  }
-  .vitrine-introduction {
-    width: 82%;
-    margin-top: 12cqw;
   }
   .vitrine-services {
     margin: 60px 7% 0;
@@ -788,59 +843,86 @@ body:has(.vitrine) {
     grid-column: 1;
     grid-row: 1;
   }
+  .vitrine-service .vitrine-service-skills,
+  .vitrine-service:nth-child(even) .vitrine-service-skills {
+    grid-column: 1;
+    grid-row: 2;
+  }
   .vitrine-service .vitrine-service-description,
   .vitrine-service:nth-child(even) .vitrine-service-description {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 3;
+  }
+  .vitrine-tags {
+    font-size: 9px;
+  }
+  .vitrine-tags > li {
+    min-width: 0;
+    padding-inline: 6px;
   }
   .vitrine-service-lettering {
     width: 100%;
     height: 90px;
   }
   .vitrine-service[data-offer='creation-de-marque'] .vitrine-service-lettering {
-    height: 140px;
+    width: 100%;
+    height: 120px;
   }
   .vitrine-service-description {
     font-size: 18px;
+    letter-spacing: -0.1em;
   }
   .vitrine-biography {
     margin: 80px 7% 0;
   }
-  .vitrine-biography-heading {
-    display: block;
-    margin: 0;
-  }
   .vitrine-biography-heading > img {
+    position: static;
+    display: block;
     width: 100%;
+    margin-top: 8px;
   }
   .vitrine-biography-intro {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    margin: 24px 0 0;
   }
   .vitrine-biography-story {
     display: contents;
   }
   .vitrine-biography-question {
     order: 0;
+    width: auto;
   }
   .vitrine-childhood {
     order: 1;
     width: 85%;
+    margin: 0;
   }
   .vitrine-chapters {
     order: 2;
     gap: 24px;
-    margin-top: 12px;
+  }
+  .vitrine-chapters-beginnings {
+    margin-top: 0;
+  }
+  .vitrine-chapters-restaurants {
+    order: 3;
+    grid-template-columns: 1fr;
+    margin-top: 0;
   }
   .vitrine-manifesto {
     margin: 60px 7% 0;
+  }
+  .vitrine-manifesto-portrait {
+    width: 100%;
+    margin-top: 24px;
   }
   .vitrine-manifesto-intro {
     display: flex;
     flex-direction: column-reverse;
     gap: 24px;
-    margin: 24px 0 0;
+    margin: 32px 0 0;
   }
   .vitrine-manifesto-definition {
     position: static;
@@ -857,8 +939,11 @@ body:has(.vitrine) {
     height: 14px;
     left: 15cqw;
   }
-  .vitrine-colophon > img {
-    left: 20cqw;
+  .vitrine-colophon > .vitrine-colophon-signature {
+    width: 8cqw;
+  }
+  .vitrine-colophon-signature > img {
+    left: 1cqw;
     width: 12cqw;
   }
   .vitrine-projects-collage {
@@ -871,8 +956,29 @@ body:has(.vitrine) {
   .vitrine-project-photo {
     width: 100%;
   }
-  .vitrine-project-fitness-row h3 {
-    font-size: 12px;
+  .vitrine-project[data-photos='1'] .vitrine-project-photo {
+    grid-column: 2;
+  }
+  .vitrine-project-names .vitrine-tags {
+    flex-direction: column;
+    width: 100%;
+  }
+  .vitrine-project-names .vitrine-tags > li {
+    padding: 4px;
+    white-space: normal;
+    text-align: center;
+  }
+  .vitrine-project-names .vitrine-tags > li + li {
+    border-left: 0;
+    border-top: 1px solid;
+  }
+  .vitrine-project-names .vitrine-tags > .vitrine-tags-lettering {
+    padding: 8px 6px;
+  }
+  .vitrine-tags-lettering > .vitrine-project-name {
+    position: static;
+    width: 100%;
+    transform: none;
   }
   .vitrine-contact {
     margin-top: 60px;
@@ -895,11 +1001,8 @@ body:has(.vitrine) {
   .vitrine-contact-send p {
     max-width: 100%;
   }
-  .vitrine-footer-content {
-    flex-direction: column;
-  }
   .vitrine-footer-content > img {
-    width: 130px;
+    width: 96px;
   }
 }
 .vitrine-manifesto-definition > span {
@@ -1039,55 +1142,30 @@ body:has(.vitrine) {
   }
 }
 
-.vitrine-project-fitness-row h3 {
-  font-family: Caveat, cursive;
-  font-weight: 400;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.vitrine-introduction {
-  position: relative;
-}
-.vitrine-introduction > .vitrine-introduction-caption {
-  position: absolute;
-  width: 17.7%;
-  left: 47.9%;
-  top: 48.3%;
-}
-
-.vitrine-manifesto h2 {
-  text-transform: none;
-}
-
-/* Les photographies se rejoignent au centre ; les noms restent contre leur duo. */
 @media (min-width: 701px) {
   .vitrine-projects-collage {
     gap: 1.04cqw;
   }
   .vitrine-project {
+    --photo-gap: 1.6cqw;
+    --name-gap: 1.6cqw;
+    --lettering-overflow: max(0cqw, var(--name-width) - 6.8cqw);
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 1.25cqw;
+    column-gap: var(--photo-gap);
   }
   .vitrine-project-names {
     grid-column: 1;
     grid-row: 1;
     justify-self: end;
-    width: min(
-      var(--project-name-width),
-      calc(100% - var(--first-photo-width) - 1.25cqw)
+    margin-right: calc(
+      var(--first-photo-width) + var(--name-gap) + var(--lettering-overflow)
     );
-    margin-right: calc(var(--first-photo-width) + 1.25cqw);
   }
   .vitrine-project[data-side='right'] .vitrine-project-names {
     grid-column: 2;
     justify-self: start;
-    width: min(
-      var(--project-name-width),
-      calc(100% - var(--second-photo-width) - 1.25cqw)
-    );
     margin-right: 0;
-    margin-left: calc(var(--second-photo-width) + 1.25cqw);
+    margin-left: calc(var(--second-photo-width) + var(--name-gap));
   }
   .vitrine-project-photos {
     display: contents;
@@ -1098,7 +1176,8 @@ body:has(.vitrine) {
     justify-self: end;
     width: var(--first-photo-width);
   }
-  .vitrine-project-photos > :nth-child(2) {
+  .vitrine-project-photos > :nth-child(2),
+  .vitrine-project[data-photos='1'] .vitrine-project-photos > :first-child {
     grid-column: 2;
     grid-row: 1;
     justify-self: start;

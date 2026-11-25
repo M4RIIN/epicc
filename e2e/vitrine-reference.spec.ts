@@ -9,6 +9,7 @@ test('le manifeste alterne ses phrases avec un glitch et anime le collage en bou
   await page.evaluate(() => document.fonts.ready);
 
   const definition = manifesto.locator('.vitrine-manifesto-definition');
+  await definition.scrollIntoViewIfNeeded();
   await expect(definition).toHaveClass(/vitrine-manifesto-rotating/);
   for (const width of [1440, 768, 320]) {
     await page.setViewportSize({ width, height: 900 });

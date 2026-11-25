@@ -1,11 +1,30 @@
 import { Artwork } from './artwork';
 
-const chapters = [
+const careerBeginnings = [
   'D’abord, j’ai commencé mon parcours en cabinet de conseil en stratégie.\n\nDévelopper des méthodologies projet et d’analyse, se confronter à des contextes clients divers…',
   'Pendant le Covid, j’ai été approchée par Metro. On se rapproche de la restauration tout doucement… J’ai continué quelques années en stratégie, puis en commerce, au contact direct des restaurateurs.\n\nJ’ai rencontré des chefs et j’ai commencé à développer mon réseau.',
+];
+
+const restaurantYears = [
   'La volonté d’entreprendre et de mettre les pieds dans la restauration s’est fait ressentir à mes 27 ans, après un tour du monde à la recherche des concepts et des tendances culinaires.',
   'Enfin, je me suis lancée dans la restauration : ouverture et direction de restaurants en tant que directrice, responsable de la communication et de l’événementiel.',
 ];
+
+function Chapters({
+  className,
+  chapters,
+}: {
+  className: string;
+  chapters: string[];
+}) {
+  return (
+    <div className={`vitrine-chapters ${className}`}>
+      {chapters.map((chapter) => (
+        <p key={chapter}>{chapter}</p>
+      ))}
+    </div>
+  );
+}
 
 export function Biography() {
   return (
@@ -16,14 +35,15 @@ export function Biography() {
     >
       <header className="vitrine-biography-heading">
         <h2 id="biography-title">
-          Hello, moi c’est <span className="vitrine-sr-only">Chloé Catala</span>
+          Hello{'\u00a0'}! Moi c’est{' '}
+          <span className="vitrine-sr-only">Chloé Catala</span>
         </h2>
         <Artwork
           file="IllustrationSansTitre81.png"
           width={1701}
           height={398}
           alt="Chloé Catala"
-          sizes="(max-width: 540px) 90vw, (max-width: 1920px) 46.15vw, 886px"
+          sizes="(max-width: 700px) 86vw, (max-width: 1920px) 55vw, 1047px"
         />
       </header>
       <div className="vitrine-biography-intro">
@@ -35,11 +55,10 @@ export function Biography() {
             <br />
             <span>ma réponse : “restaurant !”</span>
           </p>
-          <div className="vitrine-chapters">
-            {chapters.map((chapter) => (
-              <p key={chapter}>{chapter}</p>
-            ))}
-          </div>
+          <Chapters
+            className="vitrine-chapters-beginnings"
+            chapters={careerBeginnings}
+          />
         </div>
         <figure className="vitrine-childhood">
           <Artwork
@@ -78,6 +97,10 @@ export function Biography() {
             ))}
           </div>
         </figure>
+        <Chapters
+          className="vitrine-chapters-restaurants"
+          chapters={restaurantYears}
+        />
       </div>
     </section>
   );
