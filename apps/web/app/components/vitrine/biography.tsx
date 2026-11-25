@@ -16,13 +16,14 @@ export function Biography() {
     >
       <header className="vitrine-biography-heading">
         <h2 id="biography-title">
-          Hello, moi c’est <span className="vitrine-sr-only">Chloé Catala</span>
+          Hello ! Moi c’est{' '}
+          <span className="vitrine-sr-only">Chloé Catala</span>
         </h2>
         <Artwork
           file="IllustrationSansTitre81.png"
           width={1701}
           height={398}
-          alt="Chloé Catala"
+          className="vitrine-biography-signature"
           sizes="(max-width: 540px) 90vw, (max-width: 1920px) 46.15vw, 886px"
         />
       </header>
@@ -35,11 +36,9 @@ export function Biography() {
             <br />
             <span>ma réponse : “restaurant !”</span>
           </p>
-          <div className="vitrine-chapters">
-            {chapters.map((chapter) => (
-              <p key={chapter}>{chapter}</p>
-            ))}
-          </div>
+          {chapters.slice(0, 2).map((chapter) => (
+            <p key={chapter}>{chapter}</p>
+          ))}
         </div>
         <figure className="vitrine-childhood">
           <Artwork
@@ -78,6 +77,11 @@ export function Biography() {
             ))}
           </div>
         </figure>
+        <div className="vitrine-chapters">
+          {chapters.slice(2).map((chapter) => (
+            <p key={chapter}>{chapter}</p>
+          ))}
+        </div>
       </div>
     </section>
   );

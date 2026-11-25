@@ -1,16 +1,17 @@
 import { Artwork } from './artwork';
+import { VitrineFilm } from './film';
 
-export function Opening() {
+export function Opening({ film }: { film: string | undefined }) {
   return (
     <section className="vitrine-opening" aria-label="Bienvenue chez EPICC">
       <div className="vitrine-cover">
-        <Artwork
+        <VitrineFilm
+          source={film}
           file="OpeningSignature.png"
           width={1819}
           height={1019}
           alt="Chloé signe la vitrine d’un restaurant."
           eager
-          sizes="96vw"
         />
         <Artwork
           file="LogoEpicc.png"
@@ -39,21 +40,9 @@ export function Opening() {
           </div>
         </div>
       </nav>
-      <div className="vitrine-introduction">
-        <Artwork
-          file="OpeningPortrait.png"
-          width={1378}
-          height={772}
-          alt="Chloé à la rencontre des restaurateurs, dans les rues de Toulouse."
-          sizes="72vw"
-        />
-        <Artwork
-          file="Rectangle6.png"
-          width={244}
-          height={133}
-          className="vitrine-introduction-caption"
-        />
-      </div>
+      <p className="vitrine-introduction">
+        Découvrez Épicc, mon univers et mes clients
+      </p>
     </section>
   );
 }

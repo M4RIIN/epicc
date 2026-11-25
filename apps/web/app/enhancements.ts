@@ -47,17 +47,16 @@ if (manifesto && manifestoDefinition && 'IntersectionObserver' in window) {
         observer.unobserve(target);
       }
     },
-    { threshold: 0.25 },
+    { threshold: 0.1 },
   );
   observer.observe(manifesto);
   observer.observe(manifestoDefinition);
 }
 
-const projects = document.querySelector('#projets');
-const gallery = projects?.querySelector<HTMLElement>(
+const gallery = document.querySelector<HTMLElement>(
   '.vitrine-projects-collage',
 );
-if (projects && gallery) {
+if (gallery) {
   gallery.addEventListener(
     'pointermove',
     ({ clientX, clientY, pointerType }) => {
@@ -70,20 +69,6 @@ if (projects && gallery) {
       );
     },
   );
-
-  const updateProjectsEdges = () => {
-    const { scrollTop, scrollHeight, clientHeight } = gallery;
-    projects.toggleAttribute('data-projects-above', scrollTop > 1);
-    projects.toggleAttribute(
-      'data-projects-below',
-      scrollHeight - clientHeight - scrollTop > 1,
-    );
-  };
-  gallery.addEventListener('scroll', updateProjectsEdges, { passive: true });
-  if ('ResizeObserver' in window) {
-    new ResizeObserver(updateProjectsEdges).observe(gallery);
-  }
-  updateProjectsEdges();
 }
 
 const contact = document.querySelector<HTMLFormElement>(

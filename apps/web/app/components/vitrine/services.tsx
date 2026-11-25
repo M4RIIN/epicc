@@ -1,29 +1,6 @@
+import type { CSSProperties } from 'react';
 import { Artwork } from './artwork';
 import { offers } from '../../content/offers';
-
-const titles: Record<string, string[]> = {
-  'creation-de-marque': ['ServiceLancement1.png', 'ServiceLancement2.png'],
-  'restructuration-de-restaurants': ['ServiceRestructuration.png'],
-  'video-photographe': ['ServiceContenus.png'],
-  'reseaux-sociaux': ['ServiceReseaux.png'],
-  graphisme: ['ServiceGraphisme.png'],
-  evenementiel: [
-    'ServiceEvenementiel.png',
-    'ServiceReseaux.png',
-    'ServiceScenographie.png',
-  ],
-};
-
-const letteringDimensions: Record<string, [number, number]> = {
-  'ServiceLancement1.png': [469, 204],
-  'ServiceLancement2.png': [461, 204],
-  'ServiceRestructuration.png': [750, 176],
-  'ServiceReseaux.png': [389, 121],
-  'ServiceContenus.png': [584, 102],
-  'ServiceGraphisme.png': [288, 108],
-  'ServiceEvenementiel.png': [424, 198],
-  'ServiceScenographie.png': [348, 211],
-};
 
 export function Services() {
   return (
@@ -36,24 +13,33 @@ export function Services() {
         Les expertises
       </h2>
       <dl>
-        {offers.map(({ slug, name, description }) => (
+        {offers.map(({ slug, name, description, lettering, specialties }) => (
           <div className="vitrine-service" key={slug} data-offer={slug}>
-            <dt>
+            <dt
+              style={
+                {
+                  '--lettering-width': `${lettering.width / 19.2}cqw`,
+                } as CSSProperties
+              }
+            >
               <span className="vitrine-service-name vitrine-sr-only">
                 {name}
               </span>
-              <span className="vitrine-service-lettering" aria-hidden="true">
-                {titles[slug]!.map((file) => (
-                  <Artwork
-                    key={file}
-                    file={file}
-                    width={letteringDimensions[file]![0]}
-                    height={letteringDimensions[file]![1]}
-                  />
-                ))}
-              </span>
+              <Artwork
+                className="vitrine-service-lettering"
+                file={`expertise-${lettering.file}.webp`}
+                width={lettering.width}
+                height={lettering.height}
+              />
             </dt>
             <dd className="vitrine-service-description">{description}</dd>
+            <dd className="vitrine-service-specialties">
+              <ul aria-label="Spécialités">
+                {specialties.map((specialty) => (
+                  <li key={specialty}>{specialty}</li>
+                ))}
+              </ul>
+            </dd>
           </div>
         ))}
       </dl>
