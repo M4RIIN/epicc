@@ -275,19 +275,45 @@ body:has(.vitrine) {
   align-items: start;
   margin-top: 1cqw;
 }
-.vitrine-biography-question {
-  font-size: clamp(14px, 1.04cqw, 20px);
-}
-.vitrine-biography-question span {
+.vitrine-biography-story {
+  font-family: Caveat, cursive;
+  font-size: clamp(18px, 1.15cqw, 22px);
   font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.vitrine-biography-story .vitrine-sr-only {
+  user-select: none;
+}
+.vitrine-biography-question {
+  font-size: clamp(21px, 1.35cqw, 26px);
 }
 .vitrine-chapters {
   display: grid;
   gap: 2.5cqw;
   margin-top: 3cqw;
 }
-.vitrine-chapters p {
-  white-space: pre-line;
+.vitrine-biography-paragraph {
+  display: block;
+}
+.vitrine-biography-paragraph + .vitrine-biography-paragraph {
+  margin-top: 1lh;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-biography-writing='pending'] .vitrine-biography-letter {
+    opacity: 0;
+  }
+  [data-biography-writing='started'] .vitrine-biography-letter {
+    animation: vitrine-biography-write 90ms ease-out var(--letter-delay) both;
+  }
+}
+@keyframes vitrine-biography-write {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .vitrine-childhood {
   position: relative;

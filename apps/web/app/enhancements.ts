@@ -53,6 +53,24 @@ if (manifesto && manifestoDefinition && 'IntersectionObserver' in window) {
   observer.observe(manifestoDefinition);
 }
 
+const biographyParagraphs = document.querySelectorAll<HTMLElement>(
+  '[data-biography-writing]',
+);
+if (biographyParagraphs.length && 'IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting } of entries) {
+      if (!isIntersecting) continue;
+      target.setAttribute('data-biography-writing', 'started');
+      observer.unobserve(target);
+    }
+  });
+
+  for (const paragraph of biographyParagraphs) {
+    paragraph.dataset.biographyWriting = 'pending';
+    observer.observe(paragraph);
+  }
+}
+
 const projects = document.querySelector('#projets');
 const gallery = projects?.querySelector<HTMLElement>(
   '.vitrine-projects-collage',

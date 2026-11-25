@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Artwork } from './artwork';
 
 const chapters = [
@@ -6,6 +7,35 @@ const chapters = [
   'La volonté d’entreprendre et de mettre les pieds dans la restauration s’est fait ressentir à mes 27 ans, après un tour du monde à la recherche des concepts et des tendances culinaires.',
   'Enfin, je me suis lancée dans la restauration : ouverture et direction de restaurants en tant que directrice, responsable de la communication et de l’événementiel.',
 ];
+
+const letterIntervalMs = 16;
+
+function HandwrittenText({ text }: { text: string }) {
+  return (
+    <>
+      <span className="vitrine-sr-only">{text}</span>
+      <span aria-hidden="true">
+        {Array.from(text).map((character, index) =>
+          /\s/u.test(character) ? (
+            character
+          ) : (
+            <span
+              className="vitrine-biography-letter"
+              key={index}
+              style={
+                {
+                  '--letter-delay': `${index * letterIntervalMs}ms`,
+                } as CSSProperties
+              }
+            >
+              {character}
+            </span>
+          ),
+        )}
+      </span>
+    </>
+  );
+}
 
 export function Biography() {
   return (
@@ -28,16 +58,21 @@ export function Biography() {
       </header>
       <div className="vitrine-biography-intro">
         <div className="vitrine-biography-story">
-          <p className="vitrine-biography-question">
-            Petit, on vous demande souvent le métier que vous voudriez exercer
-            plus tard,
+          <p className="vitrine-biography-question" data-biography-writing="">
+            <HandwrittenText text="Petit, on vous demande souvent le métier que vous voudriez exercer plus tard," />
             <br />
             <br />
-            <span>ma réponse : “restaurant !”</span>
+            <HandwrittenText text="ma réponse : “restaurant !”" />
           </p>
           <div className="vitrine-chapters">
             {chapters.map((chapter) => (
-              <p key={chapter}>{chapter}</p>
+              <p key={chapter} data-biography-writing="">
+                {chapter.split('\n\n').map((paragraph) => (
+                  <span className="vitrine-biography-paragraph" key={paragraph}>
+                    <HandwrittenText text={paragraph} />
+                  </span>
+                ))}
+              </p>
             ))}
           </div>
         </div>
